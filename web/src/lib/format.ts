@@ -3,7 +3,10 @@
 const STALE_MS = 90 * 60 * 1000;
 
 export function formatGold(n: number): string {
-  return Math.round(n).toLocaleString("en-US");
+  if (n >= 100) return Math.round(n).toLocaleString("en-US");
+  if (n > 0 && n < 0.005) return "<0.01"; // genuinely-nonzero but sub-cent per-unit price
+  if (n > 0 && n < 1) return n.toFixed(2); // sub-1 per-unit prices (e.g. 0.27)
+  return n.toLocaleString("en-US", { maximumFractionDigits: 1 }); // 12 -> "12", 1.45 -> "1.5"
 }
 
 export interface Freshness { label: string; stale: boolean; }

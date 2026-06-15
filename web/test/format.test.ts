@@ -6,6 +6,12 @@ describe("formatGold", () => {
     expect(formatGold(106999)).toBe("106,999");
     expect(formatGold(12)).toBe("12");
   });
+  it("keeps precision for small per-unit prices", () => {
+    expect(formatGold(1.45)).toBe("1.5");
+    expect(formatGold(0.265)).toBe("0.27");
+    expect(formatGold(2)).toBe("2");
+    expect(formatGold(0.001)).toBe("<0.01");
+  });
 });
 
 describe("freshness", () => {
