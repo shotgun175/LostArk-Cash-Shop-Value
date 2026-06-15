@@ -1,0 +1,43 @@
+import type { Region } from "../api";
+
+// F4 in-game currency-exchange baseline. Provenance: distilled from TJW's compiled app and
+// confirmed against his live widget 2026-06-15 ("19200 gold for 238 crystals = 80.67 gold/crystal").
+// baseline gold-per-crystal = input gold / 238; "% vs exchange" compares a pack's gold/RC to it.
+// TJW ships a single static default 19200 (stale ~80.67); the live in-game NA rate is ~250
+// gold/crystal. The Packs panel makes the input region-aware and seeds NA to the current rate;
+// these constants remain the formula's anchor (divisor) and TJW's original default.
+export const F4_DIVISOR = 238;
+export const F4_DEFAULT_INPUT = 19200;
+
+// G2G real-money basis. Input = price for 1,000 gold in the region currency. Default from spec.
+export const G2G_DEFAULT_INPUT = 0.03268824;
+
+export function f4Baseline(inputGold: number): number {
+  return inputGold / F4_DIVISOR;
+}
+
+/** % a pack's gold/RC beats (or trails) the F4 exchange baseline. null when baseline unusable. */
+export function vsExchangePct(goldPerRc: number, baseline: number): number | null {
+  if (!baseline || !Number.isFinite(baseline)) return null;
+  return ((goldPerRc - baseline) / baseline) * 100;
+}
+
+/** Gold you get per real dollar buying gold on G2G. null when input unusable. */
+export function g2gGoldPerDollar(pricePer1k: number): number | null {
+  return pricePer1k > 0 && Number.isFinite(pricePer1k) ? 1000 / pricePer1k : null;
+}
+
+/** The "= $3.27" half of the readout (price-per-100k = pricePer1k * 100). */
+export function g2gReadout(pricePer1k: number, sym: string): string {
+  return `${sym}${(pricePer1k * 100).toFixed(2)}`;
+}
+
+/** % a pack's gold/$ beats (or trails) buying gold on G2G. Positive = pack wins. */
+export function vsG2GPct(goldPerDollar: number, g2gGpd: number | null): number | null {
+  if (!g2gGpd) return null;
+  return (goldPerDollar / g2gGpd - 1) * 100;
+}
+
+export function currencySymbol(region: Region): string {
+  return region === "euc" ? "€" : "$";
+}
