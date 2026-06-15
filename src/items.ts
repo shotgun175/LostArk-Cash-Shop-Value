@@ -24,3 +24,23 @@ export const ALL_SLUGS: readonly string[] = [
   "splendid-sacred-charm-bound", "stabilized-status", "stimulant-bound", "super-charge", "superior-abidos-fusion-material",
   "tailoring-hellfire-11-14", "tailoring-hellfire-15-18", "tailoring-hellfire-19-20", "vital-point-hit",
 ] as const;
+
+// The 6 bound battle-item pack consumables are never listed on the AH, so the feed returns
+// nothing for them. Their gold value is their *tradeable* (unbound) variant's market price.
+// We fetch the unbound variants as price sources and re-key each onto its bound slug in
+// normalize (the unbound key is then stripped, so only the bound item — which has an icon —
+// is served). Map: unbound source slug -> bound slug it prices.
+export const BOUND_FROM_UNBOUND: Readonly<Record<string, string>> = {
+  "splendid-elemental-hp-potion": "splendid-elemental-hp-potion-bound",
+  "stimulant": "stimulant-bound",
+  "atropine-potion": "atropine-potion-bound",
+  "splendid-dark-grenade": "splendid-dark-grenade-bound",
+  "splendid-sacred-bomb": "splendid-sacred-bomb-bound",
+  "splendid-sacred-charm": "splendid-sacred-charm-bound",
+};
+
+// Extra slugs we POST to the feed purely as price sources (stripped from the served payload).
+export const PRICE_SOURCE_SLUGS: readonly string[] = Object.keys(BOUND_FROM_UNBOUND);
+
+// What the cron actually requests: the 95-slug display universe + the price-source slugs.
+export const FETCH_SLUGS: readonly string[] = [...ALL_SLUGS, ...PRICE_SOURCE_SLUGS];

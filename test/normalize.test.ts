@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isValidRow, sanitizeRows, maxTimestamp, buildRegionSnapshot, buildPayload } from "../src/normalize";
+import { isValidRow, sanitizeRows, maxTimestamp, buildRegionSnapshot, buildPayload, applyDerivedPrices } from "../src/normalize";
 import type { FeedRow } from "../src/feed";
 import { BUNDLES } from "../src/bundles";
 
@@ -82,6 +82,36 @@ describe("buildRegionSnapshot", () => {
     expect(snap.prices["destruction-stone"]).toBeCloseTo(1997 / BUNDLES["destruction-stone"], 6);
     // stack-1 item unchanged
     expect(buildRegionSnapshot([{ item_slug: "grudge", price: 100000, timestamp: TS }]).prices.grudge).toBe(100000);
+  });
+});
+
+describe("applyDerivedPrices", () => {
+  it("re-keys each unbound battle item onto its bound slug and strips the source", () => {
+    const prices: Record<string, number> = { "splendid-sacred-charm": 799, grudge: 100 };
+    applyDerivedPrices(prices);
+    expect(prices["splendid-sacred-charm-bound"]).toBe(799);
+    expect(prices["splendid-sacred-charm"]).toBeUndefined();
+    expect(prices.grudge).toBe(100); // unrelated prices untouched
+  });
+
+  it("derives destiny-shard from the L pouch (÷3000) when not listed directly", () => {
+    const prices: Record<string, number> = { "destiny-shard-pouch-l": 578 };
+    applyDerivedPrices(prices);
+    expect(prices["destiny-shard"]).toBeCloseTo(578 / 3000, 6);
+  });
+
+  it("does not override an explicit destiny-shard price", () => {
+    const prices: Record<string, number> = { "destiny-shard": 0.224, "destiny-shard-pouch-l": 578 };
+    applyDerivedPrices(prices);
+    expect(prices["destiny-shard"]).toBe(0.224);
+  });
+});
+
+describe("buildRegionSnapshot derived sourcing", () => {
+  it("prices the bound battle item from its unbound feed row, not the unbound key", () => {
+    const snap = buildRegionSnapshot([{ item_slug: "stimulant", price: 111, timestamp: 1781506594 }]);
+    expect(snap.prices["stimulant-bound"]).toBe(111);
+    expect(snap.prices["stimulant"]).toBeUndefined();
   });
 });
 
