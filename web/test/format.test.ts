@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatGold, freshness } from "../src/lib/format";
+import { formatGold, freshness, formatPct, formatSignedPct, formatMoney } from "../src/lib/format";
 
 describe("formatGold", () => {
   it("groups thousands", () => {
@@ -24,5 +24,23 @@ describe("freshness", () => {
   it("flags stale only when far behind (past 90 min)", () => {
     const f = freshness("2026-06-15T06:25:00.000Z", "2026-06-15T04:00:00.000Z", now);
     expect(f.stale).toBe(true);
+  });
+});
+
+describe("formatPct / formatSignedPct / formatMoney", () => {
+  it("formatPct rounds to integer percent, em-dash for null", () => {
+    expect(formatPct(258.4)).toBe("258%");
+    expect(formatPct(-43.6)).toBe("-44%");
+    expect(formatPct(null)).toBe("—");
+  });
+  it("formatSignedPct adds an explicit + for non-negative", () => {
+    expect(formatSignedPct(258.4)).toBe("+258%");
+    expect(formatSignedPct(-43.6)).toBe("-44%");
+    expect(formatSignedPct(0)).toBe("+0%");
+    expect(formatSignedPct(null)).toBe("—");
+  });
+  it("formatMoney prefixes symbol with 2dp", () => {
+    expect(formatMoney(3.27, "$")).toBe("$3.27");
+    expect(formatMoney(1234.5, "€")).toBe("€1,234.50");
   });
 });
