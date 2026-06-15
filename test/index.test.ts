@@ -35,6 +35,19 @@ describe("worker fetch", () => {
     expect(res.headers.get("access-control-allow-origin")).toBe("*");
   });
 
+  it("serves a valid empty payload when KV is cold (no upstream fetch)", async () => {
+    const res = await call("/v1/prices");
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as PricePayload;
+    expect(body.schema_version).toBe(1);
+    expect(body.regions).toEqual({});
+  });
+
+  it("rejects non-GET methods on /v1/prices with 405", async () => {
+    const res = await call("/v1/prices", "POST");
+    expect(res.status).toBe(405);
+  });
+
   it("/healthz reports ok and a numeric source age when data exists", async () => {
     await writePayload(env.PRICES, seed);
     const res = await call("/healthz");

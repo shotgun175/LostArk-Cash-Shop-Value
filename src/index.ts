@@ -1,11 +1,16 @@
 import { refresh } from "./refresh";
 import { readPayload } from "./store";
-import type { RegionSnapshot } from "./normalize";
+import type { RegionSnapshot, PricePayload } from "./normalize";
+import { BUNDLES } from "./bundles";
 
 const CORS: Record<string, string> = {
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET, OPTIONS",
 };
+
+function emptyPayload(): PricePayload {
+  return { schema_version: 1, generated_at: new Date().toISOString(), regions: {}, bundles: BUNDLES };
+}
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -16,27 +21,45 @@ export default {
     }
 
     if (url.pathname === "/v1/prices") {
+      if (request.method !== "GET") {
+        return new Response("Method not allowed", { status: 405, headers: { ...CORS, allow: "GET, OPTIONS" } });
+      }
+
+      // Normalize the cache key to origin + path (ignore query string) so cache-busting
+      // can't bypass the shared edge cache.
+      const cacheKey = new Request(new URL(url.pathname, url.origin).toString());
       const cache = caches.default;
-      const hit = await cache.match(request);
+      const hit = await cache.match(cacheKey);
       if (hit) return hit;
 
-      // cold-KV safety net: serve an inline refresh on the very first hit before the cron runs
-      let payload = await readPayload(env.PRICES);
-      if (!payload) payload = await refresh(env.PRICES);
+      // KV is filled and kept fresh by the 60s cron (and KV persists). If it's still cold —
+      // only right after the very first deploy — serve a valid empty payload with a short
+      // cache. No inline upstream fetch: nothing unauthenticated can trigger the feed, and
+      // there is no cold-start thundering herd.
+      const payload = (await readPayload(env.PRICES)) ?? emptyPayload();
+      const isCold = Object.keys(payload.regions).length === 0;
 
       const res = new Response(JSON.stringify(payload), {
-        headers: { "content-type": "application/json", "cache-control": "public, max-age=60", ...CORS },
+        headers: {
+          "content-type": "application/json",
+          "cache-control": `public, max-age=${isCold ? 10 : 60}`,
+          ...CORS,
+        },
       });
-      ctx.waitUntil(cache.put(request, res.clone()).catch((e) => console.error("cache put failed", e)));
+      // Don't edge-cache the cold/empty payload, so the cron's first fill is served immediately.
+      if (!isCold) {
+        ctx.waitUntil(cache.put(cacheKey, res.clone()).catch((e) => console.error("cache put failed", e)));
+      }
       return res;
     }
 
     if (url.pathname === "/healthz") {
       const payload = await readPayload(env.PRICES);
       const snaps = payload ? (Object.values(payload.regions) as RegionSnapshot[]) : [];
-      const newestMs = snaps.reduce((m, s) => Math.max(m, Date.parse(s.source_valid_at)), 0);
+      const times = snaps.map((s) => Date.parse(s.source_valid_at)).filter((t) => !Number.isNaN(t));
+      const newestMs = times.length ? Math.max(...times) : 0;
       const ageSeconds = newestMs ? Math.round((Date.now() - newestMs) / 1000) : null;
-      return new Response(JSON.stringify({ ok: snaps.length > 0, source_age_seconds: ageSeconds }), {
+      return new Response(JSON.stringify({ ok: times.length > 0, source_age_seconds: ageSeconds }), {
         headers: { "content-type": "application/json", ...CORS },
       });
     }
@@ -45,6 +68,6 @@ export default {
   },
 
   async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-    ctx.waitUntil(refresh(env.PRICES));
+    ctx.waitUntil(refresh(env.PRICES).catch((e) => console.error("scheduled refresh failed", e)));
   },
 } satisfies ExportedHandler<Env>;
