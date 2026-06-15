@@ -2,7 +2,9 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "lostark-cash-shop-value",
   "main": "src/index.ts",
-  "compatibility_date": "2026-06-15",
+  // Kept at/under the bundled workerd's supported date (test + deploy runtimes).
+  // Bump deliberately when upgrading wrangler. Sufficient for fetch/KV/Cache.
+  "compatibility_date": "2025-09-06",
   "kv_namespaces": [
     // id is filled in Task 8 (`wrangler kv namespace create PRICES`).
     // A placeholder is fine for tests (vitest-pool-workers simulates KV).
