@@ -448,6 +448,8 @@ export const HELL_KEY_MAP: Record<string, { tierLabel: string; rarityTier: strin
 
 // Column -> slug/fallback/flat valuation (source B columnToSlug). 1730 tiers use the
 // destiny/Splendid mats; non-1730 tiers use cheaper T4 mats. untradable columns value to 0.
+// The Destiny "Juice" column is intentionally absent here (so it values to 0): TJW does not
+// value the Juice column in his pack/EV math, and matching him is the parity bar.
 export const COLUMN_VALUATION: Record<string, ColumnVal> = {
   Stones: { slug1730: "destiny-crystallized-destruction-stone", slugNon1730: "destiny-destruction-stone", fallback1730: 31.3, fallbackNon1730: 5 },
   "Base red stones": { slug1730: "destiny-crystallized-destruction-stone", slugNon1730: "destiny-destruction-stone", fallback1730: 31.3, fallbackNon1730: 5 },

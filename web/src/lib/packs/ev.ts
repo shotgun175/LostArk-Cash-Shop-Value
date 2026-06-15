@@ -82,12 +82,14 @@ export function chestVal(
   }
   const qty = Number(cellValue);
   if (column === "Stones") {
-    return Math.max(
+    const x = Math.max(
       qty * columnPrice("Stones", prices, is1730),
       qty * 3 * columnPrice("Base blue stones", prices, is1730),
     );
+    return Number.isFinite(x) ? x : 0;
   }
-  return qty * columnPrice(column, prices, is1730);
+  const x = qty * columnPrice(column, prices, is1730);
+  return Number.isFinite(x) ? x : 0;
 }
 
 /** Gold value of the four base-reward columns for one floor. */

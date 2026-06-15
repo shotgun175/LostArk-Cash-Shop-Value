@@ -58,6 +58,11 @@ describe("chestVal", () => {
     // "0|0|3" -> 3 * astrogem.epic(15000) = 45000
     expect(chestVal("Selectable Astrogems", "0|0|3", {}, true)).toBe(45000);
   });
+  it("zeroes the Destiny Juice column (intentionally unvalued to match TJW)", () => {
+    // Juice has no COLUMN_VALUATION entry -> columnPrice 0 -> chestVal 0, for any qty/prices.
+    expect(chestVal("Juice", 96, { "glaciers-breath": 319 }, true)).toBe(0);
+    expect(chestVal("Juice", 320, {}, true)).toBe(0);
+  });
   it("picks the max of the two Stones valuations", () => {
     // Stones slug cheap, blue-stone slug rich -> blue-stone path (qty*3*blue) wins.
     const prices = {
