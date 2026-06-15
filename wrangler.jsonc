@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lostark-cash-shop-value",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-06-15",
+  "kv_namespaces": [
+    // id is filled in Task 8 (`wrangler kv namespace create PRICES`).
+    // A placeholder is fine for tests (vitest-pool-workers simulates KV).
+    { "binding": "PRICES", "id": "PLACEHOLDER_REPLACE_IN_TASK_8" }
+  ],
+  "triggers": {
+    "crons": ["* * * * *"]
+  },
+  "observability": { "enabled": true }
+}
