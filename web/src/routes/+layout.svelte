@@ -4,6 +4,7 @@
   import { app } from "$lib/app.svelte";
   import RegionToggle from "$lib/components/RegionToggle.svelte";
   import FreshnessBanner from "$lib/components/FreshnessBanner.svelte";
+  import PacksPanel from "$lib/components/packs/PacksPanel.svelte";
 
   let { children } = $props();
   // In-page tabs for now; "Packs" and the rest arrive in Plan 3.
@@ -28,6 +29,8 @@
 
   {#if active === "Prices"}
     {@render children()}
+  {:else if active === "Packs"}
+    <PacksPanel />
   {:else}
     <p class="soon">"{active}" — coming soon (Plan 3).</p>
   {/if}
