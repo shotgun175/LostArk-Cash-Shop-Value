@@ -43,19 +43,21 @@ export interface PackResult {
 /**
  * Value ONE chest (its per-chest output(s)) against the price map.
  *
- * Bound outputs have no AH price, so their lineGold is 0 (recorded as a line). For "fixed"
- * and "multi" chests the gold is the sum of all output lineGolds. For "selection" chests
- * exactly one output is taken: the defaultPickSlug output if set, else the output with the
- * highest lineGold (ties -> first). The "highest lineGold" rule is load-bearing for matching
- * TJW, who values a selection chest at its best tradable option.
+ * Every output is priced uniformly off the map: outputs with no price-map slug resolve to 0
+ * (recorded as a line). The isBound flag is preserved on each line for UI display but does NOT
+ * force gold to 0 — many "bound" battle-item consumables are AH-tradable and ARE in the price
+ * map (TJW prices them); only items genuinely absent from the map (e.g. 30-day brews) show 0.
+ * For "fixed" and "multi" chests the gold is the sum of all output lineGolds. For "selection"
+ * chests exactly one output is taken: the defaultPickSlug output if set, else the output with
+ * the highest lineGold (ties -> first). The "highest lineGold" rule is load-bearing for
+ * matching TJW, who values a selection chest at its best tradable option.
  */
 export function resolveChest(
   chest: Chest,
   prices: Record<string, number>,
 ): ChestResult {
   const lines: ResolvedLine[] = chest.outputs.map((o) => {
-    const linePrice = prices[o.slug] ?? 0;
-    const gold = o.isBound ? 0 : Math.round(linePrice * o.qtyPerChest);
+    const gold = Math.round((prices[o.slug] ?? 0) * o.qtyPerChest);
     return { slug: o.slug, qty: o.qtyPerChest, gold, isBound: o.isBound };
   });
 

@@ -54,14 +54,26 @@ describe("resolveChest", () => {
     expect(r.gold).toBe(6580);
   });
 
-  it("values a bound multi bundle at 0 with all lines bound (Adventurer's Path Chest I)", () => {
-    // Every output is isBound -> lineGold 0, even though several have AH prices.
-    const r = resolveChest(RESOLVER["Adventurer's Path Chest I — Bound Bundle"], NAE);
-    expect(r.gold).toBe(0);
+  it("prices AH-tradable bound consumables; zeroes only no-price brews (Adventurer's Path Chest I)", () => {
+    // The 6 AH-tradable "bound" consumables ARE in the price map and get priced (TJW prices
+    // them); only the 2 brews (no price-map slug) resolve to 0. isBound is kept on every line.
+    const map = buildPriceMap(NAE);
+    const r = resolveChest(RESOLVER["Adventurer's Path Chest I — Bound Bundle"], map);
+    // 432*100 + 106*50 + 155*50 + 290*50 + 330*50 + 289*50 = 101700; brews contribute 0.
+    const expected =
+      432 * 100 + 106 * 50 + 155 * 50 + 290 * 50 + 330 * 50 + 289 * 50;
+    expect(expected).toBe(101700);
+    expect(r.gold).toBe(expected);
     expect(r.lines.length).toBe(8);
+    // Every line keeps its isBound flag (load-bearing for the UI's "no price" display).
     for (const l of r.lines) {
       expect(l.isBound).toBe(true);
-      expect(l.gold).toBe(0);
+    }
+    // The 2 brews have no price-map slug -> gold 0, but still carry isBound.
+    const byslug = Object.fromEntries(r.lines.map((l) => [l.slug, l]));
+    for (const brew of ["aura-of-resonance-recov-brew-30d", "rest-bonus-recovery-brew-30d"]) {
+      expect(byslug[brew].gold).toBe(0);
+      expect(byslug[brew].isBound).toBe(true);
     }
   });
 });
@@ -73,6 +85,7 @@ describe("resolveChest", () => {
 // in a browser. His site renders off prices.json generated_at 2026-06-15T06:15:02Z, region nae,
 // source_valid_at 2026-06-14T15:44:57Z — byte-for-byte the snapshot saved in this fixture
 // (every sampled per-unit price matched). His displayed card values (total gold / gold-per-RC):
+//   adventurers-path-package          831,020 / 415.5
 //   horizon-growth-support-pack-i   1,679,000 / 289.5
 //   horizon-growth-support-pack-ii    864,850 / 227.6
 //   limited-relic-engraving-growth  1,812,089 / 335.6
@@ -81,12 +94,15 @@ describe("resolveChest", () => {
 //   shadow-growth-support-pack-2      626,550 / 174.0
 //   weekly-t4-crystallized-stone      368,900 / 263.5
 // All of these reproduce EXACTLY from this fixture (mats + relic-recipe + Frost-key EV).
+// adventurers-path-package also requires pricing the 6 AH-tradable bound consumables in its
+// "Adventurer's Path Chest I — Bound Bundle" (101,700 gold); only its 2 brews zero out.
 // ---------------------------------------------------------------------------
 describe("packValue golden parity with TJW live pack cards", () => {
   const map = buildPriceMap(NAE);
 
   // [slug, total, goldPerRc] read directly off TJW's live cards.
   const golden: [string, number, number][] = [
+    ["adventurers-path-package", 831020, 415.5],
     ["horizon-growth-support-pack-i", 1679000, 289.5],
     ["horizon-growth-support-pack-ii", 864850, 227.6],
     ["limited-relic-engraving-growth", 1812089, 335.6],
@@ -125,15 +141,20 @@ describe("packValue golden parity with TJW live pack cards", () => {
 // ---------------------------------------------------------------------------
 // paradise-special-pack-ii — exercises the hell-key + cube + Frost-key EV wiring.
 //
-// KNOWN DIVERGENCE from TJW's live card. TJW's card shows total 815,973 (204.0 g/RC), but
-// prices the Epic hell key at 140,204 and the 4th-unlock cube at 20,495 — both ABOVE the
+// KNOWN, ACCEPTED DIVERGENCE from TJW's live card. TJW's card shows total 815,973 (204.0 g/RC),
+// but prices the Epic hell key at 140,204 and the 4th-unlock cube at 20,495 — both ABOVE the
 // values his own /math page (and this engine) compute from the published prices.json
 // (Epic = 129,295; cube = 18,427). TJW's card derives those two from a live gem AH price
 // (lv-2-gem ~= 608) that is NOT in the published prices.json snapshot, so it cannot be
-// reproduced from the fixture. The Frost key (50,440) — which does not depend on the gem
-// price — matches his card exactly, proving the EV ALGORITHM and the resolveChest/packValue
-// wiring are correct; only that one missing live input differs. We therefore pin the
-// engine's deterministic value (hand-verified below) rather than TJW's un-reproducible card.
+// reproduced from the fixture. Our engine uses the principled baked lv-2-gem (514) and matches
+// TJW's authoritative /math EVs exactly. The Frost key (50,440) — which does not depend on the
+// gem price — matches his card exactly, proving the EV ALGORITHM and the resolveChest/packValue
+// wiring are correct; only that one missing live input differs. The net effect is a ~4% lower
+// total on these EV-heavy packs: a DATA-AVAILABILITY difference (the public feed lacks a live
+// lv-2-gem price), not an algorithm bug. We therefore pin the engine's deterministic value
+// (hand-verified below) rather than TJW's un-reproducible card. The retired
+// `monthly-paradise-special-pack` (also EV-heavy, same hell-key/cube wiring) carries the
+// identical accepted divergence for the same reason.
 // ---------------------------------------------------------------------------
 describe("paradise-special-pack-ii (EV pack: deterministic engine value)", () => {
   const map = buildPriceMap(NAE);
