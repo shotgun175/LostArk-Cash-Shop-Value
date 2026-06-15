@@ -6,9 +6,7 @@
   // Bump deliberately when upgrading wrangler. Sufficient for fetch/KV/Cache.
   "compatibility_date": "2025-09-06",
   "kv_namespaces": [
-    // id is filled in Task 8 (`wrangler kv namespace create PRICES`).
-    // A placeholder is fine for tests (vitest-pool-workers simulates KV).
-    { "binding": "PRICES", "id": "PLACEHOLDER_REPLACE_IN_TASK_8" }
+    { "binding": "PRICES", "id": "f0b70c68a0924c8eb173d8f622e4fd62" }
   ],
   "triggers": {
     "crons": ["* * * * *"]
