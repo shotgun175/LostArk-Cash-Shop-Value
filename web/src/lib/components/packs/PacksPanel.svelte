@@ -59,7 +59,7 @@
 <style>
   .bar { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
     flex-wrap: wrap; padding: 12px 4px 18px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 14px; align-items: start; }
   .state { color: var(--muted); text-align: center; padding: 40px 0; }
   .state.err { color: var(--bad); }
 </style>
