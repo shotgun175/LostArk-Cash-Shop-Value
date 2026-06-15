@@ -1,4 +1,6 @@
-const STALE_MS = 30 * 60 * 1000;
+// The upstream is a periodic batch scrape that's routinely 20-40 min behind, so only
+// flag data that's far enough behind to suggest a real outage (e.g. patch-day breakage).
+const STALE_MS = 90 * 60 * 1000;
 
 export function formatGold(n: number): string {
   return Math.round(n).toLocaleString("en-US");

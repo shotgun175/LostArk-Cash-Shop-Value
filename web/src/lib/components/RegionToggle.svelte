@@ -6,13 +6,12 @@
   ];
 </script>
 
-<div class="toggle" role="tablist" aria-label="Region">
+<div class="toggle" role="group" aria-label="Region">
   {#each regions as r (r.id)}
     <button
       class:active={app.region === r.id}
       onclick={() => (app.region = r.id)}
-      role="tab"
-      aria-selected={app.region === r.id}>{r.label}</button>
+      aria-pressed={app.region === r.id}>{r.label}</button>
   {/each}
 </div>
 

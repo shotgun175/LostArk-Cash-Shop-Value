@@ -1,10 +1,11 @@
 :root{
   --bg:#0a0b10; --panel:#12141c; --panel-2:#161922; --line:#242838;
-  --txt:#e7e9f2; --muted:#8b90a6; --faint:#5b6076;
+  --txt:#e7e9f2; --muted:#8b90a6; --faint:#7d8499;
   --gold:#f4c560; --gold-2:#e0a93c; --purple:#a78bfa; --teal:#5fd3c4;
   --pos:#5fd07a; --bad:#f1796b;
 }
 *{box-sizing:border-box}
+button:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; border-radius:7px; }
 body{margin:0; background:radial-gradient(1200px 600px at 50% -200px,#1a1430 0%,transparent 60%),var(--bg);
   color:var(--txt); font-family:"Sora",system-ui,sans-serif; font-size:14px; line-height:1.45; padding:0 0 60px;}
 .wrap{max-width:1080px; margin:0 auto; padding:0 20px}

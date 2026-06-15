@@ -10,7 +10,8 @@ class AppState {
     try {
       this.payload = await loadPrices(fetchImpl);
       this.status = "ok";
-    } catch {
+    } catch (e) {
+      console.error("prices load failed", e);
       this.status = "error";
     }
   }

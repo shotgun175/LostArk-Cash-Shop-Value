@@ -1,13 +1,15 @@
 <script lang="ts">
   import { hasIcon, iconUrl, displayName } from "$lib/catalog";
   let { slug }: { slug: string } = $props();
+  let broken = $state(false);
   const initials = $derived(
-    displayName(slug).split(" ").slice(0, 2).map((w) => w[0]).join(""),
+    displayName(slug).split(" ").filter(Boolean).slice(0, 2).map((w) => w[0] ?? "").join(""),
   );
+  const showImg = $derived(hasIcon(slug) && !broken);
 </script>
 
-{#if hasIcon(slug)}
-  <img class="icon" src={iconUrl(slug)} alt={displayName(slug)} />
+{#if showImg}
+  <img class="icon" src={iconUrl(slug)} alt={displayName(slug)} onerror={() => (broken = true)} />
 {:else}
   <span class="icon fallback" aria-hidden="true">{initials}</span>
 {/if}
