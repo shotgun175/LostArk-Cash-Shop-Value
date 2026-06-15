@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { isValidRow, sanitizeRows, maxTimestamp, buildRegionSnapshot, buildPayload } from "../src/normalize";
 import type { FeedRow } from "../src/feed";
+import { BUNDLES } from "../src/bundles";
 
 const TS = 1781506594; // valid epoch-seconds
 const good: FeedRow = { item_slug: "grudge", price: 100, timestamp: TS };
@@ -73,6 +74,14 @@ describe("buildRegionSnapshot", () => {
       { item_slug: "grudge", price: 200, timestamp: TS },
     ]);
     expect(snap.prices.grudge).toBe(200);
+  });
+
+  it("converts the raw per-stack feed price to per-unit via the stack size", () => {
+    // destruction-stone stack size = 1000
+    const snap = buildRegionSnapshot([{ item_slug: "destruction-stone", price: 1997, timestamp: TS }]);
+    expect(snap.prices["destruction-stone"]).toBeCloseTo(1997 / BUNDLES["destruction-stone"], 6);
+    // stack-1 item unchanged
+    expect(buildRegionSnapshot([{ item_slug: "grudge", price: 100000, timestamp: TS }]).prices.grudge).toBe(100000);
   });
 });
 

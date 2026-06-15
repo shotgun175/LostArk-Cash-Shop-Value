@@ -1,5 +1,6 @@
 import type { FeedRow } from "./feed";
 import { ALL_SLUGS, type Region } from "./items";
+import { BUNDLES } from "./bundles";
 
 export interface RegionSnapshot {
   source_valid_at: string; // ISO-8601
@@ -45,9 +46,10 @@ export function maxTimestamp(rows: FeedRow[]): number {
 }
 
 // Assumes rows are already sanitized. Duplicate slug -> last row wins.
+// Converts the raw per-STACK feed price to a per-UNIT price via the stack-size map.
 export function buildRegionSnapshot(rows: FeedRow[]): RegionSnapshot {
   const prices: Record<string, number> = {};
-  for (const r of rows) prices[r.item_slug] = r.price;
+  for (const r of rows) prices[r.item_slug] = r.price / (BUNDLES[r.item_slug] ?? 1);
   return { source_valid_at: new Date(maxTimestamp(rows) * 1000).toISOString(), prices };
 }
 

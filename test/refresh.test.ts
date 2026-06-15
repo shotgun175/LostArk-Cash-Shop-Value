@@ -92,4 +92,10 @@ describe("refresh", () => {
     expect(putSpy).not.toHaveBeenCalled();
     putSpy.mockRestore();
   });
+
+  it("includes the bundles stack-size map in the payload", async () => {
+    const payload = await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }], euc: [] }));
+    expect(payload.bundles["destruction-stone"]).toBe(1000);
+    expect(payload.bundles.grudge).toBe(1);
+  });
 });
