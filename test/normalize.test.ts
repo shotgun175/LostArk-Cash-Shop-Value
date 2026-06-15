@@ -1,36 +1,84 @@
 import { describe, it, expect } from "vitest";
-import { isValidRows, maxTimestamp, buildRegionSnapshot, buildPayload } from "../src/normalize";
+import { isValidRow, sanitizeRows, maxTimestamp, buildRegionSnapshot, buildPayload } from "../src/normalize";
 import type { FeedRow } from "../src/feed";
 
-const rows: FeedRow[] = [
-  { item_slug: "grudge", price: 100, timestamp: 1781506594 },
-  { item_slug: "destiny-leapstone", price: 14, timestamp: 1781506000 },
-];
+const TS = 1781506594; // valid epoch-seconds
+const good: FeedRow = { item_slug: "grudge", price: 100, timestamp: TS };
 
-describe("isValidRows", () => {
-  it("accepts a non-empty list of positive priced rows", () => {
-    expect(isValidRows(rows)).toBe(true);
+describe("isValidRow", () => {
+  it("accepts a well-formed, known-slug row", () => {
+    expect(isValidRow(good)).toBe(true);
   });
-  it("rejects an empty list", () => {
-    expect(isValidRows([])).toBe(false);
+
+  it("rejects unknown or dangerous slugs (allowlist)", () => {
+    expect(isValidRow({ ...good, item_slug: "not-a-real-slug" })).toBe(false);
+    expect(isValidRow({ ...good, item_slug: "__proto__" })).toBe(false);
+    expect(isValidRow({ ...good, item_slug: "constructor" })).toBe(false);
   });
-  it("rejects non-positive prices", () => {
-    expect(isValidRows([{ item_slug: "x", price: 0, timestamp: 1 }])).toBe(false);
+
+  it("rejects non-positive, non-finite, or absurd prices", () => {
+    expect(isValidRow({ ...good, price: 0 })).toBe(false);
+    expect(isValidRow({ ...good, price: -5 })).toBe(false);
+    expect(isValidRow({ ...good, price: Infinity })).toBe(false);
+    expect(isValidRow({ ...good, price: NaN })).toBe(false);
+    expect(isValidRow({ ...good, price: 1e308 })).toBe(false);
+  });
+
+  it("rejects out-of-range or non-integer timestamps (incl. millisecond-scale)", () => {
+    expect(isValidRow({ ...good, timestamp: 0 })).toBe(false);
+    expect(isValidRow({ ...good, timestamp: 2000 })).toBe(false); // far too small
+    expect(isValidRow({ ...good, timestamp: 1781506594000 })).toBe(false); // ms-scale
+    expect(isValidRow({ ...good, timestamp: Infinity })).toBe(false);
+    expect(isValidRow({ ...good, timestamp: TS + 0.5 })).toBe(false); // non-integer
+  });
+});
+
+describe("sanitizeRows", () => {
+  it("drops invalid rows but keeps the valid ones", () => {
+    const rows: FeedRow[] = [
+      good,
+      { item_slug: "destiny-leapstone", price: 14, timestamp: TS },
+      { item_slug: "grudge", price: -1, timestamp: TS }, // bad price
+      { item_slug: "junk-slug", price: 5, timestamp: TS }, // unknown slug
+      { item_slug: "grudge", price: 5, timestamp: 1781506594000 }, // ms timestamp
+    ];
+    const out = sanitizeRows(rows);
+    expect(out).toHaveLength(2);
+    expect(out.map((r) => r.item_slug)).toEqual(["grudge", "destiny-leapstone"]);
+  });
+
+  it("returns [] for empty or non-array input", () => {
+    expect(sanitizeRows([])).toEqual([]);
+    expect(sanitizeRows(undefined as unknown as FeedRow[])).toEqual([]);
+  });
+
+  it("caps the number of rows (DoS guard)", () => {
+    const many = Array.from({ length: 6000 }, () => good);
+    expect(sanitizeRows(many)).toHaveLength(5000);
   });
 });
 
 describe("buildRegionSnapshot", () => {
   it("maps slug->price and stamps source_valid_at from the max timestamp", () => {
+    const rows: FeedRow[] = [good, { item_slug: "destiny-leapstone", price: 14, timestamp: 1781506000 }];
     const snap = buildRegionSnapshot(rows);
     expect(snap.prices).toEqual({ grudge: 100, "destiny-leapstone": 14 });
-    expect(maxTimestamp(rows)).toBe(1781506594);
-    expect(snap.source_valid_at).toBe(new Date(1781506594 * 1000).toISOString());
+    expect(maxTimestamp(rows)).toBe(TS);
+    expect(snap.source_valid_at).toBe(new Date(TS * 1000).toISOString());
+  });
+
+  it("keeps the last price on a duplicate slug", () => {
+    const snap = buildRegionSnapshot([
+      { item_slug: "grudge", price: 100, timestamp: TS },
+      { item_slug: "grudge", price: 200, timestamp: TS },
+    ]);
+    expect(snap.prices.grudge).toBe(200);
   });
 });
 
 describe("buildPayload", () => {
   it("assembles the contract shape", () => {
-    const snap = buildRegionSnapshot(rows);
+    const snap = buildRegionSnapshot([good]);
     const payload = buildPayload({ nae: snap }, { grudge: 1 }, "2026-06-15T00:00:00.000Z");
     expect(payload).toEqual({
       schema_version: 1,

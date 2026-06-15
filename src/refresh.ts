@@ -1,6 +1,6 @@
 import { ALL_SLUGS, REGIONS, type Region } from "./items";
 import { fetchRegion, type FetchLike } from "./feed";
-import { isValidRows, buildRegionSnapshot, buildPayload, type RegionSnapshot, type PricePayload } from "./normalize";
+import { sanitizeRows, buildRegionSnapshot, buildPayload, type RegionSnapshot, type PricePayload } from "./normalize";
 import { readPayload, writePayload } from "./store";
 import { BUNDLES } from "./bundles";
 
@@ -10,15 +10,16 @@ export async function refresh(kv: KVNamespace, fetchImpl: FetchLike = fetch): Pr
 
   for (const region of REGIONS) {
     try {
-      const rows = await fetchRegion(region, ALL_SLUGS, fetchImpl);
-      if (!isValidRows(rows)) continue; // empty/garbage -> keep previous snapshot
-      const snap = buildRegionSnapshot(rows);
+      const good = sanitizeRows(await fetchRegion(region, ALL_SLUGS, fetchImpl));
+      if (good.length === 0) continue; // empty/garbage -> keep previous snapshot
+      const snap = buildRegionSnapshot(good);
       const prevSnap = prev?.regions?.[region];
-      // write-on-advance: skip if upstream isn't newer than what we already have
+      // write-on-advance: skip if upstream isn't strictly newer than what we already have
       if (prevSnap && Date.parse(snap.source_valid_at) <= Date.parse(prevSnap.source_valid_at)) continue;
       regions[region] = snap;
-    } catch {
-      // network/HTTP error -> keep previous snapshot for this region
+    } catch (err) {
+      // network/HTTP error -> keep previous snapshot for this region, but make it visible
+      console.error(`refresh: region ${region} failed; keeping last-known-good`, err);
     }
   }
 

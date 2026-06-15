@@ -1,13 +1,19 @@
 import { env } from "cloudflare:test";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { refresh } from "../src/refresh";
 import { readPayload } from "../src/store";
 import type { FetchLike } from "../src/feed";
 
-// Build a fetch stub that returns canned rows per region_slug.
-function feedStub(rowsByRegion: Record<string, unknown[]>): FetchLike {
+const T_NEW = 1781506594;
+const T_OLD = 1781506000;
+const T_EUC = 1781506261;
+const T_MS = 1781506594000; // millisecond-scale -> must be rejected, must not poison
+
+// Stub fetch that returns canned rows per region_slug; listed regions throw (network error).
+function feedStub(rowsByRegion: Record<string, unknown[]>, throwRegions: string[] = []): FetchLike {
   return async (_url, init) => {
     const body = JSON.parse(String(init?.body)) as { region_slug: string };
+    if (throwRegions.includes(body.region_slug)) throw new Error("network down");
     const rows = rowsByRegion[body.region_slug] ?? [];
     return new Response(JSON.stringify(rows), { status: 200, headers: { "content-type": "application/json" } });
   };
@@ -16,8 +22,8 @@ function feedStub(rowsByRegion: Record<string, unknown[]>): FetchLike {
 describe("refresh", () => {
   it("writes validated prices for both regions", async () => {
     const stub = feedStub({
-      nae: [{ item_slug: "grudge", price: 100, timestamp: 1781506594 }],
-      euc: [{ item_slug: "grudge", price: 50, timestamp: 1781506261 }],
+      nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }],
+      euc: [{ item_slug: "grudge", price: 50, timestamp: T_EUC }],
     });
     const payload = await refresh(env.PRICES, stub);
     expect(payload.regions.nae?.prices.grudge).toBe(100);
@@ -27,16 +33,63 @@ describe("refresh", () => {
 
   it("does not overwrite good data when the feed returns empty", async () => {
     await refresh(env.PRICES, feedStub({
-      nae: [{ item_slug: "grudge", price: 100, timestamp: 1781506594 }],
-      euc: [{ item_slug: "grudge", price: 50, timestamp: 1781506261 }],
+      nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }],
+      euc: [{ item_slug: "grudge", price: 50, timestamp: T_EUC }],
     }));
     await refresh(env.PRICES, feedStub({ nae: [], euc: [] }));
     expect((await readPayload(env.PRICES))?.regions.nae?.prices.grudge).toBe(100);
   });
 
   it("ignores an older upstream timestamp", async () => {
-    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 100, timestamp: 2000 }], euc: [] }));
-    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 999, timestamp: 1000 }], euc: [] }));
+    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }], euc: [] }));
+    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 999, timestamp: T_OLD }], euc: [] }));
     expect((await readPayload(env.PRICES))?.regions.nae?.prices.grudge).toBe(100);
+  });
+
+  it("does not advance on an equal timestamp", async () => {
+    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }], euc: [] }));
+    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 999, timestamp: T_NEW }], euc: [] }));
+    expect((await readPayload(env.PRICES))?.regions.nae?.prices.grudge).toBe(100);
+  });
+
+  it("rejects a millisecond-scale timestamp instead of freezing the region", async () => {
+    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }], euc: [] }));
+    // a poisoned ms-scale row must be dropped (not stored as a year-58423 source_valid_at)
+    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 200, timestamp: T_MS }], euc: [] }));
+    expect((await readPayload(env.PRICES))?.regions.nae?.prices.grudge).toBe(100); // unchanged
+    // and a later genuine advance still lands (region is NOT frozen)
+    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 300, timestamp: T_NEW + 10 }], euc: [] }));
+    expect((await readPayload(env.PRICES))?.regions.nae?.prices.grudge).toBe(300);
+  });
+
+  it("keeps a region on network error and still advances the other", async () => {
+    await refresh(env.PRICES, feedStub({
+      nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }],
+      euc: [{ item_slug: "grudge", price: 50, timestamp: T_EUC }],
+    }));
+    // nae throws; euc returns a newer price
+    await refresh(env.PRICES, feedStub({ euc: [{ item_slug: "grudge", price: 60, timestamp: T_EUC + 10 }] }, ["nae"]));
+    const stored = await readPayload(env.PRICES);
+    expect(stored?.regions.nae?.prices.grudge).toBe(100); // retained
+    expect(stored?.regions.euc?.prices.grudge).toBe(60); // advanced
+  });
+
+  it("lets a region recover after being empty", async () => {
+    const first = await refresh(env.PRICES, feedStub({ nae: [], euc: [] }));
+    expect(first.regions.nae).toBeUndefined();
+    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }], euc: [] }));
+    expect((await readPayload(env.PRICES))?.regions.nae?.prices.grudge).toBe(100);
+  });
+
+  it("does not write to KV when nothing changed", async () => {
+    const stub = feedStub({
+      nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }],
+      euc: [{ item_slug: "grudge", price: 50, timestamp: T_EUC }],
+    });
+    await refresh(env.PRICES, stub); // first write
+    const putSpy = vi.spyOn(env.PRICES, "put");
+    await refresh(env.PRICES, stub); // identical -> must be a no-op
+    expect(putSpy).not.toHaveBeenCalled();
+    putSpy.mockRestore();
   });
 });
