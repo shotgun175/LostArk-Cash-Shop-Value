@@ -13,11 +13,20 @@ describe("displayName", () => {
 });
 
 describe("icons", () => {
-  it("builds an icon URL for known slug icons", () => {
+  it("builds an icon URL for 1:1 slug icons", () => {
     expect(iconUrl("solar-grace")).toBe("/icons/solar-grace.png");
     expect(hasIcon("solar-grace")).toBe(true);
+    expect(hasIcon("destiny-leapstone")).toBe(true); // now has a real icon
   });
-  it("reports no icon for game-id-only items", () => {
-    expect(hasIcon("destiny-leapstone")).toBe(false);
+  it("maps shared art: engravings, artisan tiers, hellfire books", () => {
+    expect(iconUrl("grudge")).toBe("/icons/relic-engraving-recipe.png");
+    expect(iconUrl("raid-captain")).toBe("/icons/relic-engraving-recipe.png");
+    expect(iconUrl("artisans-metallurgy-level-1")).toBe("/icons/artisans-level-1.png");
+    expect(iconUrl("artisans-tailoring-level-1")).toBe("/icons/artisans-level-1.png");
+    expect(iconUrl("tailoring-hellfire-19-20")).toBe("/icons/tailoring-hellfire.png");
+  });
+  it("reports no icon for items without art (e.g. oreha, raw destiny-shard)", () => {
+    expect(hasIcon("oreha-fusion-material")).toBe(false);
+    expect(hasIcon("destiny-shard")).toBe(false);
   });
 });

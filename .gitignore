@@ -10,3 +10,6 @@ worker-configuration.d.ts
 
 # Session planning / spec / research docs — organized locally, not tracked.
 docs/
+
+# Local icon drop zone — the app copies live in web/static/icons/
+/icons/
