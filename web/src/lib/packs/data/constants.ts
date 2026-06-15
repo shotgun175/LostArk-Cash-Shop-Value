@@ -1,0 +1,54 @@
+// Baked numeric constants from TJW's `ie` object (source B bakedConstants). These seed the
+// price map before the live feed / EV overrides are applied.
+export const BAKED: Record<string, number> = {
+  "lv-2-gem": 514,
+  "lv-3-gem": 1543,
+  "lv-4-gem": 4630,
+  "lv-5-gem": 13889,
+  "lv-6-gem": 41667,
+  "lv-7-gem": 125000,
+  "elysian-attempt-plus-1": 3000,
+  gold: 1,
+  "epic-astrogem": 15000,
+  "epic-astrogem-selected": 30000,
+  "relic-combat-engraving-recipe": 30000,
+};
+
+// 5:1 NPC trade-up pairs (source B tradeUpTable). Optional UI toggle, not baked into pack math.
+export const TRADE_UP: { fromSlug: string; toSlug: string; ratio: number }[] = [
+  { fromSlug: "destiny-leapstone", toSlug: "great-destiny-leapstone", ratio: 5 },
+  { fromSlug: "destiny-destruction-stone", toSlug: "destiny-crystallized-destruction-stone", ratio: 5 },
+  { fromSlug: "destiny-guardian-stone", toSlug: "destiny-crystallized-guardian-stone", ratio: 5 },
+  { fromSlug: "abidos-fusion-material", toSlug: "superior-abidos-fusion-material", ratio: 5 },
+  { fromSlug: "honor-leapstone", toSlug: "great-honor-leapstone", ratio: 5 },
+  { fromSlug: "great-honor-leapstone", toSlug: "marvelous-honor-leapstone", ratio: 5 },
+  { fromSlug: "marvelous-honor-leapstone", toSlug: "radiant-honor-leapstone", ratio: 5 },
+];
+
+// The 23 relic combat engraving slugs the relic-combat-engraving-recipe value maxes over
+// (source A/B `he()` / Se list).
+export const RELIC_ENGRAVING_SLUGS: string[] = [
+  "grudge",
+  "raid-captain",
+  "keen-blunt-weapon",
+  "adrenaline",
+  "mass-increase",
+  "cursed-doll",
+  "hit-master",
+  "ambush-master",
+  "awakening",
+  "expert",
+  "master-brawler",
+  "super-charge",
+  "drops-of-ether",
+  "magick-stream",
+  "barricade",
+  "vital-point-hit",
+  "stabilized-status",
+  "all-out-attack",
+  "mp-efficiency-increase",
+  "heavy-armor",
+  "explosive-expert",
+  "precise-dagger",
+  "spirit-absorption",
+];
