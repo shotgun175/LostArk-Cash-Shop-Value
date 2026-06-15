@@ -1,0 +1,7 @@
+Item icons are Lost Ark game assets (Smilegate / Amazon Games), used under
+community fan-tool convention. Sourced from thejunglewalrus/lostark-cash-shop-value.
+Not relicensed. Replace with official-CDN sourcing for cleaner provenance.
+
+Coverage note: only the slug-named subset (~23 items) is included. Items whose
+icons TJW publishes under opaque game-id filenames (use_12_*, use_13_*) are not
+mapped here; the UI renders a category-tinted fallback chip for those.
