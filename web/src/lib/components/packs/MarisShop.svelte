@@ -1,26 +1,12 @@
 <script lang="ts">
-  import { app } from "$lib/app.svelte";
   import { effectivePrices } from "$lib/packs/prices.svelte";
+  import { f4 } from "$lib/packs/f4.svelte";
   import { MARIS_WARES, BC_PER_BUNDLE } from "$lib/packs/data/marisShop";
   import { formatGold, formatSignedPct } from "$lib/format";
   import ItemIcon from "../ItemIcon.svelte";
-  import type { Region } from "$lib/api";
-
-  // Own copy of the F4 input (region-aware), persisted to the same key the Packs tab uses, so the
-  // two stay in sync (each tab re-reads on mount).
-  const F4_DEFAULTS: Record<Region, number> = { nae: 59500, euc: 59500 };
-  function restore(r: Region): number {
-    if (typeof localStorage === "undefined") return F4_DEFAULTS[r];
-    const v = Number(localStorage.getItem(`csv.f4.${r}`));
-    return Number.isFinite(v) && v > 0 ? v : F4_DEFAULTS[r];
-  }
-  let f4 = $state<Record<Region, number>>({ nae: restore("nae"), euc: restore("euc") });
-  $effect(() => {
-    if (typeof localStorage !== "undefined") localStorage.setItem(`csv.f4.${app.region}`, String(f4[app.region]));
-  });
 
   const prices = $derived(effectivePrices());
-  const goldPerBc = $derived((f4[app.region] || 0) / BC_PER_BUNDLE);
+  const goldPerBc = $derived(f4.perBc);
 
   const rows = $derived(
     MARIS_WARES.map((w) => {
@@ -44,7 +30,7 @@
 
   <div class="exch">
     <span class="lbl">Currency exchange (F4):</span>
-    <input class="f4 num" type="number" min="0" bind:value={f4[app.region]} aria-label="F4 exchange gold" />
+    <input class="f4 num" type="number" min="0" value={f4.value} oninput={(e) => (f4.value = e.currentTarget.valueAsNumber)} aria-label="F4 exchange gold" />
     <img class="ic" src="/icons/gold.png" alt="gold" />
     <span class="lbl">→ <b class="num accent">{formatGold(Math.round(goldPerBc))}</b> gold / BC</span>
   </div>

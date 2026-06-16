@@ -1,18 +1,15 @@
 <script lang="ts">
   import { app } from "$lib/app.svelte";
   import { buildPackRows } from "$lib/packs/packRows";
-  import { f4Baseline, g2gReadout, G2G_DEFAULT_INPUT, currencySymbol } from "$lib/packs/exchange";
+  import { g2gReadout, G2G_DEFAULT_INPUT, currencySymbol } from "$lib/packs/exchange";
+  import { f4 } from "$lib/packs/f4.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
   import { TRADE_UP } from "$lib/packs/data/constants";
   import { effectivePrices } from "$lib/packs/prices.svelte";
   import { packDetail, type DetailOption } from "$lib/packs/packDetail";
   import { PACKS } from "$lib/packs/data/packs";
-  import type { Region } from "$lib/api";
   import PackCard from "./PackCard.svelte";
-
-  // F4 crystal/RC rate is region-specific; NA seeded to the live in-game rate. Persisted per region.
-  const F4_DEFAULTS: Record<Region, number> = { nae: 59500, euc: 59500 };
 
   function restore(key: string, fallback: number): number {
     if (typeof localStorage === "undefined") return fallback;
@@ -20,21 +17,13 @@
     return Number.isFinite(v) && v > 0 ? v : fallback;
   }
 
-  let f4 = $state<Record<Region, number>>({
-    nae: restore("csv.f4.nae", F4_DEFAULTS.nae),
-    euc: restore("csv.f4.euc", F4_DEFAULTS.euc),
-  });
   let g2gInput = $state(restore("csv.g2g", G2G_DEFAULT_INPUT));
-
-  $effect(() => {
-    if (typeof localStorage !== "undefined") localStorage.setItem(`csv.f4.${app.region}`, String(f4[app.region]));
-  });
   $effect(() => {
     if (typeof localStorage !== "undefined") localStorage.setItem("csv.g2g", String(g2gInput));
   });
 
   const sym = $derived(currencySymbol(app.region));
-  const f4base = $derived(f4Baseline(f4[app.region] || 0));
+  const f4base = $derived(f4.perRc);
   const g2gOut = $derived(g2gReadout(g2gInput || 0, sym));
 
   const basePrices = $derived({ ...(app.snapshot?.prices ?? {}), ...overrides.forRegion(app.region) });
@@ -50,7 +39,7 @@
     return info;
   });
 
-  const rows = $derived(buildPackRows(effectivePrices(), { f4Input: f4[app.region], g2gInput }));
+  const rows = $derived(buildPackRows(effectivePrices(), { f4Input: f4.value, g2gInput }));
 
   // Per pack: chosen-slug -> the selection chest's full option list, for the inline "Show alts".
   const altsByPack = $derived.by(() => {
@@ -81,7 +70,7 @@
   <div class="exch">
     <span class="ex">
       <span class="lbl">Currency exchange (F4, optional):</span>
-      <input class="f4" type="number" min="0" bind:value={f4[app.region]} aria-label="F4 exchange gold" />
+      <input class="f4" type="number" min="0" value={f4.value} oninput={(e) => (f4.value = e.currentTarget.valueAsNumber)} aria-label="F4 exchange gold" />
       <img class="ic" src="/icons/gold.png" alt="gold" />
       <span class="lbl">for 238</span><img class="ic" src="/icons/royal-crystal.png" alt="RC" />
       <span class="lbl">=</span> <b class="num accent">{f4base.toFixed(2)}</b><img class="ic" src="/icons/gold.png" alt="gold" /><span class="lbl">/</span><img class="ic" src="/icons/royal-crystal.png" alt="RC" />
