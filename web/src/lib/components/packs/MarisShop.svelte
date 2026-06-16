@@ -35,6 +35,7 @@
     <span class="lbl">→ <b class="num accent">{formatGold(Math.round(goldPerBc))}</b> gold / BC</span>
   </div>
 
+  <div class="tscroll">
   <table>
     <thead>
       <tr>
@@ -59,6 +60,7 @@
       {/each}
     </tbody>
   </table>
+  </div>
 </div>
 
 <style>
@@ -78,7 +80,8 @@
   input.f4 { width: 84px; background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
     padding: 6px 10px; border-radius: 6px; font-size: 13px; }
   input.f4:focus { outline: none; border-color: var(--accent); }
-  table { width: 100%; border-collapse: collapse; }
+  .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; min-width: 620px; border-collapse: collapse; }
   th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13.5px; }
   th { color: var(--muted); font-weight: 500; }
   .right { text-align: right; }

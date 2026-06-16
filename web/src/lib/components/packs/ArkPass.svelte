@@ -53,6 +53,7 @@
     </div>
   </div>
 
+  <div class="tscroll">
   <table>
     <thead>
       <tr><th class="right">Lv</th><th class="ic-col" aria-label="icon"></th><th>Premium reward (best pick)</th><th class="right">Qty</th><th class="right">Gold</th></tr>
@@ -72,6 +73,7 @@
       {/each}
     </tbody>
   </table>
+  </div>
 </div>
 
 <style>
@@ -98,7 +100,8 @@
   .accent { color: var(--accent); }
   .lbl, .muted { color: var(--muted); }
   .ic { width: 15px; height: 15px; }
-  table { width: 100%; border-collapse: collapse; }
+  .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; min-width: 560px; border-collapse: collapse; }
   th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13.5px; }
   th { color: var(--muted); font-weight: 500; }
   .right { text-align: right; }
