@@ -9,6 +9,7 @@
   import PacksPanel from "$lib/components/packs/PacksPanel.svelte";
   import HellKeyMath from "$lib/components/packs/HellKeyMath.svelte";
   import MarisShop from "$lib/components/packs/MarisShop.svelte";
+  import ArkPass from "$lib/components/packs/ArkPass.svelte";
 
   let { children } = $props();
   // Tab order mirrors TJW (Packs default); our own Prices tab is kept at the far right.
@@ -48,6 +49,8 @@
     <HellKeyMath />
   {:else if active === "Mari's Shop"}
     <MarisShop />
+  {:else if active === "Ark Pass"}
+    <ArkPass />
   {:else}
     <p class="soon">"{active}" — coming soon (Plan 3).</p>
   {/if}
