@@ -9,11 +9,20 @@ const T_OLD = 1781506000;
 const T_EUC = 1781506261;
 const T_MS = 1781506594000; // millisecond-scale -> must be rejected, must not poison
 
-// Constant canned g2g rate; constant so the write-on-change guard treats it as unchanged.
-const G2G_RATE = 0.031;
+// Constant canned g2g rates (USD + EUR offers); constant so the write-on-change guard sees no change.
+const G2G_USD = 0.03186;
+const G2G_EUR = 0.029691;
 function g2gResponse(): Response {
   return new Response(
-    JSON.stringify({ code: 2000, payload: { results: [{ title: "Balthorr - US East", unit_price_in_usd: G2G_RATE }] } }),
+    JSON.stringify({
+      code: 2000,
+      payload: {
+        results: [
+          { title: "Balthorr - US East", converted_unit_price: G2G_USD },
+          { title: "Ratik - EU Central", converted_unit_price: G2G_EUR },
+        ],
+      },
+    }),
     { status: 200, headers: { "content-type": "application/json" } },
   );
 }
@@ -104,12 +113,13 @@ describe("refresh", () => {
     putSpy.mockRestore();
   });
 
-  it("includes the live g2g rate in the payload", async () => {
+  it("includes the live g2g USD + EUR rates in the payload", async () => {
     const payload = await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }], euc: [] }));
-    expect(payload.g2g?.usdPer1kGold).toBe(G2G_RATE);
+    expect(payload.g2g?.usdPer1kGold).toBe(G2G_USD);
+    expect(payload.g2g?.eurPer1kGold).toBe(G2G_EUR);
   });
 
-  it("keeps the last good g2g rate when the upstream offer fetch fails", async () => {
+  it("keeps the last good g2g rates when the upstream offer fetch fails", async () => {
     await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }], euc: [] }));
     // A fetcher that errors on the g2g endpoint but still serves the feed.
     const noG2g: FetchLike = async (url, init) => {
@@ -119,7 +129,8 @@ describe("refresh", () => {
       return new Response(JSON.stringify(rows), { status: 200, headers: { "content-type": "application/json" } });
     };
     const payload = await refresh(env.PRICES, noG2g);
-    expect(payload.g2g?.usdPer1kGold).toBe(G2G_RATE); // carried forward from the prior good fetch
+    expect(payload.g2g?.usdPer1kGold).toBe(G2G_USD); // carried forward from the prior good fetch
+    expect(payload.g2g?.eurPer1kGold).toBe(G2G_EUR);
   });
 
   it("includes the bundles stack-size map in the payload", async () => {

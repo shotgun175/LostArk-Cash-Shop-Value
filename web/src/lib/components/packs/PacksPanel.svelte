@@ -1,5 +1,6 @@
 <script lang="ts">
   import { app } from "$lib/app.svelte";
+  import type { Region } from "$lib/api";
   import { buildPackRows } from "$lib/packs/packRows";
   import { g2gReadout, currencySymbol } from "$lib/packs/exchange";
   import { f4 } from "$lib/packs/f4.svelte";
@@ -12,30 +13,37 @@
   import { PACKS } from "$lib/packs/data/packs";
   import PackCard from "./PackCard.svelte";
 
-  // G2G real-money rate: live from the feed by default; a typed value overrides it and is remembered
-  // (clearing the box drops the override and follows the live rate again).
-  const G2G_KEY = "csv.g2g.override";
-  function restoreG2g(): number | null {
+  // G2G real-money rate: auto-populated from the live feed for the selected region (USD for NA, EUR
+  // for EU). A typed value overrides it per region and is remembered; clearing the box returns to the
+  // live rate.
+  const ovKey = (r: Region) => `csv.g2g.override.${r}`;
+  function restoreOverride(r: Region): number | null {
     if (typeof localStorage === "undefined") return null;
-    // Retire the legacy key: the old UI auto-saved its default into `csv.g2g`, which must NOT read
-    // back as a user override now that the box follows the live rate.
-    localStorage.removeItem("csv.g2g");
-    const raw = localStorage.getItem(G2G_KEY);
+    const raw = localStorage.getItem(ovKey(r));
     if (raw == null || raw === "") return null;
     const v = Number(raw);
     return Number.isFinite(v) && v > 0 ? v : null;
   }
-  let g2gOverride = $state<number | null>(restoreG2g());
-  const g2gLive = $derived(app.payload?.g2g?.usdPer1kGold ?? null);
-  const g2gValue = $derived(g2gOverride ?? g2gLive); // effective $/1k gold, null if neither available
+  if (typeof localStorage !== "undefined") {
+    // Retire pre-region keys (the old UI auto-saved its default; both must not read back as overrides).
+    localStorage.removeItem("csv.g2g");
+    localStorage.removeItem("csv.g2g.override");
+  }
+  let g2gOverrides = $state<Record<Region, number | null>>({ nae: restoreOverride("nae"), euc: restoreOverride("euc") });
+  const g2gOverride = $derived(g2gOverrides[app.region]);
+  const g2gLive = $derived(
+    app.region === "euc" ? (app.payload?.g2g?.eurPer1kGold ?? null) : (app.payload?.g2g?.usdPer1kGold ?? null),
+  );
+  const g2gValue = $derived(g2gOverride ?? g2gLive); // effective price/1k gold, null if none available
   function onG2gInput(e: Event & { currentTarget: HTMLInputElement }): void {
     const v = e.currentTarget.valueAsNumber;
+    const r = app.region;
     if (Number.isFinite(v) && v > 0) {
-      g2gOverride = v;
-      if (typeof localStorage !== "undefined") localStorage.setItem(G2G_KEY, String(v));
+      g2gOverrides = { ...g2gOverrides, [r]: v };
+      if (typeof localStorage !== "undefined") localStorage.setItem(ovKey(r), String(v));
     } else {
-      g2gOverride = null;
-      if (typeof localStorage !== "undefined") localStorage.removeItem(G2G_KEY);
+      g2gOverrides = { ...g2gOverrides, [r]: null };
+      if (typeof localStorage !== "undefined") localStorage.removeItem(ovKey(r));
     }
   }
 
