@@ -5,11 +5,9 @@
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
   import { TRADE_UP } from "$lib/packs/data/constants";
+  import { effectivePrices } from "$lib/packs/prices.svelte";
   import type { Region } from "$lib/api";
   import PackCard from "./PackCard.svelte";
-
-  const TRADE_UP_BY_FROM: Record<string, { fromSlug: string; toSlug: string; ratio: number }> =
-    Object.fromEntries(TRADE_UP.map((t) => [t.fromSlug, t]));
 
   // F4 crystal/RC rate is region-specific; NA seeded to the live in-game rate. Persisted per region.
   const F4_DEFAULTS: Record<Region, number> = { nae: 59500, euc: 59500 };
@@ -50,17 +48,7 @@
     return info;
   });
 
-  // Prices used for pack values: base, with active trade-ups re-routing the from-slug value.
-  const effectivePrices = $derived.by(() => {
-    const p = { ...basePrices };
-    for (const slug of Object.keys(tradeUp.active)) {
-      const t = TRADE_UP_BY_FROM[slug];
-      if (t && p[t.toSlug] > 0) p[slug] = p[t.toSlug] / t.ratio;
-    }
-    return p;
-  });
-
-  const rows = $derived(buildPackRows(effectivePrices, { f4Input: f4[app.region], g2gInput }));
+  const rows = $derived(buildPackRows(effectivePrices(), { f4Input: f4[app.region], g2gInput }));
 
   const customCount = $derived(overrides.count(app.region));
   const tuCount = $derived(tradeUp.count());

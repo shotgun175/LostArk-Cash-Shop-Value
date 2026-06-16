@@ -42,7 +42,7 @@
 
 <div class="card" class:retired={row.retired}>
   <div class="head">
-    <span class="title">{row.name}</span>
+    <a class="title" href="/pack/{row.slug}">{row.name}</a>
     {#if tag}<span class="tag">{tag}</span>{/if}
   </div>
 
@@ -102,7 +102,8 @@
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
   .card.retired { opacity: .55; }
   .head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .title { font-weight: 600; color: var(--text); }
+  .title { font-weight: 600; color: var(--text); text-decoration: none; }
+  .title:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
   .tag { padding: 2px 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border);
     font-size: 12px; color: var(--muted); }
   .stats { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 7px; font-size: 13px; color: var(--text); margin-bottom: 8px; }

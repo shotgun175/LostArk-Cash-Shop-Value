@@ -1,6 +1,8 @@
 <script lang="ts">
   import "../app.css";
   import { onMount } from "svelte";
+  import { page } from "$app/state";
+  import { goto } from "$app/navigation";
   import { app } from "$lib/app.svelte";
   import RegionToggle from "$lib/components/RegionToggle.svelte";
   import FreshnessBanner from "$lib/components/FreshnessBanner.svelte";
@@ -10,6 +12,13 @@
   // Tab order mirrors TJW (Packs default); our own Prices tab is kept at the far right.
   const tabs = ["Packs", "Mari's Shop", "Ark Pass", "Hell Key math", "Prices"];
   let active = $state("Packs");
+
+  // Pack drill-down (/pack/<slug>) is a real route; everything else is in-page tab state.
+  const isPackPage = $derived(page.url.pathname.includes("/pack/"));
+  function selectTab(t: string): void {
+    active = t;
+    if (isPackPage) goto("/");
+  }
 
   onMount(() => { app.load(); });
 </script>
@@ -21,13 +30,15 @@
     <p class="sub">Live NA/EU market prices for Lost Ark cash-shop mats.</p>
     <nav>
       {#each tabs as t (t)}
-        <button class:active={active === t} onclick={() => (active = t)}>{t}</button>
+        <button class:active={!isPackPage && active === t} onclick={() => selectTab(t)}>{t}</button>
       {/each}
     </nav>
     <FreshnessBanner />
   </header>
 
-  {#if active === "Prices"}
+  {#if isPackPage}
+    {@render children()}
+  {:else if active === "Prices"}
     {@render children()}
   {:else if active === "Packs"}
     <PacksPanel />
