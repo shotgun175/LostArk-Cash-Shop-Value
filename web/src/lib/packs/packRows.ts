@@ -11,6 +11,7 @@ export interface PackRow extends PackResult {
 export interface PackRowOpts {
   f4Input: number;
   g2gInput: number;
+  picks?: Record<string, string>;
 }
 
 /**
@@ -27,7 +28,7 @@ export function buildPackRows(
   const g2gGpd = g2gGoldPerDollar(opts.g2gInput);
 
   const rows: PackRow[] = PACKS.map((p) => {
-    const v = packValue(p, prices);
+    const v = packValue(p, prices, opts.picks);
     return {
       ...v,
       vsExchange: v.goldPerRc == null ? null : vsExchangePct(v.goldPerRc, baseline),

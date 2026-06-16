@@ -42,6 +42,18 @@ describe("resolveChest", () => {
     expect(r2.lines[0].slug).toBe("destiny-guardian-stone");
   });
 
+  it("honors a user pickSlug over the highest-value rule (T4 Stone Selection Chest)", () => {
+    // Destruction wins on value, but the user picks guardian -> guardian is taken instead.
+    const prices = { "destiny-destruction-stone": 5.75, "destiny-guardian-stone": 0.09 };
+    const r = resolveChest(RESOLVER["T4 Stone Selection Chest"], prices, "destiny-guardian-stone");
+    expect(r.lines[0].slug).toBe("destiny-guardian-stone");
+    expect(r.gold).toBe(450); // 5000 * 0.09
+
+    // An unknown pickSlug falls back to the default highest-value pick (destruction).
+    const r2 = resolveChest(RESOLVER["T4 Stone Selection Chest"], prices, "not-an-option");
+    expect(r2.lines[0].slug).toBe("destiny-destruction-stone");
+  });
+
   it("honors defaultPickSlug regardless of lineGold (Wanderer's Shard Box)", () => {
     // honor-shard-pouch-l x20 @500 = 10000 would win on value, but defaultPickSlug forces
     // destiny-shard-pouch-l x10 @658 = 6580.
@@ -184,6 +196,19 @@ describe("paradise-special-pack-ii (EV pack: deterministic engine value)", () =>
     expect(r.total).toBe(783815);
     // Frost key matches TJW's card exactly (proves the EV wiring is faithful).
     expect(evFrost).toBe(50440);
+  });
+
+  it("a user pick re-routes a selection chest and changes the pack total", () => {
+    // Default takes glaciers (100@319=31900 > lavas 25@330=8250) from the T4 Support selection,
+    // qty 5 in this pack. Picking lavas instead drops the total by (31900 - 8250) * 5 = 118250.
+    const base = packValue(pack("paradise-special-pack-ii"), map).total;
+    const picked = packValue(pack("paradise-special-pack-ii"), map, {
+      "T4 Support Materials Selection Chest": "lavas-breath",
+    });
+    const lavasLine = picked.lines.find((l) => l.slug === "lavas-breath");
+    expect(lavasLine?.qty).toBe(25 * 5);
+    expect(picked.lines.some((l) => l.slug === "glaciers-breath")).toBe(false);
+    expect(base - picked.total).toBe((31900 - 8250) * 5);
   });
 
   it("aggregates per-slug lines with scaled quantities", () => {

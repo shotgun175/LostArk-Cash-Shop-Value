@@ -48,13 +48,15 @@ export interface PackResult {
  * force gold to 0 — many "bound" battle-item consumables are AH-tradable and ARE in the price
  * map (TJW prices them); only items genuinely absent from the map (e.g. 30-day brews) show 0.
  * For "fixed" and "multi" chests the gold is the sum of all output lineGolds. For "selection"
- * chests exactly one output is taken: the defaultPickSlug output if set, else the output with
- * the highest lineGold (ties -> first). The "highest lineGold" rule is load-bearing for
- * matching TJW, who values a selection chest at its best tradable option.
+ * chests exactly one output is taken: the user's pickSlug if it names a valid output, else the
+ * defaultPickSlug output if set, else the output with the highest lineGold (ties -> first). The
+ * "highest lineGold" rule is load-bearing for matching TJW, who values a selection chest at its
+ * best tradable option; pickSlug lets the user override that to value their own choice instead.
  */
 export function resolveChest(
   chest: Chest,
   prices: Record<string, number>,
+  pickSlug?: string,
 ): ChestResult {
   const lines: ResolvedLine[] = chest.outputs.map((o) => {
     const gold = Math.round((prices[o.slug] ?? 0) * o.qtyPerChest);
@@ -62,12 +64,14 @@ export function resolveChest(
   });
 
   if (chest.type === "selection") {
-    let chosen: ResolvedLine;
-    if (chest.defaultPickSlug !== undefined) {
-      chosen =
-        lines.find((l) => l.slug === chest.defaultPickSlug) ?? lines[0];
-    } else {
-      chosen = lines.reduce((best, l) => (l.gold > best.gold ? l : best), lines[0]);
+    let chosen: ResolvedLine | undefined =
+      pickSlug !== undefined ? lines.find((l) => l.slug === pickSlug) : undefined;
+    if (!chosen) {
+      if (chest.defaultPickSlug !== undefined) {
+        chosen = lines.find((l) => l.slug === chest.defaultPickSlug) ?? lines[0];
+      } else {
+        chosen = lines.reduce((best, l) => (l.gold > best.gold ? l : best), lines[0]);
+      }
     }
     return { gold: Math.max(0, chosen.gold), lines: [chosen] };
   }
@@ -85,6 +89,7 @@ export function resolveChest(
 export function packValue(
   pack: Pack,
   prices: Record<string, number>,
+  picks: Record<string, string> = {},
 ): PackResult {
   let total = 0;
   // slug -> aggregated line. Insertion order preserved for stable display.
@@ -113,7 +118,7 @@ export function packValue(
       add(content.chest, content.qty, 0, { unresolved: true });
       continue;
     }
-    const result = resolveChest(chest, prices);
+    const result = resolveChest(chest, prices, picks[content.chest]);
     total += result.gold * content.qty;
     for (const line of result.lines) {
       add(line.slug, line.qty * content.qty, line.gold * content.qty, {

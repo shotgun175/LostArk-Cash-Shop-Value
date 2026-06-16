@@ -3,6 +3,7 @@
   import { RESOLVER } from "$lib/packs/data/resolver";
   import { ARK_PASS_LEVELS, ARK_PASS_PREMIUM_RC, ARK_PASS_TOTAL_RC } from "$lib/packs/data/arkPass";
   import { effectivePrices } from "$lib/packs/prices.svelte";
+  import { selection } from "$lib/packs/selection.svelte";
   import { formatGold } from "$lib/format";
   import { displayName } from "$lib/catalog";
   import ItemIcon from "../ItemIcon.svelte";
@@ -13,7 +14,7 @@
     ARK_PASS_LEVELS.map((lvl) => {
       const chest = lvl.unresolved ? undefined : RESOLVER[lvl.chest];
       if (!chest) return { lvl, slug: null as string | null, qty: 0, gold: 0, optionCount: 0 };
-      const r = resolveChest(chest, prices);
+      const r = resolveChest(chest, prices, selection.get(lvl.chest));
       const line = r.lines[0];
       return { lvl, slug: line?.slug ?? null, qty: (line?.qty ?? 0) * lvl.qty, gold: r.gold * lvl.qty, optionCount: chest.outputs.length };
     }),

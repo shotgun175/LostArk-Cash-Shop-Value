@@ -5,6 +5,7 @@
   import { f4 } from "$lib/packs/f4.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
+  import { selection } from "$lib/packs/selection.svelte";
   import { TRADE_UP } from "$lib/packs/data/constants";
   import { effectivePrices } from "$lib/packs/prices.svelte";
   import { packDetail, type DetailOption } from "$lib/packs/packDetail";
@@ -39,7 +40,7 @@
     return info;
   });
 
-  const rows = $derived(buildPackRows(effectivePrices(), { f4Input: f4.value, g2gInput }));
+  const rows = $derived(buildPackRows(effectivePrices(), { f4Input: f4.value, g2gInput, picks: selection.map }));
 
   // Per pack: chosen-slug -> the selection chest's full option list, for the inline "Show alts".
   const altsByPack = $derived.by(() => {
@@ -47,7 +48,7 @@
     const out: Record<string, Record<string, DetailOption[]>> = {};
     for (const pack of PACKS) {
       const map: Record<string, DetailOption[]> = {};
-      for (const chest of packDetail(pack, prices)) {
+      for (const chest of packDetail(pack, prices, selection.map)) {
         if (chest.isSelection && chest.options.length > 1) {
           const chosen = chest.options.find((o) => o.chosen);
           if (chosen) map[chosen.slug] = chest.options;
@@ -60,9 +61,11 @@
 
   const customCount = $derived(overrides.count(app.region));
   const tuCount = $derived(tradeUp.count());
+  const pickCount = $derived(selection.count());
   function resetAll(): void {
     overrides.clearAll(app.region);
     tradeUp.clear();
+    selection.clearAll();
   }
 </script>
 
@@ -70,7 +73,7 @@
   <div class="exch">
     <span class="ex">
       <span class="lbl">Currency exchange (F4, optional):</span>
-      <input class="f4" type="number" min="0" value={f4.value} oninput={(e) => (f4.value = e.currentTarget.valueAsNumber)} aria-label="F4 exchange gold" />
+      <input class="f4" type="number" min="0" value={f4.value} oninput={(e) => (f4.value = e.currentTarget.valueAsNumber)} onfocus={(e) => e.currentTarget.select()} aria-label="F4 exchange gold" />
       <img class="ic" src="/icons/gold.png" alt="gold" />
       <span class="lbl">for 238</span><img class="ic" src="/icons/royal-crystal.png" alt="RC" />
       <span class="lbl">=</span> <b class="num accent">{f4base.toFixed(2)}</b><img class="ic" src="/icons/gold.png" alt="gold" /><span class="lbl">/</span><img class="ic" src="/icons/royal-crystal.png" alt="RC" />
@@ -78,7 +81,7 @@
     <span class="ex">
       <img class="ic g2g" src="/icons/g2g.png" alt="" />
       <span class="lbl">exchange (optional):</span>
-      <span class="lbl">{sym}</span><input class="g2g-in" type="number" min="0" step="0.0001" bind:value={g2gInput} aria-label="G2G price per 1,000 gold" />
+      <span class="lbl">{sym}</span><input class="g2g-in" type="number" min="0" step="0.0001" bind:value={g2gInput} onfocus={(e) => e.currentTarget.select()} aria-label="G2G price per 1,000 gold" />
       <span class="lbl">for 1k</span><img class="ic" src="/icons/gold.png" alt="gold" />
       <span class="lbl">=</span> <b class="num accent">{g2gOut}</b> <span class="lbl">/ 100k</span>
     </span>
@@ -87,7 +90,7 @@
   <p class="note">
     Sorted by g/RC. Selection chests use their highest-value option. Drill into a pack for all options + screenshot. Conversion:
     <b class="num">12,000</b> <img class="ic" src="/icons/royal-crystal.png" alt="RC" /> = $100 ($0.0083/RC).
-    Click any market price to enter your own AH price.{#if customCount > 0 || tuCount > 0} <span class="custom"><span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span> <button class="reset-all" onclick={resetAll}>reset all</button></span>{/if}
+    Click any market price to enter your own AH price.{#if customCount > 0 || tuCount > 0 || pickCount > 0} <span class="custom"><span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && (tuCount > 0 || pickCount > 0)} · {/if}{#if pickCount > 0}<b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"}{/if}{#if pickCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span> <button class="reset-all" onclick={resetAll}>reset all</button></span>{/if}
   </p>
 
   {#if app.status === "loading"}
