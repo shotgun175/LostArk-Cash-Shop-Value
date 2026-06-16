@@ -32,7 +32,8 @@ const ONE_TO_ONE: readonly string[] = [
   "splendid-netherworld-flame-key", "splendid-netherworld-frost-key",
   "atropine-potion-bound", "stimulant-bound", "splendid-dark-grenade-bound",
   "splendid-elemental-hp-potion-bound", "splendid-sacred-bomb-bound", "splendid-sacred-charm-bound",
-  "abidos-fusion-material", "aura-of-resonance-recov-brew-30d",
+  "abidos-fusion-material", "aura-of-resonance-recov-brew-30d", "oreha-fusion-material",
+  "stone-of-soaring-kit", "basic-life-energy-potion",
   "crystallized-destruction-stone", "crystallized-guardian-stone",
   "destiny-crystallized-destruction-stone", "destiny-crystallized-guardian-stone",
   "destiny-destruction-stone", "destiny-guardian-stone", "destiny-leapstone",
@@ -77,4 +78,20 @@ export function hasIcon(slug: string): boolean {
 
 export function iconUrl(slug: string): string {
   return `/icons/${ICON_FILES[slug] ?? `${slug}.png`}`;
+}
+
+// These icons use TJW's original art, which already bakes in the in-game grade frame. They must NOT
+// receive the overlay frame (icon-frame.png) or they'd be double-framed; every other icon gets it so
+// the whole set matches the framed look.
+const PRE_FRAMED = new Set<string>([
+  "atropine-potion-bound",
+  "stimulant-bound",
+  "splendid-dark-grenade-bound",
+  "splendid-elemental-hp-potion-bound",
+  "splendid-sacred-bomb-bound",
+  "splendid-sacred-charm-bound",
+]);
+
+export function isPreframed(slug: string): boolean {
+  return PRE_FRAMED.has(slug);
 }

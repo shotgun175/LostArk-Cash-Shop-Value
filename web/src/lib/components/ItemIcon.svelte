@@ -1,22 +1,33 @@
 <script lang="ts">
-  import { hasIcon, iconUrl, displayName } from "$lib/catalog";
+  import { hasIcon, iconUrl, displayName, isPreframed } from "$lib/catalog";
   let { slug }: { slug: string } = $props();
   let broken = $state(false);
   const initials = $derived(
     displayName(slug).split(" ").filter(Boolean).slice(0, 2).map((w) => w[0] ?? "").join(""),
   );
   const showImg = $derived(hasIcon(slug) && !broken);
+  // Overlay the ornate frame on everything except icons whose art already bakes one in.
+  const framed = $derived(!isPreframed(slug));
 </script>
 
-{#if showImg}
-  <img class="icon" src={iconUrl(slug)} alt={displayName(slug)} onerror={() => (broken = true)} />
-{:else}
-  <span class="icon fallback" aria-hidden="true">{initials}</span>
-{/if}
+<span class="icon-box" class:framed>
+  {#if showImg}
+    <img class="icon" src={iconUrl(slug)} alt={displayName(slug)} onerror={() => (broken = true)} />
+  {:else}
+    <span class="icon fallback" aria-hidden="true">{initials}</span>
+  {/if}
+</span>
 
 <style>
-  .icon { width: 26px; height: 26px; border-radius: 6px; background: #0c0e15;
-    border: 1px solid var(--border, var(--line, #30363d)); object-fit: contain; flex: none; }
+  .icon-box { position: relative; display: inline-flex; width: 26px; height: 26px; flex: none; vertical-align: middle; }
+  .icon { width: 100%; height: 100%; border-radius: 6px; background: #0c0e15;
+    border: 1px solid var(--border, var(--line, #30363d)); object-fit: contain; }
   .fallback { display: inline-grid; place-items: center; font: 600 10px "Sora", sans-serif;
     color: var(--muted); letter-spacing: .3px; }
+  /* The overlay frame replaces the hairline border so framed icons don't show a double edge. */
+  .icon-box.framed .icon { border-color: transparent; }
+  .icon-box.framed::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: url(/icons/icon-frame.png) center / 100% 100% no-repeat;
+  }
 </style>

@@ -7,6 +7,7 @@ export interface MariWare {
   qty: number; // units per purchase
   bc: number; // current blue-crystal cost (sale price if on sale)
   wasBc?: number; // pre-sale BC cost, when on sale
+  icon?: string; // icon slug when the item has no valuation slug (bound-only) but does have art
 }
 
 // Blue crystals per F4-exchange unit: gold-per-BC = F4 gold input / 95.
@@ -28,7 +29,7 @@ export const MARIS_WARES: MariWare[] = [
   { slug: "prime-oreha-fusion-material", name: "Prime Oreha Fusion Material", qty: 120, bc: 36 },
   { slug: "artisans-tailoring-level-1", name: "Artisan's Tailoring: Level 1", qty: 2, bc: 18 },
   { slug: "solar-grace", name: "Solar Grace", qty: 120, bc: 24 },
-  { slug: null, name: "Stone of Soaring Engraving Setting Kit Chest", qty: 10, bc: 460 },
-  { slug: null, name: "Basic Life Energy Potion ×10", qty: 10, bc: 230 },
-  { slug: null, name: "Basic Life Energy Potion ×15", qty: 15, bc: 330, wasBc: 345 },
+  { slug: null, name: "Stone of Soaring Engraving Setting Kit Chest", qty: 10, bc: 460, icon: "stone-of-soaring-kit" },
+  { slug: null, name: "Basic Life Energy Potion ×10", qty: 10, bc: 230, icon: "basic-life-energy-potion" },
+  { slug: null, name: "Basic Life Energy Potion ×15", qty: 15, bc: 330, wasBc: 345, icon: "basic-life-energy-potion" },
 ];

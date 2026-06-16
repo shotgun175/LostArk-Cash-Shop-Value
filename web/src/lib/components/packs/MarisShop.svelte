@@ -47,7 +47,7 @@
     <tbody>
       {#each rows as r (r.w.name)}
         <tr>
-          <td class="ic-col">{#if r.w.slug}<ItemIcon slug={r.w.slug} />{/if}</td>
+          <td class="ic-col">{#if r.w.icon ?? r.w.slug}<ItemIcon slug={(r.w.icon ?? r.w.slug)!} />{/if}</td>
           <td>{r.w.name} <span class="bound">(Bound)</span></td>
           <td class="right num">{r.w.qty.toLocaleString("en-US")}</td>
           <td class="right num bc">{#if r.w.wasBc}<span class="was">{r.w.wasBc}</span> {/if}{r.w.bc} BC</td>

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { displayName, iconUrl, hasIcon } from "../src/lib/catalog";
+import { displayName, iconUrl, hasIcon, isPreframed } from "../src/lib/catalog";
 
 describe("displayName", () => {
   it("title-cases simple slugs", () => {
@@ -25,8 +25,29 @@ describe("icons", () => {
     expect(iconUrl("artisans-tailoring-level-1")).toBe("/icons/artisans-level-1.png");
     expect(iconUrl("tailoring-hellfire-19-20")).toBe("/icons/tailoring-hellfire.png");
   });
-  it("maps raw destiny-shard to the L-pouch art, reports none for oreha", () => {
+  it("maps raw destiny-shard to the L-pouch art", () => {
     expect(iconUrl("destiny-shard")).toBe("/icons/destiny-shard-pouch-l.png");
-    expect(hasIcon("oreha-fusion-material")).toBe(false);
+  });
+  it("now has icons for the newly-supplied slugs (oreha + the two Mari's-only items)", () => {
+    expect(hasIcon("oreha-fusion-material")).toBe(true);
+    expect(iconUrl("oreha-fusion-material")).toBe("/icons/oreha-fusion-material.png");
+    expect(iconUrl("stone-of-soaring-kit")).toBe("/icons/stone-of-soaring-kit.png");
+    expect(iconUrl("basic-life-energy-potion")).toBe("/icons/basic-life-energy-potion.png");
+  });
+});
+
+describe("isPreframed", () => {
+  it("flags the six bound battle items whose art already includes the frame", () => {
+    for (const s of [
+      "atropine-potion-bound", "stimulant-bound", "splendid-dark-grenade-bound",
+      "splendid-elemental-hp-potion-bound", "splendid-sacred-bomb-bound", "splendid-sacred-charm-bound",
+    ]) {
+      expect(isPreframed(s)).toBe(true);
+    }
+  });
+  it("does not flag ordinary icons (they receive the overlay frame)", () => {
+    expect(isPreframed("destiny-leapstone")).toBe(false);
+    expect(isPreframed("gold")).toBe(false);
+    expect(isPreframed("splendid-hell-key-of-destiny-v")).toBe(false);
   });
 });
