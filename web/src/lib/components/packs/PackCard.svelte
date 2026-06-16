@@ -5,9 +5,13 @@
   import { displayName } from "$lib/catalog";
   import { app } from "$lib/app.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
+  import { tradeUp } from "$lib/packs/tradeup.svelte";
   import ItemIcon from "../ItemIcon.svelte";
 
-  let { row }: { row: PackRow } = $props();
+  let { row, tradeUpInfo = {} }: {
+    row: PackRow;
+    tradeUpInfo?: Record<string, { ratio: number; deltaPct: number }>;
+  } = $props();
   // TJW shows a small recurrence tag ("limited"/"monthly"/"weekly"); we add "retired".
   const tag = $derived(
     row.retired ? "retired" : (row.name.match(/^\[(\w+)\]/)?.[1]?.toLowerCase() ?? ""),
@@ -69,7 +73,7 @@
       {#each row.lines as line (line.slug)}
         <tr>
           <td class="ic-col"><ItemIcon slug={line.slug} /></td>
-          <td>{displayName(line.slug)}{#if line.isBound}<span class="bound"> (Bound)</span>{/if}</td>
+          <td>{displayName(line.slug)}{#if line.isBound}<span class="bound"> (Bound)</span>{/if}{#if tradeUpInfo[line.slug]} <button class="tradeup" class:on={tradeUp.has(line.slug)} title="Value as a {tradeUpInfo[line.slug].ratio}:1 trade-up to the next tier" onclick={() => tradeUp.toggle(line.slug)}>{tradeUpInfo[line.slug].ratio}:1 → {formatSignedPct(tradeUpInfo[line.slug].deltaPct)}</button>{/if}</td>
           <td class="right num">{line.qty.toLocaleString("en-US")}</td>
           <td class="right price">
             {#if editing === line.slug}
@@ -122,6 +126,11 @@
   tr:hover td { background: var(--panel-2); }
   .ic-col { width: 30px; }
   .bound { color: var(--muted); font-size: 12px; }
+  .tradeup { display: inline-flex; align-items: center; background: var(--panel-2); border: 1px solid var(--border);
+    color: var(--muted); border-radius: 999px; padding: 1px 7px; font-size: 11px; cursor: pointer;
+    margin-left: 5px; vertical-align: middle; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .tradeup:hover { color: var(--text); border-color: var(--muted); }
+  .tradeup.on { background: rgba(255, 209, 102, 0.15); border-color: var(--accent); color: var(--accent); }
   td.price { white-space: nowrap; }
   .price-btn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--muted); font-size: 14px; }
   .price-btn:hover { color: var(--text); text-decoration: underline dotted; text-underline-offset: 3px; }
