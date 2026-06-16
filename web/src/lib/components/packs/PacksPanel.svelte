@@ -85,9 +85,9 @@
   </div>
 
   <p class="note">
-    Sorted by g/RC. Selection chests use their highest-value option. Conversion:
+    Sorted by g/RC. Selection chests use their highest-value option. Drill into a pack for all options + screenshot. Conversion:
     <b class="num">12,000</b> <img class="ic" src="/icons/royal-crystal.png" alt="RC" /> = $100 ($0.0083/RC).
-    Bound items are valued at their unbound market price.{#if customCount > 0 || tuCount > 0} <span class="custom"><span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span> <button class="reset-all" onclick={resetAll}>reset all</button></span>{/if}
+    Click any market price to enter your own AH price.{#if customCount > 0 || tuCount > 0} <span class="custom"><span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span> <button class="reset-all" onclick={resetAll}>reset all</button></span>{/if}
   </p>
 
   {#if app.status === "loading"}

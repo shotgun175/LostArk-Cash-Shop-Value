@@ -16,10 +16,13 @@ describe("formatGold", () => {
 
 describe("freshness", () => {
   const now = new Date("2026-06-15T06:30:00.000Z").getTime();
-  it("reports fresh within the normal-lag window (40 min old)", () => {
+  it("reports fresh within the normal-lag window (40 min old), in local time", () => {
     const f = freshness("2026-06-15T06:25:00.000Z", "2026-06-15T05:50:00.000Z", now);
     expect(f.stale).toBe(false);
-    expect(f.label).toContain("05:50");
+    const localTime = new Date("2026-06-15T05:50:00.000Z").toLocaleTimeString([], {
+      hour: "2-digit", minute: "2-digit", timeZoneName: "short",
+    });
+    expect(f.label).toBe(`prices as of ${localTime}`);
   });
   it("flags stale only when far behind (past 90 min)", () => {
     const f = freshness("2026-06-15T06:25:00.000Z", "2026-06-15T04:00:00.000Z", now);

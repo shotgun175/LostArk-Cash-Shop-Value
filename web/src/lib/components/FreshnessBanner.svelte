@@ -20,7 +20,7 @@
 
 {#if f}
   <p class="fresh" class:stale={f.stale}>
-    {f.label}{#if f.stale} · may be stale (patch in progress?){/if}
+    {f.label}{#if f.stale}&nbsp;· may be stale{/if}
   </p>
 {/if}
 

@@ -26,10 +26,13 @@ export function formatMoney(n: number, sym: string): string {
 
 export interface Freshness { label: string; stale: boolean; }
 
-// `now` is injectable for tests; defaults to current time.
+// `now` is injectable for tests; defaults to current time. Time is shown in the viewer's local
+// timezone (with the tz abbreviation) — UTC reads as confusing to most users.
 export function freshness(generatedAt: string, sourceValidAt: string, now = Date.now()): Freshness {
   const src = Date.parse(sourceValidAt);
   const ageMs = Number.isNaN(src) ? Infinity : now - src;
-  const hhmm = Number.isNaN(src) ? "—" : new Date(src).toISOString().slice(11, 16);
-  return { label: `prices as of ${hhmm} UTC`, stale: ageMs > STALE_MS };
+  const time = Number.isNaN(src)
+    ? "—"
+    : new Date(src).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZoneName: "short" });
+  return { label: `prices as of ${time}`, stale: ageMs > STALE_MS };
 }
