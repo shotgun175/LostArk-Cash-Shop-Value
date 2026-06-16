@@ -1,7 +1,10 @@
 <script lang="ts">
   import type { PackRow } from "$lib/packs/packRows";
+  import type { PackLine } from "$lib/packs/packValue";
   import { formatGold, formatSignedPct } from "$lib/format";
   import { displayName } from "$lib/catalog";
+  import { app } from "$lib/app.svelte";
+  import { overrides } from "$lib/packs/overrides.svelte";
   import ItemIcon from "../ItemIcon.svelte";
 
   let { row }: { row: PackRow } = $props();
@@ -12,6 +15,24 @@
   const gpd = $derived(row.goldPerDollar == null ? null : Math.round(row.goldPerDollar));
   function perUnit(gold: number, qty: number): string {
     return gold > 0 && qty > 0 ? formatGold(gold / qty) : "—";
+  }
+
+  // Click-to-edit market price → a per-unit override for that slug (applies everywhere it appears).
+  let editing = $state<string | null>(null);
+  let draft = $state("");
+
+  function startEdit(line: PackLine): void {
+    editing = line.slug;
+    draft = line.gold > 0 && line.qty > 0 ? String(Number((line.gold / line.qty).toFixed(4))) : "";
+  }
+  function commit(slug: string): void {
+    const v = parseFloat(draft);
+    if (Number.isFinite(v) && v >= 0) overrides.set(app.region, slug, v);
+    editing = null;
+  }
+  function focusSelect(el: HTMLInputElement): void {
+    el.focus();
+    el.select();
   }
 </script>
 
@@ -50,7 +71,25 @@
           <td class="ic-col"><ItemIcon slug={line.slug} /></td>
           <td>{displayName(line.slug)}{#if line.isBound}<span class="bound"> (Bound)</span>{/if}</td>
           <td class="right num">{line.qty.toLocaleString("en-US")}</td>
-          <td class="right num muted">{perUnit(line.gold, line.qty)}</td>
+          <td class="right price">
+            {#if editing === line.slug}
+              <input
+                class="edit num" type="number" min="0" step="0.01" bind:value={draft}
+                use:focusSelect
+                onblur={() => commit(line.slug)}
+                onkeydown={(e) => { if (e.key === "Enter") commit(line.slug); else if (e.key === "Escape") editing = null; }}
+                aria-label="Edit market price for {displayName(line.slug)}" />
+            {:else}
+              <button class="price-btn num" class:edited={overrides.has(app.region, line.slug)}
+                title="Click to enter your own AH price" onclick={() => startEdit(line)}>
+                {perUnit(line.gold, line.qty)}
+              </button>
+              {#if overrides.has(app.region, line.slug)}
+                <button class="reset" title="Reset to market price" aria-label="Reset"
+                  onclick={() => overrides.clear(app.region, line.slug)}>×</button>
+              {/if}
+            {/if}
+          </td>
           <td class="right num accent">{line.gold > 0 ? formatGold(line.gold) : "—"}</td>
         </tr>
       {/each}
@@ -72,7 +111,7 @@
   .pct { display: inline-flex; align-items: center; gap: 5px; font-size: 15px; font-weight: 600; }
   .pct .num { font-size: 15px; }
   .pct .lbl { font-size: 12px; font-weight: 400; }
-  .num { font-variant-numeric: tabular-nums; }
+  .num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; }
   .accent { color: var(--accent); }
   .good { color: var(--good); }
   .bad { color: var(--bad); }
@@ -84,8 +123,15 @@
   th { color: var(--muted); font-weight: 500; }
   th.right, td.right { text-align: right; }
   td.accent { color: var(--accent); }
-  td.muted { color: var(--muted); }
   tr:hover td { background: var(--panel-2); }
   .ic-col { width: 30px; }
   .bound { color: var(--muted); font-size: 12px; }
+  td.price { white-space: nowrap; }
+  .price-btn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--muted); font-size: 14px; }
+  .price-btn:hover { color: var(--text); text-decoration: underline dotted; text-underline-offset: 3px; }
+  .price-btn.edited { color: var(--accent); }
+  .edit { width: 78px; padding: 2px 6px; text-align: right; background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--accent); border-radius: 4px; font-size: 13px; }
+  .reset { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 14px; padding: 0 2px; margin-left: 3px; line-height: 1; }
+  .reset:hover { color: var(--bad); }
 </style>

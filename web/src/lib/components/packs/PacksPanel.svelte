@@ -2,6 +2,7 @@
   import { app } from "$lib/app.svelte";
   import { buildPackRows } from "$lib/packs/packRows";
   import { f4Baseline, g2gReadout, G2G_DEFAULT_INPUT, currencySymbol } from "$lib/packs/exchange";
+  import { overrides } from "$lib/packs/overrides.svelte";
   import type { Region } from "$lib/api";
   import PackCard from "./PackCard.svelte";
 
@@ -30,7 +31,12 @@
   const sym = $derived(currencySymbol(app.region));
   const f4base = $derived(f4Baseline(f4[app.region] || 0));
   const g2gOut = $derived(g2gReadout(g2gInput || 0, sym));
-  const rows = $derived(buildPackRows(app.snapshot?.prices ?? {}, { f4Input: f4[app.region], g2gInput }));
+  const rows = $derived(
+    buildPackRows(
+      { ...(app.snapshot?.prices ?? {}), ...overrides.forRegion(app.region) },
+      { f4Input: f4[app.region], g2gInput },
+    ),
+  );
 </script>
 
 <div class="packs">
@@ -76,14 +82,14 @@
     --bg: #0e1116; --panel: #161b22; --panel-2: #1f242c; --border: #30363d;
     --text: #e6edf3; --muted: #9aa4b2; --accent: #ffd166; --good: #6ed47a; --bad: #ef6f6c; --warn: #f0b341;
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-family: "Sora", system-ui, sans-serif;
   }
   .exch { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; font-size: 13px;
     background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
     padding: 12px 16px; margin-bottom: 12px; }
   .ex { display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; }
   .lbl { color: var(--muted); }
-  .num { font-variant-numeric: tabular-nums; }
+  .num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; }
   .accent { color: var(--accent); }
   input { background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
     padding: 6px 10px; border-radius: 6px; font-size: 13px; font-family: inherit; }
