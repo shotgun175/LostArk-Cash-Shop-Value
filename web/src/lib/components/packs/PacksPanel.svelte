@@ -6,6 +6,8 @@
   import { tradeUp } from "$lib/packs/tradeup.svelte";
   import { TRADE_UP } from "$lib/packs/data/constants";
   import { effectivePrices } from "$lib/packs/prices.svelte";
+  import { packDetail, type DetailOption } from "$lib/packs/packDetail";
+  import { PACKS } from "$lib/packs/data/packs";
   import type { Region } from "$lib/api";
   import PackCard from "./PackCard.svelte";
 
@@ -50,6 +52,23 @@
 
   const rows = $derived(buildPackRows(effectivePrices(), { f4Input: f4[app.region], g2gInput }));
 
+  // Per pack: chosen-slug -> the selection chest's full option list, for the inline "Show alts".
+  const altsByPack = $derived.by(() => {
+    const prices = effectivePrices();
+    const out: Record<string, Record<string, DetailOption[]>> = {};
+    for (const pack of PACKS) {
+      const map: Record<string, DetailOption[]> = {};
+      for (const chest of packDetail(pack, prices)) {
+        if (chest.isSelection && chest.options.length > 1) {
+          const chosen = chest.options.find((o) => o.chosen);
+          if (chosen) map[chosen.slug] = chest.options;
+        }
+      }
+      out[pack.slug] = map;
+    }
+    return out;
+  });
+
   const customCount = $derived(overrides.count(app.region));
   const tuCount = $derived(tradeUp.count());
   function resetAll(): void {
@@ -90,7 +109,7 @@
     <p class="state">No prices yet — the feed may be refreshing.</p>
   {:else}
     <div class="pack-grid">
-      {#each rows as row (row.slug)}<PackCard {row} {tradeUpInfo} />{/each}
+      {#each rows as row (row.slug)}<PackCard {row} {tradeUpInfo} alts={altsByPack[row.slug] ?? {}} />{/each}
     </div>
   {/if}
 </div>

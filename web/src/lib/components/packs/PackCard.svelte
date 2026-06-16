@@ -6,12 +6,16 @@
   import { app } from "$lib/app.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
+  import type { DetailOption } from "$lib/packs/packDetail";
   import ItemIcon from "../ItemIcon.svelte";
 
-  let { row, tradeUpInfo = {} }: {
+  let { row, tradeUpInfo = {}, alts = {} }: {
     row: PackRow;
     tradeUpInfo?: Record<string, { ratio: number; deltaPct: number }>;
+    alts?: Record<string, DetailOption[]>;
   } = $props();
+
+  let expanded = $state<string | null>(null); // material slug whose selection alts are shown
   // TJW shows a small recurrence tag ("limited"/"monthly"/"weekly"); we add "retired".
   const tag = $derived(
     row.retired ? "retired" : (row.name.match(/^\[(\w+)\]/)?.[1]?.toLowerCase() ?? ""),
@@ -73,7 +77,7 @@
       {#each row.lines as line (line.slug)}
         <tr>
           <td class="ic-col"><ItemIcon slug={line.slug} /></td>
-          <td>{displayName(line.slug)}{#if line.isBound}<span class="bound"> (Bound)</span>{/if}{#if tradeUpInfo[line.slug]} <button class="tradeup" class:on={tradeUp.has(line.slug)} title="Value as a {tradeUpInfo[line.slug].ratio}:1 trade-up to the next tier" onclick={() => tradeUp.toggle(line.slug)}>{tradeUpInfo[line.slug].ratio}:1 → {formatSignedPct(tradeUpInfo[line.slug].deltaPct)}</button>{/if}</td>
+          <td>{displayName(line.slug)}{#if line.isBound}<span class="bound"> (Bound)</span>{/if}{#if tradeUpInfo[line.slug]} <button class="tradeup" class:on={tradeUp.has(line.slug)} title="Value as a {tradeUpInfo[line.slug].ratio}:1 trade-up to the next tier" onclick={() => tradeUp.toggle(line.slug)}>{tradeUpInfo[line.slug].ratio}:1 → {formatSignedPct(tradeUpInfo[line.slug].deltaPct)}</button>{/if}{#if alts[line.slug]} <button class="alts-btn" onclick={() => (expanded = expanded === line.slug ? null : line.slug)}>{expanded === line.slug ? "hide alts" : "show alts"}</button>{/if}</td>
           <td class="right num">{line.qty.toLocaleString("en-US")}</td>
           <td class="right price">
             {#if editing === line.slug}
@@ -92,6 +96,17 @@
           </td>
           <td class="right num accent">{line.gold > 0 ? formatGold(line.gold) : "—"}</td>
         </tr>
+        {#if expanded === line.slug && alts[line.slug]}
+          {#each alts[line.slug].filter((o) => !o.chosen) as alt (alt.slug)}
+            <tr class="alt">
+              <td class="ic-col"><ItemIcon slug={alt.slug} /></td>
+              <td class="altname">↳ {displayName(alt.slug)}{#if alt.isBound}<span class="bound"> (Bound)</span>{/if}</td>
+              <td class="right num">{alt.totalQty.toLocaleString("en-US")}</td>
+              <td class="right num muted">{alt.perUnit > 0 ? formatGold(alt.perUnit) : "—"}</td>
+              <td class="right num">{alt.lineGold > 0 ? formatGold(alt.lineGold) : "—"}</td>
+            </tr>
+          {/each}
+        {/if}
       {/each}
     </tbody>
   </table>
@@ -132,6 +147,11 @@
     margin-left: 5px; vertical-align: middle; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .tradeup:hover { color: var(--text); border-color: var(--muted); }
   .tradeup.on { background: rgba(255, 209, 102, 0.15); border-color: var(--accent); color: var(--accent); }
+  .alts-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 999px;
+    padding: 1px 8px; font-size: 11px; cursor: pointer; margin-left: 5px; vertical-align: middle; white-space: nowrap; }
+  .alts-btn:hover { color: var(--accent); border-color: var(--accent); }
+  tr.alt td { background: rgba(255, 255, 255, .02); padding-top: 4px; padding-bottom: 4px; }
+  .altname { color: var(--muted); font-size: 12.5px; }
   td.price { white-space: nowrap; }
   .price-btn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--muted); font-size: 14px; }
   .price-btn:hover { color: var(--text); text-decoration: underline dotted; text-underline-offset: 3px; }
