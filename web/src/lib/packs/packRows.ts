@@ -12,6 +12,7 @@ export interface PackRowOpts {
   f4Input: number;
   g2gInput: number;
   picks?: Record<string, string>;
+  cashPerRc?: number; // region cost of one RC ($100/12k NA, €94.99/12k EU); defaults to NA in packValue
 }
 
 /**
@@ -28,7 +29,7 @@ export function buildPackRows(
   const g2gGpd = g2gGoldPerDollar(opts.g2gInput);
 
   const rows: PackRow[] = PACKS.map((p) => {
-    const v = packValue(p, prices, opts.picks);
+    const v = packValue(p, prices, opts.picks, opts.cashPerRc);
     return {
       ...v,
       vsExchange: v.goldPerRc == null ? null : vsExchangePct(v.goldPerRc, baseline),

@@ -12,6 +12,14 @@ export const F4_DEFAULT_INPUT = 19200;
 // G2G real-money basis. Input = price for 1,000 gold in the region currency. Default from spec.
 export const G2G_DEFAULT_INPUT = 0.03268824;
 
+// Real-money cost of 12,000 Royal Crystals per region (NA $100, EU €94.99). Converts a pack's gold
+// value into gold-per-currency-unit so the "% vs G2G" / "g per $/€" columns compare within one
+// currency per region (NA in USD, EU in EUR).
+export const RC_CASH_PER_12K: Record<Region, number> = { nae: 100, euc: 94.99 };
+export function cashPerRc(region: Region): number {
+  return RC_CASH_PER_12K[region] / 12000;
+}
+
 export function f4Baseline(inputGold: number): number {
   return inputGold / F4_DIVISOR;
 }

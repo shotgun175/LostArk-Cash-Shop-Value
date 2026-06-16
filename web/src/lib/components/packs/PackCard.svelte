@@ -3,6 +3,7 @@
   import type { PackLine } from "$lib/packs/packValue";
   import { formatGold, formatSignedPct } from "$lib/format";
   import { displayName } from "$lib/catalog";
+  import { currencySymbol } from "$lib/packs/exchange";
   import { app } from "$lib/app.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
@@ -21,6 +22,7 @@
     row.retired ? "retired" : (row.name.match(/^\[(\w+)\]/)?.[1]?.toLowerCase() ?? ""),
   );
   const gpd = $derived(row.goldPerDollar == null ? null : Math.round(row.goldPerDollar));
+  const sym = $derived(currencySymbol(app.region)); // $ for NA, € for EU — RC priced per region
   function perUnit(gold: number, qty: number): string {
     return gold > 0 && qty > 0 ? formatGold(gold / qty) : "—";
   }
@@ -62,7 +64,7 @@
     <span class="sep">·</span>
     <span><b class="num accent">{row.goldPerRc == null ? "—" : row.goldPerRc.toFixed(1)}</b> <span class="lbl">g/RC</span></span>
     <span class="sep">·</span>
-    <span><b class="num">{gpd == null ? "—" : gpd.toLocaleString("en-US")}</b> <span class="lbl">g/$</span></span>
+    <span><b class="num">{gpd == null ? "—" : gpd.toLocaleString("en-US")}</b> <span class="lbl">g/{sym}</span></span>
   </div>
 
   <div class="cmp">
@@ -83,7 +85,7 @@
       {#each row.lines as line (line.slug)}
         <tr>
           <td class="ic-col"><ItemIcon slug={line.slug} /></td>
-          <td>{displayName(line.slug)}{#if line.isBound}<span class="bound"> (Bound)</span>{/if}{#if tradeUpInfo[line.slug]} <button class="tradeup" class:on={tradeUp.has(line.slug)} title="Value as a {tradeUpInfo[line.slug].ratio}:1 trade-up to the next tier" onclick={() => tradeUp.toggle(line.slug)}>{tradeUpInfo[line.slug].ratio}:1 → {formatSignedPct(tradeUpInfo[line.slug].deltaPct)}</button>{/if}{#if alts[line.slug]} <button class="alts-btn" onclick={() => (expanded = expanded === line.slug ? null : line.slug)}>{expanded === line.slug ? "hide alts" : "show alts"}</button>{/if}</td>
+          <td>{displayName(line.slug)}{#if line.isBound}<span class="bound"> (Bound)</span>{/if}{#if tradeUpInfo[line.slug]} <button class="tradeup" class:on={tradeUp.has(line.slug)} title="Value as a {tradeUpInfo[line.slug].ratio}:1 trade-up to the next tier" onclick={() => tradeUp.toggle(line.slug)}>{tradeUpInfo[line.slug].ratio}:1 → <span class:good={tradeUpInfo[line.slug].deltaPct >= 0} class:bad={tradeUpInfo[line.slug].deltaPct < 0}>{formatSignedPct(tradeUpInfo[line.slug].deltaPct)}</span></button>{/if}{#if alts[line.slug]} <button class="alts-btn" onclick={() => (expanded = expanded === line.slug ? null : line.slug)}>{expanded === line.slug ? "hide alts" : "show alts"}</button>{/if}</td>
           <td class="right num">{line.qty.toLocaleString("en-US")}</td>
           <td class="right price">
             {#if editing === line.slug}

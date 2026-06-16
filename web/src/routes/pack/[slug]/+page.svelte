@@ -6,6 +6,7 @@
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
   import { selection } from "$lib/packs/selection.svelte";
+  import { cashPerRc, currencySymbol } from "$lib/packs/exchange";
   import { app } from "$lib/app.svelte";
   import { formatGold } from "$lib/format";
   import { displayName } from "$lib/catalog";
@@ -17,9 +18,10 @@
   // Mirror the card path: live feed + overrides + trade-ups, then buildPriceMap layers the
   // hell-key / ebony-cube / relic-recipe EVs so the drill-down total matches the all-packs card.
   const prices = $derived(buildPriceMap(effectivePrices()));
-  const value = $derived(packValue(pack, prices, selection.map));
+  const value = $derived(packValue(pack, prices, selection.map, cashPerRc(app.region)));
   const chests = $derived(packDetail(pack, prices, selection.map));
   const gpd = $derived(value.goldPerDollar == null ? null : Math.round(value.goldPerDollar));
+  const sym = $derived(currencySymbol(app.region)); // $ for NA, € for EU — RC priced per region
 
   const customCount = $derived(overrides.count(app.region));
   const tuCount = $derived(tradeUp.count());
@@ -64,7 +66,7 @@
         <span class="sep">·</span>
         <span><b class="num accent">{value.goldPerRc == null ? "—" : value.goldPerRc.toFixed(1)}</b> <span class="lbl">g/RC</span></span>
         <span class="sep">·</span>
-        <span><b class="num">{gpd == null ? "—" : gpd.toLocaleString("en-US")}</b> <span class="lbl">g/$</span></span>
+        <span><b class="num">{gpd == null ? "—" : gpd.toLocaleString("en-US")}</b> <span class="lbl">g/{sym}</span></span>
       </div>
       <p class="hint">
         Click any market price to enter your own AH value, or click a selection-chest option to value

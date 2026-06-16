@@ -2,7 +2,7 @@
   import { app } from "$lib/app.svelte";
   import type { Region } from "$lib/api";
   import { buildPackRows } from "$lib/packs/packRows";
-  import { g2gReadout, currencySymbol } from "$lib/packs/exchange";
+  import { g2gReadout, currencySymbol, cashPerRc } from "$lib/packs/exchange";
   import { f4 } from "$lib/packs/f4.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
@@ -71,7 +71,7 @@
     return info;
   });
 
-  const rows = $derived(buildPackRows(effectivePrices(), { f4Input: f4.value, g2gInput: g2gValue ?? 0, picks: selection.map }));
+  const rows = $derived(buildPackRows(effectivePrices(), { f4Input: f4.value, g2gInput: g2gValue ?? 0, picks: selection.map, cashPerRc: cashPerRc(app.region) }));
 
   // Per pack: chosen-slug -> the selection chest's full option list, for the inline "Show alts".
   const altsByPack = $derived.by(() => {
@@ -163,9 +163,14 @@
   .num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; }
   .accent { color: var(--accent); }
   input { background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
-    padding: 6px 10px; border-radius: 6px; font-size: 13px; font-family: inherit; }
+    padding: 6px 10px; border-radius: 6px; font-size: 13px;
+    font-family: "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; }
   input:focus { outline: none; border-color: var(--accent); }
-  input.f4 { width: 82px; } input.g2g-in { width: 100px; }
+  input.f4 { width: 90px; } input.g2g-in { width: 104px; }
+  /* Hide the number-input spinners so the value uses the full width and never clips. */
+  input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .ic { width: 14px; height: 14px; vertical-align: -2px; margin: 0 1px; }
   .ic.g2g { border-radius: 3px; opacity: .85; }
   .note { color: var(--muted); font-size: 13px; margin: 2px 0 16px; line-height: 1.9; }

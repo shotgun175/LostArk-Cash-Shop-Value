@@ -1,9 +1,11 @@
 <script lang="ts">
-  import { resolveChest, USD_PER_RC } from "$lib/packs/packValue";
+  import { resolveChest } from "$lib/packs/packValue";
   import { RESOLVER } from "$lib/packs/data/resolver";
   import { ARK_PASS_LEVELS, ARK_PASS_PREMIUM_RC, ARK_PASS_TOTAL_RC } from "$lib/packs/data/arkPass";
   import { effectivePrices } from "$lib/packs/prices.svelte";
   import { selection } from "$lib/packs/selection.svelte";
+  import { cashPerRc, currencySymbol } from "$lib/packs/exchange";
+  import { app } from "$lib/app.svelte";
   import { formatGold } from "$lib/format";
   import { displayName } from "$lib/catalog";
   import ItemIcon from "../ItemIcon.svelte";
@@ -23,7 +25,8 @@
   const premiumTotal = $derived(rows.reduce((s, r) => s + r.gold, 0));
   const premiumGpRc = $derived(premiumTotal / ARK_PASS_PREMIUM_RC);
   const combinedGpRc = $derived(premiumTotal / ARK_PASS_TOTAL_RC);
-  const premiumGpDollar = $derived(Math.round(premiumTotal / (ARK_PASS_PREMIUM_RC * USD_PER_RC)));
+  const sym = $derived(currencySymbol(app.region)); // $ for NA, € for EU — RC priced per region
+  const premiumGpDollar = $derived(Math.round(premiumTotal / (ARK_PASS_PREMIUM_RC * cashPerRc(app.region))));
 </script>
 
 <div class="ark">
@@ -41,7 +44,7 @@
       <dl>
         <div><dt>Total value</dt><dd class="gold">{formatGold(premiumTotal)}</dd></div>
         <div><dt>Gold / RC</dt><dd class="gold">{premiumGpRc.toFixed(1)}</dd></div>
-        <div><dt>Gold / $</dt><dd class="gold">{premiumGpDollar.toLocaleString("en-US")}</dd></div>
+        <div><dt>Gold / {sym}</dt><dd class="gold">{premiumGpDollar.toLocaleString("en-US")}</dd></div>
       </dl>
     </div>
     <div class="card">

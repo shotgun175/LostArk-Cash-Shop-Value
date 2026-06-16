@@ -6,9 +6,9 @@
 import type { Chest, Pack } from "./data/types";
 import { RESOLVER } from "./data/resolver";
 
-// 1 Royal Crystal ~= $100 / 12000 RC. Used to derive gold-per-dollar from gold-per-RC. Lost Ark
-// prices RC packs with the same numeral in EUR (€100 == $100 / 12000 RC), so this doubles as the
-// per-EUR basis — letting the EU "% vs G2G" column compare cleanly against the EUR g2g rate.
+// NA cost of one Royal Crystal (~$100 / 12000 RC) and the DEFAULT cash-per-RC. Callers pass a
+// region-aware value (cashPerRc in exchange.ts — EU RC is priced in EUR, €94.99 / 12000) so the
+// "% vs G2G" and "g per $/€" figures compare within one currency per region.
 export const USD_PER_RC = 100 / 12000;
 
 export interface ResolvedLine {
@@ -92,6 +92,7 @@ export function packValue(
   pack: Pack,
   prices: Record<string, number>,
   picks: Record<string, string> = {},
+  cashPerRc: number = USD_PER_RC,
 ): PackResult {
   let total = 0;
   // slug -> aggregated line. Insertion order preserved for stable display.
@@ -131,7 +132,7 @@ export function packValue(
 
   const goldPerRc = pack.royalCrystalCost ? total / pack.royalCrystalCost : null;
   const goldPerDollar = pack.royalCrystalCost
-    ? total / (pack.royalCrystalCost * USD_PER_RC)
+    ? total / (pack.royalCrystalCost * cashPerRc)
     : null;
 
   return {

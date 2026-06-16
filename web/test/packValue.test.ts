@@ -239,6 +239,15 @@ describe("packValue conversions & sanity", () => {
     expect(Math.round(r.goldPerDollar!)).toBe(34738);
   });
 
+  it("honors a region cash-per-RC for goldPerDollar (EU €94.99 / 12k)", () => {
+    const eurPerRc = 94.99 / 12000;
+    const eu = packValue(pack("horizon-growth-support-pack-i"), map, {}, eurPerRc);
+    expect(eu.goldPerDollar!).toBeCloseTo(eu.total / (5800 * eurPerRc), 6);
+    // EU RC is cheaper than $100, so you get more gold per EUR than per USD.
+    const usd = packValue(pack("horizon-growth-support-pack-i"), map);
+    expect(eu.goldPerDollar!).toBeGreaterThan(usd.goldPerDollar!);
+  });
+
   it("horizon-i goldPerRc is in a sane range and matches TJW's 289.5", () => {
     const r = packValue(pack("horizon-growth-support-pack-i"), map);
     expect(r.goldPerRc!).toBeGreaterThan(50);
