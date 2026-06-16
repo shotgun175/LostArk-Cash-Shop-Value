@@ -5,7 +5,7 @@ export interface PricePayload {
   generated_at: string;
   regions: Partial<Record<Region, RegionSnapshot>>;
   bundles: Record<string, number>;
-  g2g?: { usdPer1kGold?: number; eurPer1kGold?: number }; // live per-1,000-gold reference (NA=USD, EU=EUR), polled server-side
+  g2g?: { usdPer1kGold?: number; eurPer1kGold?: number; fetchedAt?: string }; // live per-1,000-gold reference (NA=USD, EU=EUR), polled server-side
 }
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;

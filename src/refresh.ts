@@ -7,8 +7,8 @@ import type { G2gRate } from "./normalize";
 import { BUNDLES } from "./bundles";
 
 // g2g moves slowly and would otherwise rewrite KV every 60s cron (blowing the daily write cap), so we
-// re-poll it on a slow timer (default hourly) rather than every run. Injectable for tests.
-export const G2G_INTERVAL_MS = 60 * 60 * 1000;
+// re-poll it on a slow timer (every 30 min) rather than every run. Injectable for tests.
+export const G2G_INTERVAL_MS = 30 * 60 * 1000;
 
 export async function refresh(
   kv: KVNamespace,

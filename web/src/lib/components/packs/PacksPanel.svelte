@@ -50,6 +50,13 @@
   const sym = $derived(currencySymbol(app.region));
   const f4base = $derived(f4.perRc);
   const g2gOut = $derived(g2gValue ? g2gReadout(g2gValue, sym) : "—");
+  // Discreet hover-only freshness signal for the live rate (no visible text).
+  const g2gTooltip = $derived.by(() => {
+    const at = app.payload?.g2g?.fetchedAt;
+    const t = at ? new Date(at) : null;
+    if (!t || Number.isNaN(t.getTime())) return "Live exchange rate";
+    return `Rate updated ${t.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" })}`;
+  });
 
   const basePrices = $derived({ ...(app.snapshot?.prices ?? {}), ...overrides.forRegion(app.region) });
 
@@ -113,7 +120,7 @@
       <span class="lbl">=</span> <b class="num accent">{f4base.toFixed(2)}</b><img class="ic" src="/icons/gold.png" alt="gold" /><span class="lbl">/</span><img class="ic" src="/icons/royal-crystal.png" alt="RC" />
     </span>
     <span class="ex">
-      <img class="ic g2g" src="/icons/g2g.png" alt="" />
+      <img class="ic g2g" src="/icons/g2g.png" alt="" title={g2gTooltip} />
       <span class="lbl">exchange (optional):</span>
       <span class="lbl">{sym}</span><input class="g2g-in" type="number" min="0" step="0.0001" value={g2gValue ?? ""} oninput={onG2gInput} onfocus={focusExchange} aria-label="G2G price per 1,000 gold" />
       <span class="lbl">for 1k</span><img class="ic" src="/icons/gold.png" alt="gold" />
