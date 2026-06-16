@@ -61,6 +61,13 @@
   });
 
   const rows = $derived(buildPackRows(effectivePrices, { f4Input: f4[app.region], g2gInput }));
+
+  const customCount = $derived(overrides.count(app.region));
+  const tuCount = $derived(tradeUp.count());
+  function resetAll(): void {
+    overrides.clearAll(app.region);
+    tradeUp.clear();
+  }
 </script>
 
 <div class="packs">
@@ -84,7 +91,7 @@
   <p class="note">
     Sorted by g/RC. Selection chests use their highest-value option. Conversion:
     <b class="num">12,000</b> <img class="ic" src="/icons/royal-crystal.png" alt="RC" /> = $100 ($0.0083/RC).
-    Bound items are valued at their unbound market price.{#if overrides.count(app.region) > 0} <span class="custom"><span><b class="num">{overrides.count(app.region)}</b> custom price{overrides.count(app.region) === 1 ? "" : "s"}</span> <button class="reset-all" onclick={() => overrides.clearAll(app.region)}>reset all</button></span>{/if}
+    Bound items are valued at their unbound market price.{#if customCount > 0 || tuCount > 0} <span class="custom"><span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span> <button class="reset-all" onclick={resetAll}>reset all</button></span>{/if}
   </p>
 
   {#if app.status === "loading"}

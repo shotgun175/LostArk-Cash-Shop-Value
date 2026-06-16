@@ -24,6 +24,15 @@ class TradeUp {
     return slug in this.active;
   }
 
+  count(): number {
+    return Object.keys(this.active).length;
+  }
+
+  clear(): void {
+    this.active = {};
+    this.persist();
+  }
+
   toggle(slug: string): void {
     const next = { ...this.active };
     if (slug in next) delete next[slug];
