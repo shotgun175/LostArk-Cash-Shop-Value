@@ -33,7 +33,9 @@
 
   // Pack image (reset the load flag when navigating between packs).
   let imgOk = $state(true);
-  $effect(() => { void pack.slug; imgOk = true; });
+  // Also clear expanded selection chests so an expand on one pack doesn't bleed onto the next
+  // (SvelteKit reuses this component across /pack/[slug] navigations, and chest names can repeat).
+  $effect(() => { void pack.slug; imgOk = true; expandedChests = {}; });
 
   // Click-to-edit market prices — writes the shared, site-wide override store.
   let editing = $state<string | null>(null);
