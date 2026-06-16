@@ -9,9 +9,20 @@ const T_OLD = 1781506000;
 const T_EUC = 1781506261;
 const T_MS = 1781506594000; // millisecond-scale -> must be rejected, must not poison
 
+// Constant canned g2g rate; constant so the write-on-change guard treats it as unchanged.
+const G2G_RATE = 0.031;
+function g2gResponse(): Response {
+  return new Response(
+    JSON.stringify({ code: 2000, payload: { results: [{ title: "Balthorr - US East", unit_price_in_usd: G2G_RATE }] } }),
+    { status: 200, headers: { "content-type": "application/json" } },
+  );
+}
+
 // Stub fetch that returns canned rows per region_slug; listed regions throw (network error).
+// The g2g offer endpoint (a GET with no body) is answered with a fixed rate.
 function feedStub(rowsByRegion: Record<string, unknown[]>, throwRegions: string[] = []): FetchLike {
-  return async (_url, init) => {
+  return async (url, init) => {
+    if (String(url).includes("sls.g2g.com")) return g2gResponse();
     const body = JSON.parse(String(init?.body)) as { region_slug: string };
     if (throwRegions.includes(body.region_slug)) throw new Error("network down");
     const rows = rowsByRegion[body.region_slug] ?? [];
@@ -91,6 +102,24 @@ describe("refresh", () => {
     await refresh(env.PRICES, stub); // identical -> must be a no-op
     expect(putSpy).not.toHaveBeenCalled();
     putSpy.mockRestore();
+  });
+
+  it("includes the live g2g rate in the payload", async () => {
+    const payload = await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }], euc: [] }));
+    expect(payload.g2g?.usdPer1kGold).toBe(G2G_RATE);
+  });
+
+  it("keeps the last good g2g rate when the upstream offer fetch fails", async () => {
+    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }], euc: [] }));
+    // A fetcher that errors on the g2g endpoint but still serves the feed.
+    const noG2g: FetchLike = async (url, init) => {
+      if (String(url).includes("sls.g2g.com")) throw new Error("blocked");
+      const body = JSON.parse(String(init?.body)) as { region_slug: string };
+      const rows = body.region_slug === "nae" ? [{ item_slug: "grudge", price: 200, timestamp: T_NEW + 10 }] : [];
+      return new Response(JSON.stringify(rows), { status: 200, headers: { "content-type": "application/json" } });
+    };
+    const payload = await refresh(env.PRICES, noG2g);
+    expect(payload.g2g?.usdPer1kGold).toBe(G2G_RATE); // carried forward from the prior good fetch
   });
 
   it("includes the bundles stack-size map in the payload", async () => {

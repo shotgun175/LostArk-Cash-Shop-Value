@@ -1,7 +1,7 @@
 <script lang="ts">
   import { app } from "$lib/app.svelte";
   import { buildPackRows } from "$lib/packs/packRows";
-  import { g2gReadout, G2G_DEFAULT_INPUT, currencySymbol } from "$lib/packs/exchange";
+  import { g2gReadout, currencySymbol } from "$lib/packs/exchange";
   import { f4 } from "$lib/packs/f4.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
@@ -12,20 +12,32 @@
   import { PACKS } from "$lib/packs/data/packs";
   import PackCard from "./PackCard.svelte";
 
-  function restore(key: string, fallback: number): number {
-    if (typeof localStorage === "undefined") return fallback;
-    const v = Number(localStorage.getItem(key));
-    return Number.isFinite(v) && v > 0 ? v : fallback;
+  // G2G real-money rate: live from the feed by default; a typed value overrides it and is remembered
+  // (clearing the box drops the override and follows the live rate again).
+  function restoreG2g(): number | null {
+    if (typeof localStorage === "undefined") return null;
+    const raw = localStorage.getItem("csv.g2g");
+    if (raw == null || raw === "") return null;
+    const v = Number(raw);
+    return Number.isFinite(v) && v > 0 ? v : null;
   }
-
-  let g2gInput = $state(restore("csv.g2g", G2G_DEFAULT_INPUT));
-  $effect(() => {
-    if (typeof localStorage !== "undefined") localStorage.setItem("csv.g2g", String(g2gInput));
-  });
+  let g2gOverride = $state<number | null>(restoreG2g());
+  const g2gLive = $derived(app.payload?.g2g?.usdPer1kGold ?? null);
+  const g2gValue = $derived(g2gOverride ?? g2gLive); // effective $/1k gold, null if neither available
+  function onG2gInput(e: Event & { currentTarget: HTMLInputElement }): void {
+    const v = e.currentTarget.valueAsNumber;
+    if (Number.isFinite(v) && v > 0) {
+      g2gOverride = v;
+      if (typeof localStorage !== "undefined") localStorage.setItem("csv.g2g", String(v));
+    } else {
+      g2gOverride = null;
+      if (typeof localStorage !== "undefined") localStorage.removeItem("csv.g2g");
+    }
+  }
 
   const sym = $derived(currencySymbol(app.region));
   const f4base = $derived(f4.perRc);
-  const g2gOut = $derived(g2gReadout(g2gInput || 0, sym));
+  const g2gOut = $derived(g2gValue ? g2gReadout(g2gValue, sym) : "—");
 
   const basePrices = $derived({ ...(app.snapshot?.prices ?? {}), ...overrides.forRegion(app.region) });
 
@@ -40,7 +52,7 @@
     return info;
   });
 
-  const rows = $derived(buildPackRows(effectivePrices(), { f4Input: f4.value, g2gInput, picks: selection.map }));
+  const rows = $derived(buildPackRows(effectivePrices(), { f4Input: f4.value, g2gInput: g2gValue ?? 0, picks: selection.map }));
 
   // Per pack: chosen-slug -> the selection chest's full option list, for the inline "Show alts".
   const altsByPack = $derived.by(() => {
@@ -91,7 +103,7 @@
     <span class="ex">
       <img class="ic g2g" src="/icons/g2g.png" alt="" />
       <span class="lbl">exchange (optional):</span>
-      <span class="lbl">{sym}</span><input class="g2g-in" type="number" min="0" step="0.0001" bind:value={g2gInput} onfocus={focusExchange} aria-label="G2G price per 1,000 gold" />
+      <span class="lbl">{sym}</span><input class="g2g-in" type="number" min="0" step="0.0001" value={g2gValue ?? ""} oninput={onG2gInput} onfocus={focusExchange} aria-label="G2G price per 1,000 gold" />
       <span class="lbl">for 1k</span><img class="ic" src="/icons/gold.png" alt="gold" />
       <span class="lbl">=</span> <b class="num accent">{g2gOut}</b> <span class="lbl">/ 100k</span>
     </span>

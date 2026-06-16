@@ -1,7 +1,9 @@
 import { app } from "../app.svelte";
 import type { Region } from "../api";
 
-const DEFAULTS: Record<Region, number> = { nae: 59500, euc: 59500 };
+// A round, deliberately-illustrative default — not pulled from any live source. The user tunes it
+// once and it's remembered per region; we don't want the seeded value to look authoritative.
+const DEFAULTS: Record<Region, number> = { nae: 20000, euc: 20000 };
 
 // The one shared F4 currency-exchange gold input, used by Packs, Mari's Shop and Ark Pass (per
 // region, persisted). Royal and blue crystals are valued the same; only the denominator differs:

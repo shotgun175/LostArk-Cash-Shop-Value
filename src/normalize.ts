@@ -7,11 +7,18 @@ export interface RegionSnapshot {
   prices: Record<string, number>;
 }
 
+// Live real-money reference rate (USD per 1,000 gold), polled server-side. Value-only so the
+// write-on-change guard in refresh() doesn't churn KV when the rate is unchanged.
+export interface G2gRate {
+  usdPer1kGold: number;
+}
+
 export interface PricePayload {
   schema_version: 1;
   generated_at: string;
   regions: Partial<Record<Region, RegionSnapshot>>;
   bundles: Record<string, number>;
+  g2g?: G2gRate;
 }
 
 // The feed is an unauthenticated third-party endpoint — treat every row as untrusted.
@@ -80,6 +87,9 @@ export function buildPayload(
   regions: Partial<Record<Region, RegionSnapshot>>,
   bundles: Record<string, number>,
   generatedAt: string,
+  g2g?: G2gRate,
 ): PricePayload {
-  return { schema_version: 1, generated_at: generatedAt, regions, bundles };
+  const payload: PricePayload = { schema_version: 1, generated_at: generatedAt, regions, bundles };
+  if (g2g) payload.g2g = g2g;
+  return payload;
 }

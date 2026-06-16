@@ -2,6 +2,7 @@ import { FETCH_SLUGS, REGIONS, type Region } from "./items";
 import { fetchRegion, type FetchLike } from "./feed";
 import { sanitizeRows, buildRegionSnapshot, buildPayload, type RegionSnapshot, type PricePayload } from "./normalize";
 import { readPayload, writePayload } from "./store";
+import { fetchG2gRate } from "./g2g";
 import { BUNDLES } from "./bundles";
 
 export async function refresh(kv: KVNamespace, fetchImpl: FetchLike = fetch): Promise<PricePayload> {
@@ -23,10 +24,16 @@ export async function refresh(kv: KVNamespace, fetchImpl: FetchLike = fetch): Pr
     }
   }
 
-  const payload = buildPayload(regions, BUNDLES, new Date().toISOString());
+  // Poll the live real-money rate too; keep the last good value if this fetch fails.
+  const g2g = (await fetchG2gRate(fetchImpl)) ?? prev?.g2g;
+  const payload = buildPayload(regions, BUNDLES, new Date().toISOString(), g2g);
 
-  // Only write when a region actually changed — keeps KV writes far under the free cap.
-  if (!prev || JSON.stringify(prev.regions) !== JSON.stringify(regions)) {
+  // Only write when a region or the g2g rate actually changed — keeps KV writes far under the cap.
+  const changed =
+    !prev ||
+    JSON.stringify(prev.regions) !== JSON.stringify(regions) ||
+    JSON.stringify(prev.g2g) !== JSON.stringify(g2g);
+  if (changed) {
     await writePayload(kv, payload);
   }
   return payload;
