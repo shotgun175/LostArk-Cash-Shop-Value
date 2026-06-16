@@ -157,6 +157,8 @@
     margin-left: 5px; vertical-align: middle; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .tradeup:hover { color: var(--text); border-color: var(--muted); }
   .tradeup.on { background: rgba(255, 209, 102, 0.15); border-color: var(--accent); color: var(--accent); }
+  /* Flex collapses the literal space, so the arrow and the % touch — add explicit room. */
+  .tradeup span { margin-left: 4px; }
   .alts-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 999px;
     padding: 1px 8px; font-size: 11px; cursor: pointer; margin-left: 5px; vertical-align: middle; white-space: nowrap; }
   .alts-btn:hover { color: var(--accent); border-color: var(--accent); }
