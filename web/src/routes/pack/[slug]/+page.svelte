@@ -157,9 +157,9 @@
                 <td class="ic-col"><ItemIcon slug={o.slug} /></td>
                 <td>
                   {#if c.isSelection && !readOnly}
-                    <button class="pick-name" class:chosen={o.chosen} title="Value this pack with this option" onclick={() => selection.set(c.chest, o.slug)}>{displayName(o.slug)}</button>{#if o.isBound}<span class="bound"> (Bound)</span>{/if}{#if o.chosen}<span class="pick">✓ picked</span>{/if}
+                    <button class="pick-name" class:chosen={o.chosen} title="Value this pack with this option" onclick={() => selection.set(c.chest, o.slug)}>{displayName(o.slug)}</button>{#if o.isBound}<span class="bound"> (Bound)</span>{/if}{#if o.chosen}<span class="pick">✓ counts</span>{/if}
                   {:else}
-                    {displayName(o.slug)}{#if o.isBound}<span class="bound"> (Bound)</span>{/if}{#if c.isSelection && o.chosen}<span class="pick">✓ picked</span>{/if}
+                    {displayName(o.slug)}{#if o.isBound}<span class="bound"> (Bound)</span>{/if}{#if c.isSelection && o.chosen}<span class="pick">✓ counts</span>{/if}
                   {/if}
                 </td>
                 <td class="right num">{o.totalQty.toLocaleString("en-US")}</td>
