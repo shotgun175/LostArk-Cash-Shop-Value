@@ -14,9 +14,13 @@
 
   // G2G real-money rate: live from the feed by default; a typed value overrides it and is remembered
   // (clearing the box drops the override and follows the live rate again).
+  const G2G_KEY = "csv.g2g.override";
   function restoreG2g(): number | null {
     if (typeof localStorage === "undefined") return null;
-    const raw = localStorage.getItem("csv.g2g");
+    // Retire the legacy key: the old UI auto-saved its default into `csv.g2g`, which must NOT read
+    // back as a user override now that the box follows the live rate.
+    localStorage.removeItem("csv.g2g");
+    const raw = localStorage.getItem(G2G_KEY);
     if (raw == null || raw === "") return null;
     const v = Number(raw);
     return Number.isFinite(v) && v > 0 ? v : null;
@@ -28,10 +32,10 @@
     const v = e.currentTarget.valueAsNumber;
     if (Number.isFinite(v) && v > 0) {
       g2gOverride = v;
-      if (typeof localStorage !== "undefined") localStorage.setItem("csv.g2g", String(v));
+      if (typeof localStorage !== "undefined") localStorage.setItem(G2G_KEY, String(v));
     } else {
       g2gOverride = null;
-      if (typeof localStorage !== "undefined") localStorage.removeItem("csv.g2g");
+      if (typeof localStorage !== "undefined") localStorage.removeItem(G2G_KEY);
     }
   }
 
