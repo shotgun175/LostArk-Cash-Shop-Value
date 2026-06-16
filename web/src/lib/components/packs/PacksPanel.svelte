@@ -104,10 +104,13 @@
   input.f4 { width: 82px; } input.g2g-in { width: 100px; }
   .ic { width: 14px; height: 14px; vertical-align: -2px; margin: 0 1px; }
   .ic.g2g { border-radius: 3px; opacity: .85; }
-  .custom { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
-  .reset-all { background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
-    padding: 3px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-family: inherit; }
-  .reset-all:hover { border-color: var(--bad); color: var(--bad); }
+  .custom { display: inline-flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 600;
+    color: var(--accent); background: rgba(255, 209, 102, 0.1); border: 1px solid rgba(255, 209, 102, 0.4);
+    border-radius: 6px; padding: 6px 12px; margin-bottom: 12px; }
+  .custom .num { color: var(--accent); }
+  .reset-all { background: rgba(255, 209, 102, 0.12); color: var(--accent); border: 1px solid rgba(255, 209, 102, 0.5);
+    padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .reset-all:hover { background: var(--bad); border-color: var(--bad); color: var(--bg); }
   .note { color: var(--muted); font-size: 13px; margin: 2px 0 16px; line-height: 1.5; }
   .pack-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
   @media (min-width: 900px) { .pack-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
