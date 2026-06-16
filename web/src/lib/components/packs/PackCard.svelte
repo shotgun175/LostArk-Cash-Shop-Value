@@ -28,15 +28,20 @@
   // Click-to-edit market price → a per-unit override for that slug (applies everywhere it appears).
   let editing = $state<string | null>(null);
   let draft = $state("");
+  let original = $state(""); // value shown when the editor opened; used to ignore no-op edits
 
   function startEdit(line: PackLine): void {
     editing = line.slug;
     draft = line.gold > 0 && line.qty > 0 ? String(Number((line.gold / line.qty).toFixed(4))) : "";
+    original = draft;
   }
   function commit(slug: string): void {
     const v = parseFloat(draft);
-    if (Number.isFinite(v) && v >= 0) overrides.set(app.region, slug, v);
     editing = null;
+    if (!Number.isFinite(v) || v < 0) return;
+    // Opening a price and clicking away without changing it must not create a "custom" override.
+    if (v === parseFloat(original)) return;
+    overrides.set(app.region, slug, v);
   }
   function focusSelect(el: HTMLInputElement): void {
     el.focus();

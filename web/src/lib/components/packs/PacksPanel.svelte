@@ -59,6 +59,16 @@
     return out;
   });
 
+  // Highlight the whole value for quick re-entry, and on mobile nudge the field above the
+  // on-screen keyboard once it settles (the keyboard otherwise covers the exchange inputs).
+  function focusExchange(e: FocusEvent & { currentTarget: HTMLInputElement }): void {
+    const el = e.currentTarget;
+    el.select();
+    if (typeof window !== "undefined" && window.innerWidth < 700) {
+      setTimeout(() => el.scrollIntoView({ block: "center", behavior: "smooth" }), 250);
+    }
+  }
+
   const customCount = $derived(overrides.count(app.region));
   const tuCount = $derived(tradeUp.count());
   const pickCount = $derived(selection.count());
@@ -73,7 +83,7 @@
   <div class="exch">
     <span class="ex">
       <span class="lbl">Currency exchange (F4, optional):</span>
-      <input class="f4" type="number" min="0" value={f4.value} oninput={(e) => (f4.value = e.currentTarget.valueAsNumber)} onfocus={(e) => e.currentTarget.select()} aria-label="F4 exchange gold" />
+      <input class="f4" type="number" min="0" value={f4.value} oninput={(e) => (f4.value = e.currentTarget.valueAsNumber)} onfocus={focusExchange} aria-label="F4 exchange gold" />
       <img class="ic" src="/icons/gold.png" alt="gold" />
       <span class="lbl">for 238</span><img class="ic" src="/icons/royal-crystal.png" alt="RC" />
       <span class="lbl">=</span> <b class="num accent">{f4base.toFixed(2)}</b><img class="ic" src="/icons/gold.png" alt="gold" /><span class="lbl">/</span><img class="ic" src="/icons/royal-crystal.png" alt="RC" />
@@ -81,7 +91,7 @@
     <span class="ex">
       <img class="ic g2g" src="/icons/g2g.png" alt="" />
       <span class="lbl">exchange (optional):</span>
-      <span class="lbl">{sym}</span><input class="g2g-in" type="number" min="0" step="0.0001" bind:value={g2gInput} onfocus={(e) => e.currentTarget.select()} aria-label="G2G price per 1,000 gold" />
+      <span class="lbl">{sym}</span><input class="g2g-in" type="number" min="0" step="0.0001" bind:value={g2gInput} onfocus={focusExchange} aria-label="G2G price per 1,000 gold" />
       <span class="lbl">for 1k</span><img class="ic" src="/icons/gold.png" alt="gold" />
       <span class="lbl">=</span> <b class="num accent">{g2gOut}</b> <span class="lbl">/ 100k</span>
     </span>
