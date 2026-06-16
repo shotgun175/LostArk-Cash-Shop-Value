@@ -2,7 +2,7 @@
   import { app } from "$lib/app.svelte";
   import type { Region } from "$lib/api";
   import { buildPackRows } from "$lib/packs/packRows";
-  import { g2gReadout, currencySymbol, cashPerRc } from "$lib/packs/exchange";
+  import { g2gReadout, currencySymbol, cashPerRc, RC_CASH_PER_12K } from "$lib/packs/exchange";
   import { f4 } from "$lib/packs/f4.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
@@ -49,6 +49,8 @@
 
   const sym = $derived(currencySymbol(app.region));
   const f4base = $derived(f4.perRc);
+  const rcCash = $derived(RC_CASH_PER_12K[app.region]); // 100 (NA) / 94.99 (EU) per 12,000 RC
+  const rcPerUnit = $derived(cashPerRc(app.region));
   const g2gOut = $derived(g2gValue ? g2gReadout(g2gValue, sym) : "—");
   // Discreet hover-only freshness signal for the live rate (no visible text).
   const g2gTooltip = $derived.by(() => {
@@ -130,7 +132,7 @@
 
   <p class="note">
     Sorted by g/RC. Selection chests use their highest-value option. Drill into a pack for all options + screenshot. Conversion:
-    <b class="num">12,000</b> <img class="ic" src="/icons/royal-crystal.png" alt="RC" /> = $100 ($0.0083/RC).
+    <b class="num">12,000</b> <img class="ic" src="/icons/royal-crystal.png" alt="RC" /> = {sym}{rcCash.toLocaleString("en-US")} ({sym}{rcPerUnit.toFixed(4)}/RC).
     Click any market price to enter your own AH price.{#if customCount > 0 || tuCount > 0 || pickCount > 0} <span class="custom"><span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && (tuCount > 0 || pickCount > 0)} · {/if}{#if pickCount > 0}<b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"}{/if}{#if pickCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span> <button class="reset-all" onclick={resetAll}>reset all</button></span>{/if}
   </p>
 
