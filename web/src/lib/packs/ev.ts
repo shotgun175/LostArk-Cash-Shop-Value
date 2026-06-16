@@ -106,21 +106,38 @@ export function baseGold(
   return sum;
 }
 
+export interface FloorBreakdown {
+  range: string;
+  p: number; // P(floor | rarity)
+  bestPick: number; // best-of-k chest pick value
+  base: number; // base-reward gold
+  contribution: number; // (bestPick + base) * p, before renormalization
+}
+
+export interface HellKeyBreakdown {
+  slug: string;
+  ev: number; // renormalized expected value (not rounded)
+  sump: number; // total probability mass (renormalization divisor)
+  rarityTier: string;
+  tierLabel: string;
+  floors: FloorBreakdown[];
+}
+
 /**
- * EV of one of the 4 hell/netherworld keys. Sums per-floor (best-of-3 blended with
- * best-of-4 at weight h) chest pick plus base rewards, weighted by P(floor | rarity),
- * then renormalizes by the probability mass. Not rounded; callers round for display.
+ * Full per-floor breakdown of a hell/netherworld key's EV (drives the "Hell Key math" view).
+ * Each floor's best-of-3 (blended with best-of-4 at weight h) chest pick plus base rewards,
+ * weighted by P(floor | rarity); the EV is the renormalized sum.
  */
-export function hellKeyEv(
+export function hellKeyBreakdown(
   slug: string,
   prices: Record<string, number>,
-): number {
+): HellKeyBreakdown | null {
   const m = HELL_KEY_MAP[slug];
-  if (!m) return 0;
+  if (!m) return null;
   const tier = HELL_TIERS[m.tierLabel];
-  const is1730 =
-    m.tierLabel.startsWith("1730 ") && !m.tierLabel.includes("Old");
+  const is1730 = m.tierLabel.startsWith("1730 ") && !m.tierLabel.includes("Old");
   const probs = PROBABILITIES[m.probKey as keyof typeof PROBABILITIES];
+  const floors: FloorBreakdown[] = [];
   let g = 0;
   let sump = 0;
   for (let i = 0; i < probs.length; i++) {
@@ -139,12 +156,21 @@ export function hellKeyEv(
       if (v > 0) candidates.push(v);
     }
     candidates.sort((x, y) => y - x);
-    const bestPick =
-      (1 - h) * G(candidates, topK) + h * G(candidates, topK + 1);
-    g += (bestPick + baseGold(rewards, prices, is1730)) * p;
+    const bestPick = (1 - h) * G(candidates, topK) + h * G(candidates, topK + 1);
+    const base = baseGold(rewards, prices, is1730);
+    floors.push({ range: floorRange, p, bestPick, base, contribution: (bestPick + base) * p });
+    g += (bestPick + base) * p;
   }
-  if (Math.abs(sump - 1) > 0.001) g /= sump;
-  return g;
+  const ev = Math.abs(sump - 1) > 0.001 ? g / sump : g;
+  return { slug, ev, sump, rarityTier: m.rarityTier, tierLabel: m.tierLabel, floors };
+}
+
+/**
+ * EV of one of the 4 hell/netherworld keys, in gold. Not rounded; callers round for display.
+ * Delegates to hellKeyBreakdown so the math has a single source of truth.
+ */
+export function hellKeyEv(slug: string, prices: Record<string, number>): number {
+  return hellKeyBreakdown(slug, prices)?.ev ?? 0;
 }
 
 /** EV of an ebony-cube unlock, in gold. Rounded. */

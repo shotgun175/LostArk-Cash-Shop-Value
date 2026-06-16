@@ -7,6 +7,7 @@
   import RegionToggle from "$lib/components/RegionToggle.svelte";
   import FreshnessBanner from "$lib/components/FreshnessBanner.svelte";
   import PacksPanel from "$lib/components/packs/PacksPanel.svelte";
+  import HellKeyMath from "$lib/components/packs/HellKeyMath.svelte";
 
   let { children } = $props();
   // Tab order mirrors TJW (Packs default); our own Prices tab is kept at the far right.
@@ -42,6 +43,8 @@
     {@render children()}
   {:else if active === "Packs"}
     <PacksPanel />
+  {:else if active === "Hell Key math"}
+    <HellKeyMath />
   {:else}
     <p class="soon">"{active}" — coming soon (Plan 3).</p>
   {/if}
