@@ -111,7 +111,15 @@ export interface FloorBreakdown {
   p: number; // P(floor | rarity)
   bestPick: number; // best-of-k chest pick value
   base: number; // base-reward gold
-  contribution: number; // (bestPick + base) * p, before renormalization
+  floorTotal: number; // bestPick + base (per-floor value before weighting)
+  contribution: number; // floorTotal * p, before renormalization
+}
+
+export interface ColumnPrice {
+  column: string;
+  slug: string | null;
+  perUnit: number;
+  source: "live" | "fallback" | "flat" | "untradable" | "—";
 }
 
 export interface HellKeyBreakdown {
@@ -158,11 +166,37 @@ export function hellKeyBreakdown(
     candidates.sort((x, y) => y - x);
     const bestPick = (1 - h) * G(candidates, topK) + h * G(candidates, topK + 1);
     const base = baseGold(rewards, prices, is1730);
-    floors.push({ range: floorRange, p, bestPick, base, contribution: (bestPick + base) * p });
-    g += (bestPick + base) * p;
+    const floorTotal = bestPick + base;
+    floors.push({ range: floorRange, p, bestPick, base, floorTotal, contribution: floorTotal * p });
+    g += floorTotal * p;
   }
   const ev = Math.abs(sump - 1) > 0.001 ? g / sump : g;
   return { slug, ev, sump, rarityTier: m.rarityTier, tierLabel: m.tierLabel, floors };
+}
+
+/** The per-unit price (and its source) used for each priced reward column — the "prices used" table. */
+export function hellKeyColumnPrices(slug: string, prices: Record<string, number>): ColumnPrice[] {
+  const m = HELL_KEY_MAP[slug];
+  if (!m) return [];
+  const tier = HELL_TIERS[m.tierLabel];
+  const is1730 = m.tierLabel.startsWith("1730 ") && !m.tierLabel.includes("Old");
+  const out: ColumnPrice[] = [];
+  for (const column of tier.columns) {
+    if (SKIP_COLUMNS.has(column)) continue;
+    const c = COLUMN_VALUATION[column];
+    if (!c) continue; // e.g. astrogem columns are valued by constants, not a price
+    if (c.flat !== undefined) {
+      out.push({ column, slug: null, perUnit: c.flat, source: "flat" });
+    } else if (c.untradable) {
+      out.push({ column, slug: null, perUnit: 0, source: "untradable" });
+    } else {
+      const s = c.slug ?? (is1730 ? c.slug1730 : c.slugNon1730) ?? null;
+      const fb = c.fallback ?? (is1730 ? c.fallback1730 : c.fallbackNon1730);
+      const source: ColumnPrice["source"] = s && prices[s] !== undefined ? "live" : fb !== undefined ? "fallback" : "—";
+      out.push({ column, slug: s, perUnit: columnPrice(column, prices, is1730), source });
+    }
+  }
+  return out;
 }
 
 /**
