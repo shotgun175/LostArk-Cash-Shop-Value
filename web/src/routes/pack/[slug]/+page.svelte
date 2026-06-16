@@ -55,6 +55,12 @@
   function focusSelect(el: HTMLInputElement): void { el.focus(); el.select(); }
 
   const tagFor = (t: string) => (t === "selection" ? "select" : t === "multi" ? "everything" : "fixed");
+
+  // Selection chests show only the chosen option by default; this toggles the rest into view.
+  let expandedChests = $state<Record<string, boolean>>({});
+  function toggleChest(name: string): void {
+    expandedChests = { ...expandedChests, [name]: !expandedChests[name] };
+  }
 </script>
 
 <section class="detail">
@@ -73,7 +79,7 @@
       </div>
       {#if readOnly}
         <p class="hint">
-          No longer in the shop — read-only. The header total is this pack's value at retirement{#if pack.retiredOn} ({pack.retiredOn}){/if};
+          No longer in the shop, so this view is read-only. The header total is this pack's value at retirement{#if pack.retiredOn} ({pack.retiredOn}){/if};
           the mat prices below are current, shown for reference.
         </p>
       {:else}
@@ -106,18 +112,25 @@
       <div class="chest-head">
         <span class="chest-name">{c.qty}× {c.chest}</span>
         <span class="tag">{tagFor(c.type)}</span>
+        {#if c.isSelection && c.options.length > 1}
+          <button class="opts-toggle" onclick={() => toggleChest(c.chest)}>{expandedChests[c.chest] ? "Hide options" : `Show all ${c.options.length} options`}</button>
+        {/if}
         {#if c.isSelection && !readOnly && selection.has(c.chest)}
           <button class="chest-reset" title="Restore the highest-value pick" onclick={() => selection.clearOne(c.chest)}>reset pick</button>
         {/if}
         <span class="chest-gold num accent">{formatGold(c.gold)}<img class="ic" src="/icons/gold.png" alt="g" /></span>
       </div>
       {#if c.unresolved}
-        <p class="unresolved">Unmapped chest — not valued.</p>
+        <p class="unresolved">Unmapped chest (not valued).</p>
       {:else}
         <div class="tscroll">
         <table>
+          <thead>
+            <tr><th class="ic-col" aria-label="icon"></th><th>Item</th><th class="right">Qty</th><th class="right">Unit price</th><th class="right">Gold</th></tr>
+          </thead>
           <tbody>
             {#each c.options as o (o.slug)}
+              {#if !c.isSelection || o.chosen || expandedChests[c.chest]}
               <tr class:dim={c.isSelection && !o.chosen}>
                 <td class="ic-col"><ItemIcon slug={o.slug} /></td>
                 <td>
@@ -143,6 +156,7 @@
                 </td>
                 <td class="right num accent">{o.lineGold > 0 ? formatGold(o.lineGold) : "—"}</td>
               </tr>
+              {/if}
             {/each}
           </tbody>
         </table>
@@ -200,8 +214,10 @@
   .chest-gold { margin-left: auto; }
   .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table { width: 100%; min-width: 420px; border-collapse: collapse; }
+  th { padding: 5px 8px; text-align: left; font-size: 11px; font-weight: 500; color: var(--muted);
+    border-bottom: 1px solid var(--border); }
   td { padding: 6px 8px; border-bottom: 1px solid var(--border); font-size: 13.5px; }
-  tr:last-child td { border-bottom: 0; }
+  tbody tr:last-child td { border-bottom: 0; }
   .right { text-align: right; }
   td.accent { color: var(--accent); }
   .ic-col { width: 30px; }
@@ -217,6 +233,9 @@
     border: 1px solid rgba(255, 209, 102, 0.5); padding: 1px 9px; border-radius: 999px;
     font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
   .chest-reset:hover { background: var(--bad); border-color: var(--bad); color: var(--bg); }
+  .opts-toggle { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 999px;
+    padding: 1px 9px; font-size: 11px; cursor: pointer; font-family: inherit; }
+  .opts-toggle:hover { color: var(--accent); border-color: var(--accent); }
   .unresolved { color: var(--muted); font-size: 13px; margin: 4px 0 0; }
   .price-btn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--muted); font-size: 13.5px; }
   .price-btn:hover { color: var(--text); text-decoration: underline dotted; text-underline-offset: 3px; }

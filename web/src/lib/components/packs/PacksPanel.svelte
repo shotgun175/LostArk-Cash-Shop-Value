@@ -153,7 +153,7 @@
     {#if retiredRows.length}
       <div class="retired-head">
         <h3>No longer in the shop</h3>
-        <span class="retired-sub">— kept here for value reference</span>
+        <span class="retired-sub">· kept for value reference</span>
       </div>
       <div class="pack-grid">
         {#each retiredRows as row (row.slug)}<PackCard {row} compact {tradeUpInfo} alts={altsByPack[row.slug] ?? {}} />{/each}
