@@ -33,7 +33,7 @@ const ONE_TO_ONE: readonly string[] = [
   "abidos-fusion-material", "aura-of-resonance-recov-brew-30d",
   "crystallized-destruction-stone", "crystallized-guardian-stone",
   "destiny-crystallized-destruction-stone", "destiny-crystallized-guardian-stone",
-  "destiny-destruction-stone", "destiny-guardian-stone", "destiny-leapstone",
+  "destiny-destruction-stone", "destiny-guardian-stone", "destiny-leapstone", "destiny-shard",
   "destiny-shard-pouch-l", "destiny-shard-pouch-m", "destiny-shard-pouch-s",
   "destruction-stone", "destruction-stone-fragment", "epic-astrogem-selected",
   "glaciers-breath", "great-destiny-leapstone", "great-honor-leapstone",

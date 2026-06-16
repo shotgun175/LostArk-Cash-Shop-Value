@@ -7,9 +7,9 @@
   import PacksPanel from "$lib/components/packs/PacksPanel.svelte";
 
   let { children } = $props();
-  // In-page tabs for now; "Packs" and the rest arrive in Plan 3.
-  const tabs = ["Prices", "Packs", "Mari's Shop", "Ark Pass", "Hell Key math"];
-  let active = $state("Prices");
+  // Tab order mirrors TJW (Packs default); our own Prices tab is kept at the far right.
+  const tabs = ["Packs", "Mari's Shop", "Ark Pass", "Hell Key math", "Prices"];
+  let active = $state("Packs");
 
   onMount(() => { app.load(); });
 </script>

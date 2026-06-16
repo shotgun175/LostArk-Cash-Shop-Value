@@ -1,15 +1,11 @@
 <script lang="ts">
   import { app } from "$lib/app.svelte";
   import { buildPackRows } from "$lib/packs/packRows";
-  import { G2G_DEFAULT_INPUT, currencySymbol } from "$lib/packs/exchange";
+  import { f4Baseline, g2gReadout, G2G_DEFAULT_INPUT, currencySymbol } from "$lib/packs/exchange";
   import type { Region } from "$lib/api";
-  import F4Widget from "./F4Widget.svelte";
-  import G2GWidget from "./G2GWidget.svelte";
   import PackCard from "./PackCard.svelte";
 
-  // F4 crystal rate is region-specific (NA != EU). NA seeded to the live in-game rate
-  // (~250 gold/crystal -> 250 * 238 = 59500 gold for 238 crystals); EU is a placeholder
-  // until confirmed or a live source lands. Persisted per region. G2G is one field.
+  // F4 crystal/RC rate is region-specific; NA seeded to the live in-game rate. Persisted per region.
   const F4_DEFAULTS: Record<Region, number> = { nae: 59500, euc: 59500 };
 
   function restore(key: string, fallback: number): number {
@@ -32,34 +28,70 @@
   });
 
   const sym = $derived(currencySymbol(app.region));
-  const rows = $derived(
-    buildPackRows(app.snapshot?.prices ?? {}, { f4Input: f4[app.region], g2gInput }),
-  );
+  const f4base = $derived(f4Baseline(f4[app.region] || 0));
+  const g2gOut = $derived(g2gReadout(g2gInput || 0, sym));
+  const rows = $derived(buildPackRows(app.snapshot?.prices ?? {}, { f4Input: f4[app.region], g2gInput }));
 </script>
 
-<div class="bar">
-  <F4Widget bind:value={f4[app.region]} />
-  <G2GWidget bind:value={g2gInput} region={app.region} />
+<div class="packs">
+  <div class="exch">
+    <span class="ex">
+      <span class="lbl">Currency exchange (F4, optional):</span>
+      <input class="f4" type="number" min="0" bind:value={f4[app.region]} aria-label="F4 exchange gold" />
+      <img class="ic" src="/icons/gold.png" alt="gold" />
+      <span class="lbl">for 238</span><img class="ic" src="/icons/royal-crystal.png" alt="RC" />
+      <span class="lbl">=</span> <b class="num accent">{f4base.toFixed(2)}</b><img class="ic" src="/icons/gold.png" alt="gold" /><span class="lbl">/</span><img class="ic" src="/icons/royal-crystal.png" alt="RC" />
+    </span>
+    <span class="ex">
+      <img class="ic g2g" src="/icons/g2g.png" alt="" />
+      <span class="lbl">exchange (optional):</span>
+      <span class="lbl">{sym}</span><input class="g2g-in" type="number" min="0" step="0.0001" bind:value={g2gInput} aria-label="G2G price per 1,000 gold" />
+      <span class="lbl">for 1k</span><img class="ic" src="/icons/gold.png" alt="gold" />
+      <span class="lbl">=</span> <b class="num accent">{g2gOut}</b> <span class="lbl">/ 100k</span>
+    </span>
+  </div>
+
+  <p class="note">
+    Sorted by g/RC. Selection chests use their highest-value option. Conversion:
+    <b class="num">12,000</b> <img class="ic" src="/icons/royal-crystal.png" alt="RC" /> = $100 ($0.0083/RC).
+    Bound items are valued at their unbound market price.
+  </p>
+
+  {#if app.status === "loading"}
+    <p class="state">Loading prices…</p>
+  {:else if app.status === "error"}
+    <p class="state bad">Failed to load prices.</p>
+  {:else if app.snapshot?.prices && Object.keys(app.snapshot.prices).length === 0}
+    <p class="state">No prices yet — the feed may be refreshing.</p>
+  {:else}
+    <div class="pack-grid">
+      {#each rows as row (row.slug)}<PackCard {row} />{/each}
+    </div>
+  {/if}
 </div>
 
-{#if app.status === "loading"}
-  <p class="state">Loading prices…</p>
-{:else if app.status === "error"}
-  <p class="state err">Failed to load prices.</p>
-{:else if app.snapshot?.prices && Object.keys(app.snapshot.prices).length === 0}
-  <p class="state">No prices yet — the feed may be refreshing.</p>
-{:else}
-  <section class="grid">
-    {#each rows as row (row.slug)}
-      <PackCard {row} {sym} />
-    {/each}
-  </section>
-{/if}
-
 <style>
-  .bar { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
-    flex-wrap: wrap; padding: 12px 4px 18px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 14px; align-items: start; }
+  /* TJW's content design tokens, scoped to the packs view so the header keeps our palette. */
+  .packs {
+    --bg: #0e1116; --panel: #161b22; --panel-2: #1f242c; --border: #30363d;
+    --text: #e6edf3; --muted: #9aa4b2; --accent: #ffd166; --good: #6ed47a; --bad: #ef6f6c; --warn: #f0b341;
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+  .exch { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; padding: 4px 0 10px; font-size: 13px; }
+  .ex { display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+  .lbl { color: var(--muted); }
+  .num { font-variant-numeric: tabular-nums; }
+  .accent { color: var(--accent); }
+  input { background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    padding: 6px 10px; border-radius: 6px; font-size: 13px; font-family: inherit; }
+  input:focus { outline: none; border-color: var(--accent); }
+  input.f4 { width: 82px; } input.g2g-in { width: 100px; }
+  .ic { width: 14px; height: 14px; vertical-align: -2px; margin: 0 1px; }
+  .ic.g2g { border-radius: 3px; opacity: .85; }
+  .note { color: var(--muted); font-size: 13px; margin: 2px 0 16px; line-height: 1.5; }
+  .pack-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 900px) { .pack-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .state { color: var(--muted); text-align: center; padding: 40px 0; }
-  .state.err { color: var(--bad); }
+  .state.bad { color: var(--bad); }
 </style>

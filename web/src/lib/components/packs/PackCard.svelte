@@ -3,83 +3,80 @@
   import { formatGold, formatSignedPct } from "$lib/format";
   import { displayName } from "$lib/catalog";
   import ItemIcon from "../ItemIcon.svelte";
-  let { row, sym }: { row: PackRow; sym: string } = $props();
-  const goldPerDollar = $derived(row.goldPerDollar == null ? null : Math.round(row.goldPerDollar));
+
+  let { row }: { row: PackRow } = $props();
+  // TJW shows a small recurrence tag ("limited"/"monthly"/"weekly"); we add "retired".
+  const tag = $derived(
+    row.retired ? "retired" : (row.name.match(/^\[(\w+)\]/)?.[1]?.toLowerCase() ?? ""),
+  );
+  const gpd = $derived(row.goldPerDollar == null ? null : Math.round(row.goldPerDollar));
+  function perUnit(gold: number, qty: number): string {
+    return gold > 0 && qty > 0 ? formatGold(gold / qty) : "—";
+  }
 </script>
 
-<article class="card" class:retired={row.retired}>
-  <header>
-    <h3>{row.name}</h3>
-    {#if row.retired}<span class="badge">retired</span>{/if}
-  </header>
-
-  <div class="rc">
-    <span class="rc-cost">{row.royalCrystalCost.toLocaleString("en-US")}</span>
-    <img class="coin" src="/icons/royal-crystal.png" alt="RC" />
+<div class="card" class:retired={row.retired}>
+  <div class="head">
+    <span class="title">{row.name}</span>
+    {#if tag}<span class="tag">{tag}</span>{/if}
   </div>
 
-  <dl>
-    <div><dt>Total value</dt><dd class="gold">{formatGold(row.total)}<img class="coin" src="/icons/gold.png" alt="" /></dd></div>
-    <div><dt>Gold / RC</dt><dd class="gold">{row.goldPerRc == null ? "—" : row.goldPerRc.toFixed(1)}</dd></div>
-    <div><dt>% vs exchange</dt><dd class={row.vsExchange != null && row.vsExchange >= 0 ? "pos" : "neg"}>{formatSignedPct(row.vsExchange)}</dd></div>
-    <div><dt>Gold / $</dt><dd class="gold">{goldPerDollar == null ? "—" : goldPerDollar.toLocaleString("en-US")}</dd></div>
-    <div><dt><img class="mark" src="/icons/g2g.png" alt="" /> % vs G2G</dt><dd class={row.vsG2G != null && row.vsG2G >= 0 ? "pos" : "neg"}>{formatSignedPct(row.vsG2G)}</dd></div>
-  </dl>
+  <div class="stats">
+    <span><b class="num accent">{row.royalCrystalCost.toLocaleString("en-US")}</b><img class="ic" src="/icons/royal-crystal.png" alt="RC" /></span>
+    <span class="sep">·</span>
+    <span><b class="num">{formatGold(row.total)}</b><img class="ic" src="/icons/gold.png" alt="g" /></span>
+    <span class="sep">·</span>
+    <span><b class="num accent">{row.goldPerRc == null ? "—" : row.goldPerRc.toFixed(1)}</b> <span class="lbl">g/RC</span></span>
+    <span class="sep">·</span>
+    <span class="num" class:good={(row.vsExchange ?? 0) >= 0} class:bad={(row.vsExchange ?? 0) < 0}>{formatSignedPct(row.vsExchange)} <span class="lbl">vs exchange</span></span>
+    <span class="sep">·</span>
+    <span><b class="num">{gpd == null ? "—" : gpd.toLocaleString("en-US")}</b> <span class="lbl">g/$</span></span>
+    <span class="sep">·</span>
+    <span class="num" class:good={(row.vsG2G ?? 0) >= 0} class:bad={(row.vsG2G ?? 0) < 0}><img class="ic g2g" src="/icons/g2g.png" alt="" /> {formatSignedPct(row.vsG2G)} <span class="lbl">vs G2G</span></span>
+  </div>
 
-  <table class="mats">
+  <table>
     <thead>
-      <tr><th class="m">Material</th><th class="r">Qty</th><th class="r">Price</th><th class="r">Gold</th></tr>
+      <tr><th class="ic-col" aria-label="icon"></th><th>Material</th><th class="right">Total qty</th><th class="right">Market price</th><th class="right">Gold</th></tr>
     </thead>
     <tbody>
       {#each row.lines as line (line.slug)}
         <tr>
-          <td class="m">
-            <ItemIcon slug={line.slug} />
-            <span class="name">{displayName(line.slug)}{#if line.isBound}<em class="tag">bound</em>{/if}{#if line.unresolved}<em class="tag warn">?</em>{/if}</span>
-          </td>
-          <td class="r">{line.qty.toLocaleString("en-US")}</td>
-          <td class="r dim">{line.gold > 0 && line.qty > 0 ? formatGold(line.gold / line.qty) : "—"}</td>
-          <td class="r gold">{line.gold > 0 ? formatGold(line.gold) : "—"}</td>
+          <td class="ic-col"><ItemIcon slug={line.slug} /></td>
+          <td>{displayName(line.slug)}{#if line.isBound}<span class="bound"> (Bound)</span>{/if}</td>
+          <td class="right num">{line.qty.toLocaleString("en-US")}</td>
+          <td class="right num muted">{perUnit(line.gold, line.qty)}</td>
+          <td class="right num accent">{line.gold > 0 ? formatGold(line.gold) : "—"}</td>
         </tr>
       {/each}
     </tbody>
   </table>
-</article>
+</div>
 
 <style>
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px;
-    display: flex; flex-direction: column; gap: 12px; }
-  .card.retired { opacity: .5; }
-  header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-  h3 { margin: 0; font: 600 14.5px "Sora", sans-serif; color: var(--txt); line-height: 1.3; }
-  .badge { font: 600 9.5px "Sora", sans-serif; text-transform: uppercase; letter-spacing: .5px;
-    color: var(--faint); border: 1px solid var(--line); border-radius: 999px; padding: 2px 7px; white-space: nowrap; }
-  .rc { display: flex; align-items: center; gap: 5px; }
-  .rc-cost { font: 700 20px "JetBrains Mono", monospace;
-    background: linear-gradient(180deg, var(--gold), var(--gold-2)); -webkit-background-clip: text;
-    background-clip: text; color: transparent; }
-  dl { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; }
-  dl > div { display: contents; }
-  dt { font-size: 11.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
-  dt .mark { width: 12px; height: 12px; border-radius: 2px; opacity: .75; }
-  dd { margin: 0; text-align: right; font: 600 13px "JetBrains Mono", monospace; }
-  dd.gold { color: var(--gold); }
-  dd.pos { color: var(--pos); }
-  dd.neg { color: var(--bad); }
-  .coin { width: 13px; height: 13px; vertical-align: -2px; margin-left: 4px; }
-
-  .mats { width: 100%; border-collapse: collapse; margin-top: 2px; }
-  .mats thead th { font: 600 9.5px "Sora", sans-serif; text-transform: uppercase; letter-spacing: .5px;
-    color: var(--faint); padding: 6px 6px; border-bottom: 1px solid var(--line); }
-  .mats th.m { text-align: left; }
-  .mats th.r, .mats td.r { text-align: right; font-family: "JetBrains Mono", monospace; }
-  .mats tbody td { padding: 5px 6px; border-top: 1px solid #1c2030; font-size: 12px; }
-  .mats td.m { display: flex; align-items: center; gap: 8px; }
-  .mats td.m .name { color: var(--txt); font: 500 12px "Sora", sans-serif; line-height: 1.25; }
-  .mats td.r { color: var(--txt); }
-  .mats td.dim { color: var(--muted); }
-  .mats td.gold { color: var(--gold); }
-  .tag { font-style: normal; font-size: 9px; text-transform: uppercase; letter-spacing: .4px;
-    color: var(--faint); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: 1px; }
-  .tag.warn { color: var(--bad); border-color: var(--bad); }
+  /* Content palette (--panel/--border/--accent/...) is provided by PacksPanel, matching TJW. */
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .card.retired { opacity: .55; }
+  .head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .title { font-weight: 600; color: var(--text); }
+  .tag { padding: 2px 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border);
+    font-size: 12px; color: var(--muted); }
+  .stats { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 7px; font-size: 13px; color: var(--text); margin-bottom: 10px; }
+  .sep { color: var(--muted); opacity: .5; }
+  .num { font-variant-numeric: tabular-nums; }
+  .accent { color: var(--accent); }
+  .good { color: var(--good); }
+  .bad { color: var(--bad); }
+  .lbl { color: var(--muted); }
+  .ic { width: 14px; height: 14px; vertical-align: -2px; margin-left: 2px; }
+  .ic.g2g { border-radius: 3px; opacity: .85; margin: 0 2px 0 0; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+  th { color: var(--muted); font-weight: 500; }
+  th.right, td.right { text-align: right; }
+  td.accent { color: var(--accent); }
+  td.muted { color: var(--muted); }
+  tr:hover td { background: var(--panel-2); }
+  .ic-col { width: 30px; }
+  .bound { color: var(--muted); font-size: 12px; }
 </style>
