@@ -1,8 +1,8 @@
 <script lang="ts">
   import { app } from "$lib/app.svelte";
   const regions: { id: "nae" | "euc"; label: string }[] = [
-    { id: "nae", label: "NA-East" },
-    { id: "euc", label: "EU-Central" },
+    { id: "nae", label: "NA" },
+    { id: "euc", label: "EU" },
   ];
 </script>
 
