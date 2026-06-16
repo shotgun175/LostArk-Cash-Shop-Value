@@ -6,7 +6,7 @@
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
   import { selection } from "$lib/packs/selection.svelte";
-  import { cashPerRc, currencySymbol } from "$lib/packs/exchange";
+  import { cashPerRc, currencySymbol, RC_CASH_PER_12K } from "$lib/packs/exchange";
   import { app } from "$lib/app.svelte";
   import { formatGold } from "$lib/format";
   import { displayName } from "$lib/catalog";
@@ -26,6 +26,9 @@
   const chests = $derived(packDetail(pack, prices, picksForView));
   const gpd = $derived(value.goldPerDollar == null ? null : Math.round(value.goldPerDollar));
   const sym = $derived(currencySymbol(app.region)); // $ for NA, € for EU — RC priced per region
+  // Summary-box real-money row: "per US dollar (12,000 RC = $100)" / "per Euro (12,000 RC = €94.99)".
+  const cashName = $derived(app.region === "euc" ? "Euro" : "US dollar");
+  const cashRate = $derived(`12,000 RC = ${sym}${RC_CASH_PER_12K[app.region]}`);
 
   const customCount = $derived(overrides.count(app.region));
   const tuCount = $derived(tradeUp.count());
@@ -70,24 +73,15 @@
 
   <div class="info">
       <h2>{pack.name}</h2>
-      <div class="stats">
-        <span><b class="num accent">{pack.royalCrystalCost.toLocaleString("en-US")}</b><img class="ic" src="/icons/royal-crystal.png" alt="RC" /></span>
-        <span class="sep">·</span>
-        <span><b class="num">{formatGold(value.total)}</b><img class="ic" src="/icons/gold.png" alt="g" /></span>
-        <span class="sep">·</span>
-        <span><b class="num accent">{value.goldPerRc == null ? "—" : value.goldPerRc.toFixed(1)}</b> <span class="lbl">g/RC</span></span>
-        <span class="sep">·</span>
-        <span><b class="num">{gpd == null ? "—" : gpd.toLocaleString("en-US")}</b> <span class="lbl">g/{sym}</span></span>
-      </div>
       {#if readOnly}
-        <p class="hint">
-          No longer in the shop, so this view is read-only. The header total is this pack's value at retirement{#if pack.retiredOn} ({pack.retiredOn}){/if};
-          the mat prices below are current, shown for reference.
-        </p>
+        <div class="retired-banner">
+          <span class="rb-pill">retired</span>
+          <span>This pack is no longer offered in-game{pack.retiredOn ? ` (removed ${pack.retiredOn})` : ""}. The totals are its value at retirement; material prices below are current, kept for historical reference.</span>
+        </div>
       {:else}
         <p class="hint">
           Click any market price to enter your own AH value, or click a selection-chest option to value
-          the pack with your pick — changes apply site-wide until reset. The highest-value option (✓)
+          the pack with your pick; changes apply site-wide until reset. The highest-value option (✓)
           counts by default.
         </p>
         {#if customCount > 0 || tuCount > 0 || pickCount > 0}
@@ -109,19 +103,45 @@
     </div>
     <div class="chests">
 
+      <div class="summary">
+        <div class="srow total">
+          <span class="slabel">Total gold</span>
+          <span class="sval"><b class="num accent">{formatGold(value.total)}</b><img class="ic" src="/icons/gold.png" alt="g" /></span>
+        </div>
+        <div class="srow">
+          <span class="slabel">per Royal Crystal</span>
+          <span class="sval"><b class="num accent">{value.goldPerRc == null ? "—" : value.goldPerRc.toFixed(1)}</b> <span class="lbl">g/RC</span></span>
+        </div>
+        <div class="srow">
+          <span class="slabel">per {cashName} <span class="rate">({cashRate})</span></span>
+          <span class="sval"><b class="num">{gpd == null ? "—" : gpd.toLocaleString("en-US")}</b> <span class="lbl">g/{sym}</span></span>
+        </div>
+      </div>
+
   {#each chests as c (c.chest)}
     <div class="chest">
       <div class="chest-head">
         <span class="chest-name">{c.qty}× {c.chest}</span>
         <span class="tag">{tagFor(c.type)}</span>
-        {#if c.isSelection && c.options.length > 1}
-          <button class="opts-toggle" onclick={() => toggleChest(c.chest)}>{expandedChests[c.chest] ? "Hide options" : `Show all ${c.options.length} options`}</button>
+        <!-- The per-chest total only adds information for "everything" chests, where several
+             differently-valued lines sum up. For fixed/selection it equals the single counted
+             line, so it would just repeat the Gold column. -->
+        {#if c.type === "multi"}
+          <span class="chest-gold num accent">{formatGold(c.gold)}<img class="ic" src="/icons/gold.png" alt="g" /></span>
         {/if}
-        {#if c.isSelection && !readOnly && selection.has(c.chest)}
-          <button class="chest-reset" title="Restore the highest-value pick" onclick={() => selection.clearOne(c.chest)}>reset pick</button>
-        {/if}
-        <span class="chest-gold num accent">{formatGold(c.gold)}<img class="ic" src="/icons/gold.png" alt="g" /></span>
       </div>
+      {#if c.isSelection && c.options.length > 1}
+        {@const chosen = c.options.find((o) => o.chosen) ?? c.options[0]}
+        <div class="chest-default">
+          <span class="default-label">{!readOnly && selection.has(c.chest) ? "Picked" : "Default"}:</span>
+          <span class="default-item">{displayName(chosen.slug)}{#if chosen.isBound}<span class="bound"> (Bound)</span>{/if}</span>
+          <span class="sep">·</span>
+          <button class="opts-toggle" onclick={() => toggleChest(c.chest)}>{expandedChests[c.chest] ? "Hide options" : `Show all ${c.options.length} options`}</button>
+          {#if !readOnly && selection.has(c.chest)}
+            <button class="chest-reset" title="Restore the highest-value pick" onclick={() => selection.clearOne(c.chest)}>reset pick</button>
+          {/if}
+        </div>
+      {/if}
       {#if c.unresolved}
         <p class="unresolved">Unmapped chest (not valued).</p>
       {:else}
@@ -195,8 +215,23 @@
     .chests { width: 100%; }
   }
   h2 { margin: 8px 0 8px; font-size: 22px; }
-  .stats { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 14px; margin-bottom: 6px; }
   .sep { color: var(--muted); opacity: .5; }
+  /* Value summary box at the top of the breakdown (replaces the old under-title stats line). */
+  .summary { background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; margin-bottom: 12px; }
+  .srow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 3px 0; }
+  .srow.total { font-size: 17px; border-bottom: 1px solid var(--border); padding-bottom: 7px; margin-bottom: 3px; }
+  .srow.total .slabel { color: var(--text); font-weight: 600; font-size: 15px; }
+  .slabel { color: var(--muted); font-size: 13px; }
+  .rate { font-size: 11.5px; opacity: .8; }
+  .sval { white-space: nowrap; }
+  /* Retired-pack disclaimer banner shown above the breakdown. */
+  .retired-banner { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+    background: rgba(239, 111, 108, .1); border: 1px solid rgba(239, 111, 108, .4); border-radius: 6px;
+    padding: 8px 12px; margin: 8px 0 12px; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .rb-pill { flex: none; text-transform: uppercase; letter-spacing: .3px; font-size: 10px; font-weight: 700;
+    color: var(--bad); background: rgba(239, 111, 108, .16); border: 1px solid rgba(239, 111, 108, .55);
+    border-radius: 999px; padding: 2px 8px; }
   .num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; }
   .accent { color: var(--accent); }
   .lbl, .muted { color: var(--muted); }
@@ -214,6 +249,10 @@
   .chest-name { font-weight: 600; }
   .tag { padding: 1px 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border); font-size: 11px; color: var(--muted); }
   .chest-gold { margin-left: auto; }
+  /* Selection-chest second line: "Default: <item> · show all N options". */
+  .chest-default { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 2px 0 8px; font-size: 12.5px; }
+  .default-label { color: var(--muted); }
+  .default-item { color: var(--text); font-weight: 600; }
   .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table { width: 100%; min-width: 420px; border-collapse: collapse; }
   th { padding: 5px 8px; text-align: left; font-size: 11px; font-weight: 500; color: var(--muted);

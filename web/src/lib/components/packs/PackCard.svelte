@@ -133,10 +133,12 @@
     box-shadow: 0 0 0 1px rgba(255, 209, 102, .35), 0 10px 26px rgba(0, 0, 0, .45);
     transform: translateY(-2px); }
   .card.retired:hover .title { color: var(--accent); }
-  /* .tag.retired-tag beats the plain .tag rule (equal-specificity tie would otherwise let the
-     later .tag win and paint the pill grey). */
+  /* RETIRED pill is grey at rest (inherits the base .tag colours) and turns red only while the card
+     is hovered, in step with the card's hover highlight. .tag.retired-tag keeps the compact shape. */
   .tag.retired-tag { text-transform: uppercase; letter-spacing: .3px; font-size: 10px; font-weight: 600;
-    color: var(--bad); background: rgba(239, 111, 108, .16); border-color: rgba(239, 111, 108, .55); }
+    transition: color .15s ease, background-color .15s ease, border-color .15s ease; }
+  .card.retired:hover .retired-tag { color: var(--bad);
+    background: rgba(239, 111, 108, .16); border-color: rgba(239, 111, 108, .55); }
   /* Slightly smaller title on the reference cards so it + the RETIRED pill fit on the first line
      like TJW (any extra tags wrap below). */
   .card.retired .title { font-size: 14px; }
