@@ -57,19 +57,11 @@
     </span>
   </div>
 
-  <div class="noterow">
-    <p class="note">
-      Sorted by g/RC. Selection chests use their highest-value option. Conversion:
-      <b class="num">12,000</b> <img class="ic" src="/icons/royal-crystal.png" alt="RC" /> = $100 ($0.0083/RC).
-      Bound items are valued at their unbound market price.
-    </p>
-    {#if overrides.count(app.region) > 0}
-      <div class="custom">
-        <span><b class="num">{overrides.count(app.region)}</b> custom price{overrides.count(app.region) === 1 ? "" : "s"}</span>
-        <button class="reset-all" onclick={() => overrides.clearAll(app.region)}>reset all</button>
-      </div>
-    {/if}
-  </div>
+  <p class="note">
+    Sorted by g/RC. Selection chests use their highest-value option. Conversion:
+    <b class="num">12,000</b> <img class="ic" src="/icons/royal-crystal.png" alt="RC" /> = $100 ($0.0083/RC).
+    Bound items are valued at their unbound market price.{#if overrides.count(app.region) > 0} <span class="custom"><span><b class="num">{overrides.count(app.region)}</b> custom price{overrides.count(app.region) === 1 ? "" : "s"}</span> <button class="reset-all" onclick={() => overrides.clearAll(app.region)}>reset all</button></span>{/if}
+  </p>
 
   {#if app.status === "loading"}
     <p class="state">Loading prices…</p>
@@ -105,11 +97,10 @@
   input.f4 { width: 82px; } input.g2g-in { width: 100px; }
   .ic { width: 14px; height: 14px; vertical-align: -2px; margin: 0 1px; }
   .ic.g2g { border-radius: 3px; opacity: .85; }
-  .noterow { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin: 2px 0 16px; }
-  .note { color: var(--muted); font-size: 13px; margin: 0; line-height: 1.5; flex: 1; min-width: 280px; }
-  .custom { display: inline-flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 600; white-space: nowrap;
-    color: var(--accent); background: rgba(255, 209, 102, 0.1); border: 1px solid rgba(255, 209, 102, 0.4);
-    border-radius: 6px; padding: 6px 12px; }
+  .note { color: var(--muted); font-size: 13px; margin: 2px 0 16px; line-height: 1.9; }
+  .custom { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; white-space: nowrap;
+    vertical-align: middle; color: var(--accent); background: rgba(255, 209, 102, 0.1);
+    border: 1px solid rgba(255, 209, 102, 0.4); border-radius: 6px; padding: 3px 10px; }
   .custom .num { color: var(--accent); }
   .reset-all { background: rgba(255, 209, 102, 0.12); color: var(--accent); border: 1px solid rgba(255, 209, 102, 0.5);
     padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
