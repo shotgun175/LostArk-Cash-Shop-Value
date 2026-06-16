@@ -6,8 +6,9 @@
     displayName(slug).split(" ").filter(Boolean).slice(0, 2).map((w) => w[0] ?? "").join(""),
   );
   const showImg = $derived(hasIcon(slug) && !broken);
-  // Overlay the ornate frame on everything except icons whose art already bakes one in.
-  const framed = $derived(!isPreframed(slug));
+  // Overlay the ornate frame on real art only (not the lettered fallback chip), except for icons
+  // whose art already bakes a frame in.
+  const framed = $derived(showImg && !isPreframed(slug));
 </script>
 
 <span class="icon-box" class:framed>
