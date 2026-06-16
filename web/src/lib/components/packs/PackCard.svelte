@@ -84,10 +84,6 @@
                 title="Click to enter your own AH price" onclick={() => startEdit(line)}>
                 {perUnit(line.gold, line.qty)}
               </button>
-              {#if overrides.has(app.region, line.slug)}
-                <button class="reset" title="Reset to market price" aria-label="Reset"
-                  onclick={() => overrides.clear(app.region, line.slug)}>×</button>
-              {/if}
             {/if}
           </td>
           <td class="right num accent">{line.gold > 0 ? formatGold(line.gold) : "—"}</td>
@@ -132,6 +128,4 @@
   .price-btn.edited { color: var(--accent); }
   .edit { width: 78px; padding: 2px 6px; text-align: right; background: var(--panel-2); color: var(--text);
     border: 1px solid var(--accent); border-radius: 4px; font-size: 13px; }
-  .reset { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 14px; padding: 0 2px; margin-left: 3px; line-height: 1; }
-  .reset:hover { color: var(--bad); }
 </style>

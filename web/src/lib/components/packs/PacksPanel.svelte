@@ -57,6 +57,13 @@
     </span>
   </div>
 
+  {#if overrides.count(app.region) > 0}
+    <div class="custom">
+      <span><b class="num">{overrides.count(app.region)}</b> custom price{overrides.count(app.region) === 1 ? "" : "s"}</span>
+      <button class="reset-all" onclick={() => overrides.clearAll(app.region)}>reset all</button>
+    </div>
+  {/if}
+
   <p class="note">
     Sorted by g/RC. Selection chests use their highest-value option. Conversion:
     <b class="num">12,000</b> <img class="ic" src="/icons/royal-crystal.png" alt="RC" /> = $100 ($0.0083/RC).
@@ -97,6 +104,10 @@
   input.f4 { width: 82px; } input.g2g-in { width: 100px; }
   .ic { width: 14px; height: 14px; vertical-align: -2px; margin: 0 1px; }
   .ic.g2g { border-radius: 3px; opacity: .85; }
+  .custom { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .reset-all { background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    padding: 3px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-family: inherit; }
+  .reset-all:hover { border-color: var(--bad); color: var(--bad); }
   .note { color: var(--muted); font-size: 13px; margin: 2px 0 16px; line-height: 1.5; }
   .pack-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
   @media (min-width: 900px) { .pack-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

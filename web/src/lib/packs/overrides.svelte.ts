@@ -34,16 +34,18 @@ class Overrides {
     return slug in this.map[r];
   }
 
-  set(r: Region, slug: string, value: number): void {
-    if (!Number.isFinite(value) || value < 0) return;
-    this.map[r] = { ...this.map[r], [slug]: value };
+  count(r: Region): number {
+    return Object.keys(this.map[r]).length;
+  }
+
+  clearAll(r: Region): void {
+    this.map[r] = {};
     this.persist(r);
   }
 
-  clear(r: Region, slug: string): void {
-    const next = { ...this.map[r] };
-    delete next[slug];
-    this.map[r] = next;
+  set(r: Region, slug: string, value: number): void {
+    if (!Number.isFinite(value) || value < 0) return;
+    this.map[r] = { ...this.map[r], [slug]: value };
     this.persist(r);
   }
 }
