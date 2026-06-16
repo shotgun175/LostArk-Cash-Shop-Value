@@ -13,3 +13,6 @@ docs/
 
 # Local icon drop zone — the app copies live in web/static/icons/
 /icons/
+
+# Local pack-image drop zone — the app copies live in web/static/packs/
+/screenshots/

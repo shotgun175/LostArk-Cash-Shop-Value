@@ -56,8 +56,7 @@
 <section class="detail">
   <a class="back" href="/">← All packs</a>
 
-  <div class="top">
-    <div class="info">
+  <div class="info">
       <h2>{pack.name}</h2>
       <div class="stats">
         <span><b class="num accent">{pack.royalCrystalCost.toLocaleString("en-US")}</b><img class="ic" src="/icons/royal-crystal.png" alt="RC" /></span>
@@ -81,6 +80,7 @@
       {/if}
     </div>
 
+  <div class="body">
     <div class="img">
       {#if imgOk}
         <img src="/packs/{pack.slug}.png" alt={pack.name} onerror={() => (imgOk = false)} />
@@ -88,7 +88,7 @@
         <div class="img-ph">pack image</div>
       {/if}
     </div>
-  </div>
+    <div class="chests">
 
   {#each chests as c (c.chest)}
     <div class="chest">
@@ -137,25 +137,33 @@
       {/if}
     </div>
   {/each}
+    </div>
+  </div>
 </section>
 
 <style>
   .detail {
     --bg: #0e1116; --panel: #161b22; --panel-2: #1f242c; --border: #30363d;
     --text: #e6edf3; --muted: #9aa4b2; --accent: #ffd166; --good: #6ed47a; --bad: #ef6f6c;
-    color: var(--text); font-family: "Sora", system-ui, sans-serif; max-width: 860px;
+    color: var(--text); font-family: "Sora", system-ui, sans-serif; max-width: 980px;
   }
   .back { color: var(--accent); text-decoration: none; font-size: 13px; }
   .back:hover { text-decoration: underline; }
-  .top { display: flex; gap: 20px; align-items: flex-start; margin: 8px 0 16px; }
-  .info { flex: 1; min-width: 0; }
-  .img { flex: none; width: 240px; }
+  .info { margin: 8px 0 14px; }
+  /* Desktop: items on the left, pack image on the right (row-reverse puts the image — first in the
+     DOM — on the right). Mobile: column keeps DOM order, so the image sits above the contents. */
+  .body { display: flex; flex-direction: row-reverse; gap: 20px; align-items: flex-start; }
+  .chests { flex: 1; min-width: 0; }
+  .img { flex: none; width: 300px; }
   .img img { width: 100%; border-radius: 10px; border: 1px solid var(--border); display: block; }
   .img-ph { width: 100%; aspect-ratio: 4 / 3; border: 1px dashed var(--border); border-radius: 10px;
     display: grid; place-items: center; color: var(--muted); font-size: 12px; background: var(--panel); }
   @media (max-width: 640px) {
-    .top { flex-direction: column; }
+    .body { flex-direction: column; }
     .img { width: 100%; max-width: 320px; }
+    /* Column + flex-start would size the items column to the table's min-width and overflow the
+       page; pin it to the viewport so the wide table scrolls inside its own container instead. */
+    .chests { width: 100%; }
   }
   h2 { margin: 8px 0 8px; font-size: 22px; }
   .stats { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 14px; margin-bottom: 6px; }
