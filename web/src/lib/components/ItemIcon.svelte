@@ -25,10 +25,10 @@
     border: 1px solid var(--border, var(--line, #30363d)); object-fit: contain; }
   .fallback { display: inline-grid; place-items: center; font: 600 10px "Sora", sans-serif;
     color: var(--muted); letter-spacing: .3px; }
-  /* The overlay frame replaces the hairline border so framed icons don't show a double edge.
-     Pad the art into the frame's opening (object-fit honours the content box) so it can't spill
-     past the bronze edge; the dark background still fills the whole box behind the frame. */
-  .icon-box.framed .icon { border-color: transparent; padding: 10%; box-sizing: border-box; }
+  /* The overlay frame replaces the hairline border so framed icons don't show a double edge. The
+     corner-bracket frame only touches the corners, so let the art fill the whole box (like the
+     pre-framed icons) instead of insetting it — an inset leaves a dark gap that reads as "smaller". */
+  .icon-box.framed .icon { border-color: transparent; }
   .icon-box.framed::after {
     content: ""; position: absolute; inset: 0; pointer-events: none;
     background: url(/icons/icon-frame.png) center / 100% 100% no-repeat;
