@@ -40,6 +40,7 @@
       {#if c.unresolved}
         <p class="unresolved">Unmapped chest — not valued.</p>
       {:else}
+        <div class="tscroll">
         <table>
           <tbody>
             {#each c.options as o (o.slug)}
@@ -53,6 +54,7 @@
             {/each}
           </tbody>
         </table>
+        </div>
       {/if}
     </div>
   {/each}
@@ -80,7 +82,8 @@
   .chest-name { font-weight: 600; }
   .tag { padding: 1px 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border); font-size: 11px; color: var(--muted); }
   .chest-gold { margin-left: auto; }
-  table { width: 100%; border-collapse: collapse; }
+  .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; min-width: 420px; border-collapse: collapse; }
   td { padding: 6px 8px; border-bottom: 1px solid var(--border); font-size: 13.5px; }
   tr:last-child td { border-bottom: 0; }
   .right { text-align: right; }

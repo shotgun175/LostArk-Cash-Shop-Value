@@ -58,6 +58,12 @@ const NAME_OVERRIDES: Record<string, string> = {
   "lv-3-doomfire-gem": "Lv. 3 Doomfire Gem",
   "mp-efficiency-increase": "MP Efficiency Increase",
   "elysian-attempt-plus-1": "Elysian Attempt +1",
+  "metallurgy-hellfire-11-14": "Metallurgy Hellfire 11 - 14",
+  "metallurgy-hellfire-15-18": "Metallurgy Hellfire 15 - 18",
+  "metallurgy-hellfire-19-20": "Metallurgy Hellfire 19 - 20",
+  "tailoring-hellfire-11-14": "Tailoring Hellfire 11 - 14",
+  "tailoring-hellfire-15-18": "Tailoring Hellfire 15 - 18",
+  "tailoring-hellfire-19-20": "Tailoring Hellfire 19 - 20",
 };
 
 export function displayName(slug: string): string {

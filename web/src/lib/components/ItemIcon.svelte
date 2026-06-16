@@ -16,7 +16,7 @@
 
 <style>
   .icon { width: 26px; height: 26px; border-radius: 6px; background: #0c0e15;
-    border: 1px solid var(--line); object-fit: contain; flex: none; }
+    border: 1px solid var(--border, var(--line, #30363d)); object-fit: contain; flex: none; }
   .fallback { display: inline-grid; place-items: center; font: 600 10px "Sora", sans-serif;
     color: var(--muted); letter-spacing: .3px; }
 </style>

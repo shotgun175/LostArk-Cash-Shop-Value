@@ -69,6 +69,7 @@
     </span>
   </div>
 
+  <div class="tscroll">
   <table>
     <thead>
       <tr><th class="ic-col" aria-label="icon"></th><th>Material</th><th class="right">Total qty</th><th class="right">Market price</th><th class="right">Gold</th></tr>
@@ -110,13 +111,14 @@
       {/each}
     </tbody>
   </table>
+  </div>
 </div>
 
 <style>
   /* Content palette (--panel/--border/--accent/...) is provided by PacksPanel, matching TJW. */
-  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; min-width: 0; }
   .card.retired { opacity: .55; }
-  .head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
   .title { font-weight: 600; color: var(--text); text-decoration: none; }
   .title:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
   .tag { padding: 2px 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border);
@@ -134,7 +136,8 @@
   .lbl { color: var(--muted); }
   .ic { width: 14px; height: 14px; vertical-align: -2px; margin-left: 2px; }
   .ic.g2g { border-radius: 3px; opacity: .9; margin: 0 0 0 1px; }
-  table { width: 100%; border-collapse: collapse; }
+  .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; min-width: 0; }
+  table { width: 100%; min-width: 360px; border-collapse: collapse; }
   th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
   th { color: var(--muted); font-weight: 500; }
   th.right, td.right { text-align: right; }
