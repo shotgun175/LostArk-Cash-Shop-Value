@@ -23,7 +23,13 @@
     if (isPackPage) goto("/");
   }
 
-  onMount(() => { app.load(); });
+  onMount(() => {
+    app.load();
+    // Poll in step with the worker's 60s cron so prices + the "prices as of" time stay current
+    // on a page left open, without a manual reload.
+    const id = setInterval(() => app.refresh(), 60_000);
+    return () => clearInterval(id);
+  });
 </script>
 
 <div class="wrap">

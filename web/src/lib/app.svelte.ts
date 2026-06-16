@@ -16,6 +16,17 @@ class AppState {
     }
   }
 
+  // Silent background poll: swap in fresh prices without flipping to the loading/error state, so a
+  // periodic refresh doesn't blank the page and a transient blip keeps showing the last good data.
+  async refresh(fetchImpl?: typeof fetch) {
+    try {
+      this.payload = await loadPrices(fetchImpl);
+      this.status = "ok";
+    } catch (e) {
+      console.error("prices refresh failed", e);
+    }
+  }
+
   get snapshot() {
     return this.payload?.regions[this.region] ?? null;
   }
