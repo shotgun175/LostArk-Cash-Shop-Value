@@ -262,3 +262,29 @@ describe("packValue conversions & sanity", () => {
     expect(r.goldPerDollar).toBeNull();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Frozen value-at-retirement display path. The golden tests above pin the LIVE math; this pins the
+// useFrozen=true display path the retired cards/drill-down use, so a typo in a frozenTotal is caught.
+// ---------------------------------------------------------------------------
+describe("frozen retirement values (display path)", () => {
+  const map = buildPriceMap(NAE);
+
+  it("every retired pack is value-frozen, and useFrozen surfaces it with a consistent g/RC", () => {
+    const retired = PACKS.filter((p) => p.retired);
+    expect(retired.length).toBeGreaterThan(0);
+    for (const p of retired) {
+      expect(p.frozenTotal).toBeDefined();
+      const r = packValue(p, map, {}, undefined, true);
+      expect(r.total).toBe(p.frozenTotal);
+      expect(r.goldPerRc!).toBeCloseTo(p.frozenTotal! / p.royalCrystalCost, 1);
+    }
+  });
+
+  it("the default (live) path ignores frozenTotal", () => {
+    // relic's live value (golden) is 1,812,089 — distinct from its retirement snapshot (1,769,665).
+    const relic = pack("limited-relic-engraving-growth");
+    expect(packValue(relic, map).total).toBe(1812089);
+    expect(relic.frozenTotal).toBe(1769665);
+  });
+});
