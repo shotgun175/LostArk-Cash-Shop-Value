@@ -78,7 +78,9 @@
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   }
-  .exch { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; padding: 4px 0 10px; font-size: 13px; }
+  .exch { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: center; font-size: 13px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 16px; margin-bottom: 12px; }
   .ex { display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; }
   .lbl { color: var(--muted); }
   .num { font-variant-numeric: tabular-nums; }

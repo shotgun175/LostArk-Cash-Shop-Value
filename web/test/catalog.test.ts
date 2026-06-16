@@ -25,8 +25,8 @@ describe("icons", () => {
     expect(iconUrl("artisans-tailoring-level-1")).toBe("/icons/artisans-level-1.png");
     expect(iconUrl("tailoring-hellfire-19-20")).toBe("/icons/tailoring-hellfire.png");
   });
-  it("maps destiny-shard to its own art, reports none for oreha", () => {
-    expect(iconUrl("destiny-shard")).toBe("/icons/destiny-shard.png");
+  it("maps raw destiny-shard to the L-pouch art, reports none for oreha", () => {
+    expect(iconUrl("destiny-shard")).toBe("/icons/destiny-shard-pouch-l.png");
     expect(hasIcon("oreha-fusion-material")).toBe(false);
   });
 });

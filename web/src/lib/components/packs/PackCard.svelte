@@ -28,11 +28,16 @@
     <span class="sep">·</span>
     <span><b class="num accent">{row.goldPerRc == null ? "—" : row.goldPerRc.toFixed(1)}</b> <span class="lbl">g/RC</span></span>
     <span class="sep">·</span>
-    <span class="num" class:good={(row.vsExchange ?? 0) >= 0} class:bad={(row.vsExchange ?? 0) < 0}>{formatSignedPct(row.vsExchange)} <span class="lbl">vs exchange</span></span>
-    <span class="sep">·</span>
     <span><b class="num">{gpd == null ? "—" : gpd.toLocaleString("en-US")}</b> <span class="lbl">g/$</span></span>
-    <span class="sep">·</span>
-    <span class="num" class:good={(row.vsG2G ?? 0) >= 0} class:bad={(row.vsG2G ?? 0) < 0}><img class="ic g2g" src="/icons/g2g.png" alt="" /> {formatSignedPct(row.vsG2G)} <span class="lbl">vs G2G</span></span>
+  </div>
+
+  <div class="cmp">
+    <span class="pct" class:good={(row.vsExchange ?? 0) >= 0} class:bad={(row.vsExchange ?? 0) < 0}>
+      <b class="num">{formatSignedPct(row.vsExchange)}</b> <span class="lbl">vs exchange</span>
+    </span>
+    <span class="pct" class:good={(row.vsG2G ?? 0) >= 0} class:bad={(row.vsG2G ?? 0) < 0}>
+      <b class="num">{formatSignedPct(row.vsG2G)}</b> <span class="lbl">vs</span><img class="ic g2g" src="/icons/g2g.png" alt="G2G" />
+    </span>
   </div>
 
   <table>
@@ -61,15 +66,19 @@
   .title { font-weight: 600; color: var(--text); }
   .tag { padding: 2px 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border);
     font-size: 12px; color: var(--muted); }
-  .stats { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 7px; font-size: 13px; color: var(--text); margin-bottom: 10px; }
+  .stats { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 7px; font-size: 13px; color: var(--text); margin-bottom: 8px; }
   .sep { color: var(--muted); opacity: .5; }
+  .cmp { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; margin-bottom: 12px; }
+  .pct { display: inline-flex; align-items: center; gap: 5px; font-size: 15px; font-weight: 600; }
+  .pct .num { font-size: 15px; }
+  .pct .lbl { font-size: 12px; font-weight: 400; }
   .num { font-variant-numeric: tabular-nums; }
   .accent { color: var(--accent); }
   .good { color: var(--good); }
   .bad { color: var(--bad); }
   .lbl { color: var(--muted); }
   .ic { width: 14px; height: 14px; vertical-align: -2px; margin-left: 2px; }
-  .ic.g2g { border-radius: 3px; opacity: .85; margin: 0 2px 0 0; }
+  .ic.g2g { border-radius: 3px; opacity: .9; margin: 0 0 0 1px; }
   table { width: 100%; border-collapse: collapse; }
   th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
   th { color: var(--muted); font-weight: 500; }

@@ -20,6 +20,8 @@ const SHARED: Record<string, string> = {
   "tailoring-hellfire-15-18": "tailoring-hellfire.png",
   "tailoring-hellfire-19-20": "tailoring-hellfire.png",
   "epic-astrogem": "epic-astrogem-random.png",
+  // Raw shards aren't sold loose — reuse the Large pouch art for the per-shard line.
+  "destiny-shard": "destiny-shard-pouch-l.png",
 };
 
 // Items whose icon file is named after the slug (`${slug}.png`): the original set + the 1:1 drops.
@@ -33,7 +35,7 @@ const ONE_TO_ONE: readonly string[] = [
   "abidos-fusion-material", "aura-of-resonance-recov-brew-30d",
   "crystallized-destruction-stone", "crystallized-guardian-stone",
   "destiny-crystallized-destruction-stone", "destiny-crystallized-guardian-stone",
-  "destiny-destruction-stone", "destiny-guardian-stone", "destiny-leapstone", "destiny-shard",
+  "destiny-destruction-stone", "destiny-guardian-stone", "destiny-leapstone",
   "destiny-shard-pouch-l", "destiny-shard-pouch-m", "destiny-shard-pouch-s",
   "destruction-stone", "destruction-stone-fragment", "epic-astrogem-selected",
   "glaciers-breath", "great-destiny-leapstone", "great-honor-leapstone",
