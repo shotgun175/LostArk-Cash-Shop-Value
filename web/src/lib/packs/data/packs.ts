@@ -53,6 +53,7 @@ export const PACKS: Pack[] = [
   {
     name: "[Limited] Relic Engraving Growth Support Pack",
     slug: "limited-relic-engraving-growth",
+    frozenTotal: 1769665,
     royalCrystalCost: 5400,
     limited: true,
     retired: true,
@@ -73,6 +74,7 @@ export const PACKS: Pack[] = [
   {
     name: "[Monthly] Paradise Special Pack",
     slug: "monthly-paradise-special-pack",
+    frozenTotal: 1779188,
     royalCrystalCost: 7000,
     limited: true,
     recurrence: "monthly",
@@ -123,6 +125,7 @@ export const PACKS: Pack[] = [
   {
     name: "[Limited] Shadow Growth Support Pack 1",
     slug: "shadow-growth-support-pack-1",
+    frozenTotal: 1413600,
     royalCrystalCost: 5600,
     limited: true,
     retired: true,
@@ -140,6 +143,7 @@ export const PACKS: Pack[] = [
   {
     name: "[Limited] Shadow Growth Support Pack II",
     slug: "shadow-growth-support-pack-2",
+    frozenTotal: 595050,
     royalCrystalCost: 3600,
     limited: true,
     retired: true,
@@ -156,6 +160,7 @@ export const PACKS: Pack[] = [
   {
     name: "[Weekly] T4 Crystallized Stone & Fusion Pack II",
     slug: "weekly-t4-crystallized-stone",
+    frozenTotal: 370300,
     royalCrystalCost: 1400,
     limited: true,
     recurrence: "weekly",
@@ -170,6 +175,7 @@ export const PACKS: Pack[] = [
   {
     name: "[Weekly] T4 Fusion & Leap Pack II",
     slug: "weekly-t4-fusion-leap-pack-2",
+    frozenTotal: 164800,
     royalCrystalCost: 1300,
     limited: true,
     recurrence: "weekly",
@@ -183,6 +189,7 @@ export const PACKS: Pack[] = [
   {
     name: "[Weekly] T4 Shards & Support Materials Pack",
     slug: "weekly-t4-shards-support",
+    frozenTotal: 185320,
     royalCrystalCost: 1400,
     limited: true,
     recurrence: "weekly",

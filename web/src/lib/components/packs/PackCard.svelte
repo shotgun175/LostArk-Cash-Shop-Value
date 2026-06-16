@@ -10,17 +10,14 @@
   import type { DetailOption } from "$lib/packs/packDetail";
   import ItemIcon from "../ItemIcon.svelte";
 
-  let { row, tradeUpInfo = {}, alts = {}, compact = false, retiredOn }: {
+  let { row, tradeUpInfo = {}, alts = {}, compact = false }: {
     row: PackRow;
     tradeUpInfo?: Record<string, { ratio: number; deltaPct: number }>;
     alts?: Record<string, DetailOption[]>;
     compact?: boolean; // retired cards: stats + drill-down link only, no material table
-    retiredOn?: string;
   } = $props();
 
   let expanded = $state<string | null>(null); // material slug whose selection alts are shown
-  // Small recurrence tag from the name prefix ("limited"/"monthly"/"weekly"), mirroring TJW.
-  const prefixTag = $derived(row.name.match(/^\[(\w+)\]/)?.[1]?.toLowerCase() ?? "");
   const gpd = $derived(row.goldPerDollar == null ? null : Math.round(row.goldPerDollar));
   const sym = $derived(currencySymbol(app.region)); // $ for NA, € for EU — RC priced per region
   function perUnit(gold: number, qty: number): string {
@@ -54,8 +51,9 @@
 <div class="card" class:retired={row.retired}>
   <div class="head">
     <a class="title" href="/pack/{row.slug}">{row.name}</a>
-    {#if row.retired}<span class="tag retired-tag">retired{#if retiredOn} {retiredOn}{/if}</span>{/if}
-    {#if prefixTag}<span class="tag">{prefixTag}</span>{/if}
+    {#if row.retired}<span class="tag retired-tag">retired{#if row.retiredOn} {row.retiredOn}{/if}</span>{/if}
+    {#if row.recurrence}<span class="tag">{row.recurrence}</span>{/if}
+    {#if row.limited}<span class="tag">limited</span>{/if}
   </div>
 
   <div class="stats">
@@ -129,7 +127,12 @@
 <style>
   /* Content palette (--panel/--border/--accent/...) is provided by PacksPanel, matching TJW. */
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; min-width: 0; }
-  .card.retired { opacity: .72; }
+  .card.retired { opacity: .72;
+    transition: opacity .15s ease, border-color .15s ease, box-shadow .2s ease, transform .15s ease; }
+  .card.retired:hover { opacity: 1; border-color: var(--accent);
+    box-shadow: 0 0 0 1px rgba(255, 209, 102, .35), 0 10px 26px rgba(0, 0, 0, .45);
+    transform: translateY(-2px); }
+  .card.retired:hover .title { color: var(--accent); }
   .retired-tag { text-transform: uppercase; letter-spacing: .3px; font-size: 10px; font-weight: 600;
     font-variant-numeric: tabular-nums; }
   .ref-note { color: var(--muted); font-size: 12.5px; margin: 2px 0 0; }

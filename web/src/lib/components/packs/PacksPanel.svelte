@@ -78,9 +78,6 @@
   // active grid, rather than being greyed out inline. buildPackRows already sorts active before retired.
   const activeRows = $derived(rows.filter((r) => !r.retired));
   const retiredRows = $derived(rows.filter((r) => r.retired));
-  const retiredOnBySlug: Record<string, string | undefined> = Object.fromEntries(
-    PACKS.filter((p) => p.retired).map((p) => [p.slug, p.retiredOn]),
-  );
 
   // Per pack: chosen-slug -> the selection chest's full option list, for the inline "Show alts".
   const altsByPack = $derived.by(() => {
@@ -159,7 +156,7 @@
         <span class="retired-sub">— kept here for value reference</span>
       </div>
       <div class="pack-grid">
-        {#each retiredRows as row (row.slug)}<PackCard {row} compact retiredOn={retiredOnBySlug[row.slug]} {tradeUpInfo} alts={altsByPack[row.slug] ?? {}} />{/each}
+        {#each retiredRows as row (row.slug)}<PackCard {row} compact {tradeUpInfo} alts={altsByPack[row.slug] ?? {}} />{/each}
       </div>
     {/if}
   {/if}

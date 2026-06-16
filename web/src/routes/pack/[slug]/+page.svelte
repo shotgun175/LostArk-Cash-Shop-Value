@@ -18,8 +18,12 @@
   // Mirror the card path: live feed + overrides + trade-ups, then buildPriceMap layers the
   // hell-key / ebony-cube / relic-recipe EVs so the drill-down total matches the all-packs card.
   const prices = $derived(buildPriceMap(effectivePrices()));
-  const value = $derived(packValue(pack, prices, selection.map, cashPerRc(app.region)));
-  const chests = $derived(packDetail(pack, prices, selection.map));
+  // Retired packs are a read-only reference: no price edits / picks, and the header shows the frozen
+  // value-at-retirement (the breakdown below stays at current prices for reference).
+  const readOnly = $derived(pack.retired);
+  const picksForView = $derived(pack.retired ? {} : selection.map);
+  const value = $derived(packValue(pack, prices, picksForView, cashPerRc(app.region), pack.retired));
+  const chests = $derived(packDetail(pack, prices, picksForView));
   const gpd = $derived(value.goldPerDollar == null ? null : Math.round(value.goldPerDollar));
   const sym = $derived(currencySymbol(app.region)); // $ for NA, € for EU — RC priced per region
 
@@ -67,16 +71,23 @@
         <span class="sep">·</span>
         <span><b class="num">{gpd == null ? "—" : gpd.toLocaleString("en-US")}</b> <span class="lbl">g/{sym}</span></span>
       </div>
-      <p class="hint">
-        Click any market price to enter your own AH value, or click a selection-chest option to value
-        the pack with your pick — changes apply site-wide until reset. The highest-value option (✓)
-        counts by default.
-      </p>
-      {#if customCount > 0 || tuCount > 0 || pickCount > 0}
-        <div class="custom">
-          <span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && (tuCount > 0 || pickCount > 0)} · {/if}{#if pickCount > 0}<b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"}{/if}{#if pickCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span>
-          <button class="reset-all" onclick={() => { overrides.clearAll(app.region); tradeUp.clear(); selection.clearAll(); }}>reset all</button>
-        </div>
+      {#if readOnly}
+        <p class="hint">
+          No longer in the shop — read-only. The header total is this pack's value at retirement{#if pack.retiredOn} ({pack.retiredOn}){/if};
+          the mat prices below are current, shown for reference.
+        </p>
+      {:else}
+        <p class="hint">
+          Click any market price to enter your own AH value, or click a selection-chest option to value
+          the pack with your pick — changes apply site-wide until reset. The highest-value option (✓)
+          counts by default.
+        </p>
+        {#if customCount > 0 || tuCount > 0 || pickCount > 0}
+          <div class="custom">
+            <span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && (tuCount > 0 || pickCount > 0)} · {/if}{#if pickCount > 0}<b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"}{/if}{#if pickCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span>
+            <button class="reset-all" onclick={() => { overrides.clearAll(app.region); tradeUp.clear(); selection.clearAll(); }}>reset all</button>
+          </div>
+        {/if}
       {/if}
     </div>
 
@@ -95,7 +106,7 @@
       <div class="chest-head">
         <span class="chest-name">{c.qty}× {c.chest}</span>
         <span class="tag">{tagFor(c.type)}</span>
-        {#if c.isSelection && selection.has(c.chest)}
+        {#if c.isSelection && !readOnly && selection.has(c.chest)}
           <button class="chest-reset" title="Restore the highest-value pick" onclick={() => selection.clearOne(c.chest)}>reset pick</button>
         {/if}
         <span class="chest-gold num accent">{formatGold(c.gold)}<img class="ic" src="/icons/gold.png" alt="g" /></span>
@@ -110,15 +121,17 @@
               <tr class:dim={c.isSelection && !o.chosen}>
                 <td class="ic-col"><ItemIcon slug={o.slug} /></td>
                 <td>
-                  {#if c.isSelection}
+                  {#if c.isSelection && !readOnly}
                     <button class="pick-name" class:chosen={o.chosen} title="Value this pack with this option" onclick={() => selection.set(c.chest, o.slug)}>{displayName(o.slug)}</button>{#if o.isBound}<span class="bound"> (Bound)</span>{/if}{#if o.chosen}<span class="pick">✓ picked</span>{/if}
                   {:else}
-                    {displayName(o.slug)}{#if o.isBound}<span class="bound"> (Bound)</span>{/if}
+                    {displayName(o.slug)}{#if o.isBound}<span class="bound"> (Bound)</span>{/if}{#if c.isSelection && o.chosen}<span class="pick">✓ picked</span>{/if}
                   {/if}
                 </td>
                 <td class="right num">{o.totalQty.toLocaleString("en-US")}</td>
                 <td class="right price">
-                  {#if editing === o.slug}
+                  {#if readOnly}
+                    <span class="num">{o.perUnit > 0 ? formatGold(o.perUnit) : "—"}</span>
+                  {:else if editing === o.slug}
                     <input class="edit num" type="number" min="0" step="0.01" bind:value={draft} use:focusSelect
                       onblur={() => commit(o.slug)}
                       onkeydown={(e) => { if (e.key === "Enter") commit(o.slug); else if (e.key === "Escape") editing = null; }}

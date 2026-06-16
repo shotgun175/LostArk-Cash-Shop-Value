@@ -9,6 +9,7 @@ export interface Pack {
   recurrence?: "monthly" | "weekly";
   retired: boolean;
   retiredOn?: string; // ISO date (YYYY-MM-DD) the pack left the shop, shown on the retired card
+  frozenTotal?: number; // gold value AT retirement — display-frozen so retired stats don't drift live
   contents: { chest: string; qty: number }[];
 }
 

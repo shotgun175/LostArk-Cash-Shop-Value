@@ -36,6 +36,9 @@ export interface PackResult {
   name: string;
   royalCrystalCost: number;
   retired: boolean;
+  retiredOn?: string;
+  limited: boolean;
+  recurrence?: "monthly" | "weekly";
   total: number;
   goldPerRc: number | null;
   goldPerDollar: number | null;
@@ -93,8 +96,9 @@ export function packValue(
   prices: Record<string, number>,
   picks: Record<string, string> = {},
   cashPerRc: number = USD_PER_RC,
+  useFrozen = false, // display layer only: retired packs show their frozen value-at-retirement total
 ): PackResult {
-  let total = 0;
+  let liveTotal = 0;
   // slug -> aggregated line. Insertion order preserved for stable display.
   const agg = new Map<string, PackLine>();
 
@@ -122,7 +126,7 @@ export function packValue(
       continue;
     }
     const result = resolveChest(chest, prices, picks[content.chest]);
-    total += result.gold * content.qty;
+    liveTotal += result.gold * content.qty;
     for (const line of result.lines) {
       add(line.slug, line.qty * content.qty, line.gold * content.qty, {
         isBound: line.isBound,
@@ -130,6 +134,9 @@ export function packValue(
     }
   }
 
+  // Retired packs display their frozen value-at-retirement (live math still runs for the line
+  // breakdown, and stays untouched when useFrozen is false — e.g. the golden-parity tests).
+  const total = useFrozen && pack.frozenTotal != null ? pack.frozenTotal : liveTotal;
   const goldPerRc = pack.royalCrystalCost ? total / pack.royalCrystalCost : null;
   const goldPerDollar = pack.royalCrystalCost
     ? total / (pack.royalCrystalCost * cashPerRc)
@@ -140,6 +147,9 @@ export function packValue(
     name: pack.name,
     royalCrystalCost: pack.royalCrystalCost,
     retired: pack.retired,
+    retiredOn: pack.retiredOn,
+    limited: pack.limited,
+    recurrence: pack.recurrence,
     total,
     goldPerRc,
     goldPerDollar,

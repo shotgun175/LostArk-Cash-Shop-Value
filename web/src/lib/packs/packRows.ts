@@ -29,7 +29,7 @@ export function buildPackRows(
   const g2gGpd = g2gGoldPerDollar(opts.g2gInput);
 
   const rows: PackRow[] = PACKS.map((p) => {
-    const v = packValue(p, prices, opts.picks, opts.cashPerRc);
+    const v = packValue(p, prices, opts.picks, opts.cashPerRc, true);
     return {
       ...v,
       vsExchange: v.goldPerRc == null ? null : vsExchangePct(v.goldPerRc, baseline),
