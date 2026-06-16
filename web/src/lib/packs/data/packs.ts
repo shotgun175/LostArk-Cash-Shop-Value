@@ -56,6 +56,7 @@ export const PACKS: Pack[] = [
     royalCrystalCost: 5400,
     limited: true,
     retired: true,
+    retiredOn: "2026-06-10",
     contents: [
       { chest: "Superior Abidos Fusion Material Chest", qty: 50 },
       { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 30 },
@@ -76,6 +77,7 @@ export const PACKS: Pack[] = [
     limited: true,
     recurrence: "monthly",
     retired: true,
+    retiredOn: "2026-06-10",
     contents: [
       { chest: "Elysian Attempt +1 Exchange Ticket (Season 3)", qty: 3 },
       { chest: "Legendary Netherworld Key Exchange Ticket (Season 3)", qty: 1 },
@@ -124,6 +126,7 @@ export const PACKS: Pack[] = [
     royalCrystalCost: 5600,
     limited: true,
     retired: true,
+    retiredOn: "2026-06-10",
     contents: [
       { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 20 },
       { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 40 },
@@ -140,6 +143,7 @@ export const PACKS: Pack[] = [
     royalCrystalCost: 3600,
     limited: true,
     retired: true,
+    retiredOn: "2026-06-10",
     contents: [
       { chest: "Destiny Destruction Stone Bundle", qty: 30 },
       { chest: "Destiny Guardian Stone Bundle", qty: 150 },
@@ -156,6 +160,7 @@ export const PACKS: Pack[] = [
     limited: true,
     recurrence: "weekly",
     retired: true,
+    retiredOn: "2026-06-10",
     contents: [
       { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 10 },
       { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 30 },
@@ -169,6 +174,7 @@ export const PACKS: Pack[] = [
     limited: true,
     recurrence: "weekly",
     retired: true,
+    retiredOn: "2026-06-10",
     contents: [
       { chest: "Superior Abidos Fusion Material Chest", qty: 40 },
       { chest: "Great Destiny Leapstone Chest", qty: 30 },
@@ -181,6 +187,7 @@ export const PACKS: Pack[] = [
     limited: true,
     recurrence: "weekly",
     retired: true,
+    retiredOn: "2026-06-10",
     contents: [
       { chest: "T4 Support Materials Selection Chest", qty: 5 },
       { chest: "Destiny Shard Pouch (L)", qty: 60 },

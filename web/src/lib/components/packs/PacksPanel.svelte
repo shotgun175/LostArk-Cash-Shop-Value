@@ -74,6 +74,13 @@
   });
 
   const rows = $derived(buildPackRows(effectivePrices(), { f4Input: f4.value, g2gInput: g2gValue ?? 0, picks: selection.map, cashPerRc: cashPerRc(app.region) }));
+  // Retired packs get their own "no longer in the shop" section (compact reference cards) below the
+  // active grid, rather than being greyed out inline. buildPackRows already sorts active before retired.
+  const activeRows = $derived(rows.filter((r) => !r.retired));
+  const retiredRows = $derived(rows.filter((r) => r.retired));
+  const retiredOnBySlug: Record<string, string | undefined> = Object.fromEntries(
+    PACKS.filter((p) => p.retired).map((p) => [p.slug, p.retiredOn]),
+  );
 
   // Per pack: chosen-slug -> the selection chest's full option list, for the inline "Show alts".
   const altsByPack = $derived.by(() => {
@@ -144,8 +151,17 @@
     <p class="state">No prices yet — the feed may be refreshing.</p>
   {:else}
     <div class="pack-grid">
-      {#each rows as row (row.slug)}<PackCard {row} {tradeUpInfo} alts={altsByPack[row.slug] ?? {}} />{/each}
+      {#each activeRows as row (row.slug)}<PackCard {row} {tradeUpInfo} alts={altsByPack[row.slug] ?? {}} />{/each}
     </div>
+    {#if retiredRows.length}
+      <div class="retired-head">
+        <h3>No longer in the shop</h3>
+        <span class="retired-sub">— kept here for value reference</span>
+      </div>
+      <div class="pack-grid">
+        {#each retiredRows as row (row.slug)}<PackCard {row} compact retiredOn={retiredOnBySlug[row.slug]} {tradeUpInfo} alts={altsByPack[row.slug] ?? {}} />{/each}
+      </div>
+    {/if}
   {/if}
 </div>
 
@@ -185,6 +201,11 @@
   .reset-all:hover { background: var(--bad); border-color: var(--bad); color: var(--bg); }
   .pack-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
   @media (min-width: 900px) { .pack-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .retired-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+    margin: 28px 0 12px; padding-top: 18px; border-top: 1px solid var(--border); }
+  .retired-head h3 { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 1.2px;
+    text-transform: uppercase; color: var(--muted); }
+  .retired-sub { color: var(--muted); font-size: 12.5px; opacity: .8; }
   .state { color: var(--muted); text-align: center; padding: 40px 0; }
   .state.bad { color: var(--bad); }
 </style>

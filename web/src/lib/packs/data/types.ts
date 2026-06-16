@@ -8,6 +8,7 @@ export interface Pack {
   limited: boolean;
   recurrence?: "monthly" | "weekly";
   retired: boolean;
+  retiredOn?: string; // ISO date (YYYY-MM-DD) the pack left the shop, shown on the retired card
   contents: { chest: string; qty: number }[];
 }
 

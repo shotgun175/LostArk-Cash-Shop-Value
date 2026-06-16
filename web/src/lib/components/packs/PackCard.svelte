@@ -10,17 +10,17 @@
   import type { DetailOption } from "$lib/packs/packDetail";
   import ItemIcon from "../ItemIcon.svelte";
 
-  let { row, tradeUpInfo = {}, alts = {} }: {
+  let { row, tradeUpInfo = {}, alts = {}, compact = false, retiredOn }: {
     row: PackRow;
     tradeUpInfo?: Record<string, { ratio: number; deltaPct: number }>;
     alts?: Record<string, DetailOption[]>;
+    compact?: boolean; // retired cards: stats + drill-down link only, no material table
+    retiredOn?: string;
   } = $props();
 
   let expanded = $state<string | null>(null); // material slug whose selection alts are shown
-  // TJW shows a small recurrence tag ("limited"/"monthly"/"weekly"); we add "retired".
-  const tag = $derived(
-    row.retired ? "retired" : (row.name.match(/^\[(\w+)\]/)?.[1]?.toLowerCase() ?? ""),
-  );
+  // Small recurrence tag from the name prefix ("limited"/"monthly"/"weekly"), mirroring TJW.
+  const prefixTag = $derived(row.name.match(/^\[(\w+)\]/)?.[1]?.toLowerCase() ?? "");
   const gpd = $derived(row.goldPerDollar == null ? null : Math.round(row.goldPerDollar));
   const sym = $derived(currencySymbol(app.region)); // $ for NA, € for EU — RC priced per region
   function perUnit(gold: number, qty: number): string {
@@ -54,7 +54,8 @@
 <div class="card" class:retired={row.retired}>
   <div class="head">
     <a class="title" href="/pack/{row.slug}">{row.name}</a>
-    {#if tag}<span class="tag">{tag}</span>{/if}
+    {#if row.retired}<span class="tag retired-tag">retired{#if retiredOn} {retiredOn}{/if}</span>{/if}
+    {#if prefixTag}<span class="tag">{prefixTag}</span>{/if}
   </div>
 
   <div class="stats">
@@ -67,6 +68,9 @@
     <span><b class="num">{gpd == null ? "—" : gpd.toLocaleString("en-US")}</b> <span class="lbl">g/{sym}</span></span>
   </div>
 
+  {#if compact}
+    <p class="ref-note">Open the <a class="ref-link" href="/pack/{row.slug}">drill-down</a> for the full mat breakdown.</p>
+  {:else}
   <div class="cmp">
     <span class="pct" class:good={row.vsExchange != null && row.vsExchange >= 0} class:bad={row.vsExchange != null && row.vsExchange < 0}>
       <b class="num">{formatSignedPct(row.vsExchange)}</b> <span class="lbl">vs exchange</span>
@@ -119,12 +123,18 @@
     </tbody>
   </table>
   </div>
+  {/if}
 </div>
 
 <style>
   /* Content palette (--panel/--border/--accent/...) is provided by PacksPanel, matching TJW. */
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; min-width: 0; }
-  .card.retired { opacity: .55; }
+  .card.retired { opacity: .72; }
+  .retired-tag { text-transform: uppercase; letter-spacing: .3px; font-size: 10px; font-weight: 600;
+    font-variant-numeric: tabular-nums; }
+  .ref-note { color: var(--muted); font-size: 12.5px; margin: 2px 0 0; }
+  .ref-link { color: var(--accent); text-decoration: none; }
+  .ref-link:hover { text-decoration: underline; text-underline-offset: 3px; }
   .head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
   .title { font-weight: 600; color: var(--text); text-decoration: none; }
   .title:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
