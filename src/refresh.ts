@@ -6,7 +6,15 @@ import { fetchG2gRates } from "./g2g";
 import type { G2gRate } from "./normalize";
 import { BUNDLES } from "./bundles";
 
-export async function refresh(kv: KVNamespace, fetchImpl: FetchLike = fetch): Promise<PricePayload> {
+// g2g moves slowly and would otherwise rewrite KV every 60s cron (blowing the daily write cap), so we
+// re-poll it on a slow timer (default hourly) rather than every run. Injectable for tests.
+export const G2G_INTERVAL_MS = 60 * 60 * 1000;
+
+export async function refresh(
+  kv: KVNamespace,
+  fetchImpl: FetchLike = fetch,
+  g2gIntervalMs: number = G2G_INTERVAL_MS,
+): Promise<PricePayload> {
   const prev = await readPayload(kv);
   const regions: Partial<Record<Region, RegionSnapshot>> = { ...(prev?.regions ?? {}) };
 
@@ -25,19 +33,26 @@ export async function refresh(kv: KVNamespace, fetchImpl: FetchLike = fetch): Pr
     }
   }
 
-  // Poll the live real-money rates too; keep each currency's last good value if its fetch fails.
-  const fetched = await fetchG2gRates(fetchImpl);
-  const usd = fetched?.usdPer1kGold ?? prev?.g2g?.usdPer1kGold;
-  const eur = fetched?.eurPer1kGold ?? prev?.g2g?.eurPer1kGold;
-  let g2g: G2gRate | undefined;
-  if (usd != null || eur != null) {
-    g2g = {};
-    if (usd != null) g2g.usdPer1kGold = usd;
-    if (eur != null) g2g.eurPer1kGold = eur;
+  // Re-poll the live real-money rates only when the interval has elapsed; otherwise carry the last
+  // values forward. Each currency keeps its own last-good value if that leg of the fetch fails.
+  const prevG2g = prev?.g2g;
+  const lastFetched = prevG2g?.fetchedAt ? Date.parse(prevG2g.fetchedAt) : 0;
+  const due = !Number.isFinite(lastFetched) || Date.now() - lastFetched >= g2gIntervalMs;
+  let g2g: G2gRate | undefined = prevG2g;
+  if (due) {
+    const fetched = await fetchG2gRates(fetchImpl);
+    const usd = fetched?.usdPer1kGold ?? prevG2g?.usdPer1kGold;
+    const eur = fetched?.eurPer1kGold ?? prevG2g?.eurPer1kGold;
+    if (fetched && (usd != null || eur != null)) {
+      g2g = { fetchedAt: new Date().toISOString() };
+      if (usd != null) g2g.usdPer1kGold = usd;
+      if (eur != null) g2g.eurPer1kGold = eur;
+    }
+    // fetch failed (null) -> keep prevG2g (and its old fetchedAt), so the next cron retries.
   }
   const payload = buildPayload(regions, BUNDLES, new Date().toISOString(), g2g);
 
-  // Only write when a region or the g2g rate actually changed — keeps KV writes far under the cap.
+  // Only write when a region or the g2g block actually changed — keeps KV writes far under the cap.
   const changed =
     !prev ||
     JSON.stringify(prev.regions) !== JSON.stringify(regions) ||

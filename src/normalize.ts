@@ -7,12 +7,14 @@ export interface RegionSnapshot {
   prices: Record<string, number>;
 }
 
-// Live real-money reference rate (marketplace-displayed price per 1,000 gold), polled server-side.
-// USD is the NA (US-East) figure, EUR the EU-Central figure; each is present only when its poll
-// succeeded. Value-only so the write-on-change guard in refresh() doesn't churn KV when unchanged.
+// Live real-money reference rate (marketplace-displayed price per 1,000 gold), polled server-side on
+// a slow timer (not every cron). USD is the NA (US-East) figure, EUR the EU-Central figure; each is
+// present only when its poll succeeded. fetchedAt stamps the last successful poll — it both rate-limits
+// re-polling and serves as a freshness signal.
 export interface G2gRate {
   usdPer1kGold?: number;
   eurPer1kGold?: number;
+  fetchedAt?: string; // ISO-8601 of the last successful poll
 }
 
 export interface PricePayload {

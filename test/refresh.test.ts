@@ -113,6 +113,23 @@ describe("refresh", () => {
     putSpy.mockRestore();
   });
 
+  it("does not re-poll g2g within the refresh interval", async () => {
+    let g2gFetches = 0;
+    const feed: FetchLike = async (url, init) => {
+      if (String(url).includes("sls.g2g.com")) {
+        g2gFetches++;
+        return g2gResponse();
+      }
+      const body = JSON.parse(String(init?.body)) as { region_slug: string };
+      const rows = body.region_slug === "nae" ? [{ item_slug: "grudge", price: 100, timestamp: T_NEW }] : [];
+      return new Response(JSON.stringify(rows), { status: 200, headers: { "content-type": "application/json" } });
+    };
+    await refresh(env.PRICES, feed, 0); // force a poll -> stamps fetchedAt = now (independent of prior KV)
+    const primed = g2gFetches;
+    await refresh(env.PRICES, feed); // default 1h interval, fetchedAt just set -> must NOT poll again
+    expect(g2gFetches).toBe(primed);
+  });
+
   it("includes the live g2g USD + EUR rates in the payload", async () => {
     const payload = await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }], euc: [] }));
     expect(payload.g2g?.usdPer1kGold).toBe(G2G_USD);
@@ -128,7 +145,7 @@ describe("refresh", () => {
       const rows = body.region_slug === "nae" ? [{ item_slug: "grudge", price: 200, timestamp: T_NEW + 10 }] : [];
       return new Response(JSON.stringify(rows), { status: 200, headers: { "content-type": "application/json" } });
     };
-    const payload = await refresh(env.PRICES, noG2g);
+    const payload = await refresh(env.PRICES, noG2g, 0); // interval 0 -> force a (failing) re-poll
     expect(payload.g2g?.usdPer1kGold).toBe(G2G_USD); // carried forward from the prior good fetch
     expect(payload.g2g?.eurPer1kGold).toBe(G2G_EUR);
   });

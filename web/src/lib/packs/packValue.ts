@@ -6,7 +6,9 @@
 import type { Chest, Pack } from "./data/types";
 import { RESOLVER } from "./data/resolver";
 
-// 1 Royal Crystal ~= $100 / 12000 RC. Used to derive gold-per-dollar from gold-per-RC.
+// 1 Royal Crystal ~= $100 / 12000 RC. Used to derive gold-per-dollar from gold-per-RC. Lost Ark
+// prices RC packs with the same numeral in EUR (€100 == $100 / 12000 RC), so this doubles as the
+// per-EUR basis — letting the EU "% vs G2G" column compare cleanly against the EUR g2g rate.
 export const USD_PER_RC = 100 / 12000;
 
 export interface ResolvedLine {
