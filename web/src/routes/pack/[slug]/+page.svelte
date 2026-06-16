@@ -11,6 +11,7 @@
   import { formatGold } from "$lib/format";
   import { displayName } from "$lib/catalog";
   import ItemIcon from "$lib/components/ItemIcon.svelte";
+  import GoldRate from "$lib/components/packs/GoldRate.svelte";
 
   let { data } = $props();
   const pack = $derived(data.pack);
@@ -24,7 +25,6 @@
   const picksForView = $derived(pack.retired ? {} : selection.map);
   const value = $derived(packValue(pack, prices, picksForView, cashPerRc(app.region), pack.retired));
   const chests = $derived(packDetail(pack, prices, picksForView));
-  const gpd = $derived(value.goldPerDollar == null ? null : Math.round(value.goldPerDollar));
   const sym = $derived(currencySymbol(app.region)); // $ for NA, € for EU — RC priced per region
   // Summary-box real-money row: "per US dollar (12,000 RC = $100)" / "per Euro (12,000 RC = €94.99)".
   const cashName = $derived(app.region === "euc" ? "Euro" : "US dollar");
@@ -109,12 +109,12 @@
           <span class="sval"><b class="num accent">{formatGold(value.total)}</b><img class="ic" src="/icons/gold.png" alt="g" /></span>
         </div>
         <div class="srow">
-          <span class="slabel">per Royal Crystal</span>
-          <span class="sval"><b class="num accent">{value.goldPerRc == null ? "—" : value.goldPerRc.toFixed(1)}</b> <span class="lbl">g/RC</span></span>
+          <span class="slabel">per Royal Crystal <img class="ic" src="/icons/royal-crystal.png" alt="RC" /></span>
+          <span class="sval"><GoldRate value={value.goldPerRc} unit="rc" /></span>
         </div>
         <div class="srow">
           <span class="slabel">per {cashName} <span class="rate">({cashRate})</span></span>
-          <span class="sval"><b class="num">{gpd == null ? "—" : gpd.toLocaleString("en-US")}</b> <span class="lbl">g/{sym}</span></span>
+          <span class="sval"><GoldRate value={value.goldPerDollar} unit="cash" {sym} /></span>
         </div>
       </div>
 
@@ -234,7 +234,7 @@
     border-radius: 999px; padding: 2px 8px; }
   .num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; }
   .accent { color: var(--accent); }
-  .lbl, .muted { color: var(--muted); }
+  .muted { color: var(--muted); }
   .ic { width: 14px; height: 14px; vertical-align: -2px; margin-left: 2px; }
   .hint { color: var(--muted); font-size: 12.5px; line-height: 1.5; margin: 0 0 10px; }
   .custom { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600;

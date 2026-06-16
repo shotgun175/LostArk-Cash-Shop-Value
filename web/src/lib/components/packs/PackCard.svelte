@@ -9,6 +9,7 @@
   import { tradeUp } from "$lib/packs/tradeup.svelte";
   import type { DetailOption } from "$lib/packs/packDetail";
   import ItemIcon from "../ItemIcon.svelte";
+  import GoldRate from "./GoldRate.svelte";
 
   let { row, tradeUpInfo = {}, alts = {}, compact = false }: {
     row: PackRow;
@@ -18,7 +19,6 @@
   } = $props();
 
   let expanded = $state<string | null>(null); // material slug whose selection alts are shown
-  const gpd = $derived(row.goldPerDollar == null ? null : Math.round(row.goldPerDollar));
   const sym = $derived(currencySymbol(app.region)); // $ for NA, € for EU — RC priced per region
   function perUnit(gold: number, qty: number): string {
     return gold > 0 && qty > 0 ? formatGold(gold / qty) : "—";
@@ -61,9 +61,9 @@
     <span class="sep">·</span>
     <span><b class="num">{formatGold(row.total)}</b><img class="ic" src="/icons/gold.png" alt="g" /></span>
     <span class="sep">·</span>
-    <span><b class="num accent">{row.goldPerRc == null ? "—" : row.goldPerRc.toFixed(1)}</b> <span class="lbl">g/RC</span></span>
+    <span><GoldRate value={row.goldPerRc} unit="rc" /></span>
     <span class="sep">·</span>
-    <span><b class="num">{gpd == null ? "—" : gpd.toLocaleString("en-US")}</b> <span class="lbl">g/{sym}</span></span>
+    <span><GoldRate value={row.goldPerDollar} unit="cash" {sym} /></span>
   </div>
 
   {#if compact}
