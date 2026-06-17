@@ -11,6 +11,7 @@
   import HellKeyMath from "$lib/components/packs/HellKeyMath.svelte";
   import MarisShop from "$lib/components/packs/MarisShop.svelte";
   import ArkPass from "$lib/components/packs/ArkPass.svelte";
+  import HubBadge from "$lib/components/HubBadge.svelte";
 
   let { children } = $props();
   // Tab order mirrors TJW (Packs default); our own Prices tab is kept at the far right.
@@ -59,6 +60,10 @@
   {:else if active === "Ark Pass"}
     <ArkPass />
   {/if}
+
+  <footer class="hub-footer">
+    <HubBadge />
+  </footer>
 </div>
 
 <style>
@@ -72,4 +77,5 @@
   nav button:hover{color:var(--txt); background:var(--panel)}
   nav button.active{color:var(--bg); background:linear-gradient(180deg,var(--gold),var(--gold-2)); font-weight:600}
   @media (max-width:640px){ .region-tr{position:static; display:flex; justify-content:center; margin-bottom:14px} }
+  .hub-footer{ display:flex; justify-content:center; margin-top:40px; padding-top:24px; border-top:1px solid var(--line); }
 </style>
