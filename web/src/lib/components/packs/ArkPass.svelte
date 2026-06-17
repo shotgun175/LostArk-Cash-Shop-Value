@@ -9,6 +9,7 @@
   import { formatGold } from "$lib/format";
   import { displayName } from "$lib/catalog";
   import ItemIcon from "../ItemIcon.svelte";
+  import { base } from "$app/paths";
 
   const prices = $derived(effectivePrices());
 
@@ -40,7 +41,7 @@
   <div class="summary">
     <div class="card">
       <div class="tier">Premium</div>
-      <div class="cost"><b class="num accent">{ARK_PASS_PREMIUM_RC.toLocaleString("en-US")}</b><img class="ic" src="/icons/royal-crystal.png" alt="RC" /></div>
+      <div class="cost"><b class="num accent">{ARK_PASS_PREMIUM_RC.toLocaleString("en-US")}</b><img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" /></div>
       <dl>
         <div><dt>Total value</dt><dd class="gold">{formatGold(premiumTotal)}</dd></div>
         <div><dt>Gold / RC</dt><dd class="gold">{premiumGpRc.toFixed(1)}</dd></div>
@@ -49,7 +50,7 @@
     </div>
     <div class="card">
       <div class="tier">Super Premium</div>
-      <div class="cost"><b class="num accent">{ARK_PASS_TOTAL_RC.toLocaleString("en-US")}</b><img class="ic" src="/icons/royal-crystal.png" alt="RC" /> <span class="lbl">total</span></div>
+      <div class="cost"><b class="num accent">{ARK_PASS_TOTAL_RC.toLocaleString("en-US")}</b><img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" /> <span class="lbl">total</span></div>
       <dl>
         <div><dt>Milestone rewards</dt><dd class="muted">TBD (skins/extras)</dd></div>
         <div><dt>Combined gold / RC</dt><dd class="gold">{combinedGpRc.toFixed(1)}</dd></div>

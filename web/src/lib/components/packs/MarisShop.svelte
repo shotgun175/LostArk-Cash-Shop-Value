@@ -4,6 +4,7 @@
   import { MARIS_WARES, BC_PER_BUNDLE } from "$lib/packs/data/marisShop";
   import { formatGold, formatSignedPct } from "$lib/format";
   import ItemIcon from "../ItemIcon.svelte";
+  import { base } from "$app/paths";
 
   const prices = $derived(effectivePrices());
   const goldPerBc = $derived(f4.perBc);
@@ -31,7 +32,7 @@
   <div class="exch">
     <span class="lbl">Currency exchange (F4):</span>
     <input class="f4 num" type="number" min="0" value={f4.value} oninput={(e) => (f4.value = e.currentTarget.valueAsNumber)} aria-label="F4 exchange gold" />
-    <img class="ic" src="/icons/gold.png" alt="gold" />
+    <img class="ic" src="{base}/icons/gold.png" alt="gold" />
     <span class="lbl">→ <b class="num accent">{formatGold(Math.round(goldPerBc))}</b> gold / BC</span>
   </div>
 

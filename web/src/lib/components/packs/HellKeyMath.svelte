@@ -5,6 +5,7 @@
   import { formatGold } from "$lib/format";
   import { displayName } from "$lib/catalog";
   import ItemIcon from "../ItemIcon.svelte";
+  import { base } from "$app/paths";
 
   const prices = $derived(effectivePrices());
   const keys = $derived(
@@ -22,7 +23,7 @@
     Each key opens one chest per floor and you keep the best of 3 (with a small best-of-4 blend).
     Each card's value is the expected gold per key at current prices — the per-floor best pick plus
     base rewards, weighted by how likely you are to draw that floor, summed across floors. Prices
-    and trade-ups you set on the <a href="/">Packs</a> page flow through here.
+    and trade-ups you set on the <a href="{base}/">Packs</a> page flow through here.
   </p>
 
   {#each keys as k (k.b.slug)}
@@ -32,7 +33,7 @@
         <span class="title">{displayName(k.b.slug)}</span>
         <span class="tag">{k.b.rarityTier}</span>
         <span class="tag">{k.b.tierLabel}</span>
-        <span class="ev num accent">{formatGold(Math.round(k.b.ev))}<img class="ic" src="/icons/gold.png" alt="g" /></span>
+        <span class="ev num accent">{formatGold(Math.round(k.b.ev))}<img class="ic" src="{base}/icons/gold.png" alt="g" /></span>
       </div>
       <details>
         <summary>Draw per floor breakdown</summary>

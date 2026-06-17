@@ -12,6 +12,7 @@
   import { displayName } from "$lib/catalog";
   import ItemIcon from "$lib/components/ItemIcon.svelte";
   import GoldRate from "$lib/components/packs/GoldRate.svelte";
+  import { base } from "$app/paths";
 
   let { data } = $props();
   const pack = $derived(data.pack);
@@ -69,7 +70,7 @@
 </script>
 
 <section class="detail">
-  <a class="back" href="/">← All packs</a>
+  <a class="back" href="{base}/">← All packs</a>
 
   <div class="info">
       <h2>{pack.name}</h2>
@@ -96,7 +97,7 @@
   <div class="body">
     <div class="img">
       {#if imgOk}
-        <img src="/packs/{pack.slug}.png" alt={pack.name} onerror={() => (imgOk = false)} />
+        <img src="{base}/packs/{pack.slug}.png" alt={pack.name} onerror={() => (imgOk = false)} />
       {:else}
         <div class="img-ph">pack image</div>
       {/if}
@@ -106,10 +107,10 @@
       <div class="summary">
         <div class="srow total">
           <span class="slabel">Total gold</span>
-          <span class="sval"><b class="num accent">{formatGold(value.total)}</b><img class="ic" src="/icons/gold.png" alt="g" /></span>
+          <span class="sval"><b class="num accent">{formatGold(value.total)}</b><img class="ic" src="{base}/icons/gold.png" alt="g" /></span>
         </div>
         <div class="srow">
-          <span class="slabel">per Royal Crystal <img class="ic" src="/icons/royal-crystal.png" alt="RC" /></span>
+          <span class="slabel">per Royal Crystal <img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" /></span>
           <span class="sval"><GoldRate value={value.goldPerRc} unit="rc" /></span>
         </div>
         <div class="srow">
@@ -127,7 +128,7 @@
              differently-valued lines sum up. For fixed/selection it equals the single counted
              line, so it would just repeat the Gold column. -->
         {#if c.type === "multi"}
-          <span class="chest-gold num accent">{formatGold(c.gold)}<img class="ic" src="/icons/gold.png" alt="g" /></span>
+          <span class="chest-gold num accent">{formatGold(c.gold)}<img class="ic" src="{base}/icons/gold.png" alt="g" /></span>
         {/if}
       </div>
       {#if c.isSelection && c.options.length > 1}

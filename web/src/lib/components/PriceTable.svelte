@@ -3,6 +3,7 @@
   import { displayName } from "$lib/catalog";
   import { formatGold } from "$lib/format";
   import ItemIcon from "./ItemIcon.svelte";
+  import { base } from "$app/paths";
 
   // Sorted [slug, gold] for the active region.
   const rows = $derived(
@@ -24,7 +25,7 @@
       {#each rows as [slug, gold] (slug)}
         <tr>
           <td><div class="mat"><ItemIcon {slug} /><span>{displayName(slug)}</span></div></td>
-          <td class="r">{formatGold(gold)}<img class="coin" src="/icons/gold.png" alt="" /></td>
+          <td class="r">{formatGold(gold)}<img class="coin" src="{base}/icons/gold.png" alt="" /></td>
         </tr>
       {/each}
     </tbody>

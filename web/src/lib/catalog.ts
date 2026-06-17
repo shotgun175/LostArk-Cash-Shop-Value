@@ -1,3 +1,4 @@
+import { base } from "$app/paths";
 import { RELIC_ENGRAVING_SLUGS } from "./packs/data/constants";
 
 // slug -> icon filename under /static/icons. Several item families share one piece of art
@@ -77,7 +78,7 @@ export function hasIcon(slug: string): boolean {
 }
 
 export function iconUrl(slug: string): string {
-  return `/icons/${ICON_FILES[slug] ?? `${slug}.png`}`;
+  return `${base}/icons/${ICON_FILES[slug] ?? `${slug}.png`}`;
 }
 
 // These icons use TJW's original art, which already bakes in the in-game grade frame. They must NOT

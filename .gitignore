@@ -10,6 +10,7 @@ dist/
 .idea/
 .cursor/
 .claude/
+.playwright-mcp/
 Thumbs.db
 desktop.ini
 

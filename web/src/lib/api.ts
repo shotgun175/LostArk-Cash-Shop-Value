@@ -11,8 +11,12 @@ export interface PricePayload {
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
+// Same-origin "/v1/prices" for the Cloudflare/dev build; an absolute Worker URL for the GitHub
+// Pages build (set via VITE_API_BASE at build time) so the static site fetches prices cross-origin.
+const API_BASE = import.meta.env.VITE_API_BASE ?? "";
+
 export async function loadPrices(fetchImpl: FetchLike = fetch): Promise<PricePayload> {
-  const res = await fetchImpl("/v1/prices", { cache: "no-store" });
+  const res = await fetchImpl(`${API_BASE}/v1/prices`, { cache: "no-store" });
   if (!res.ok) throw new Error(`prices HTTP ${res.status}`);
   return (await res.json()) as PricePayload;
 }

@@ -3,6 +3,7 @@
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
+  import { base } from "$app/paths";
   import { app } from "$lib/app.svelte";
   import RegionToggle from "$lib/components/RegionToggle.svelte";
   import FreshnessBanner from "$lib/components/FreshnessBanner.svelte";
@@ -20,7 +21,7 @@
   const isPackPage = $derived(page.url.pathname.includes("/pack/"));
   function selectTab(t: string): void {
     active = t;
-    if (isPackPage) goto("/");
+    if (isPackPage) goto(`${base}/`);
   }
 
   onMount(() => {

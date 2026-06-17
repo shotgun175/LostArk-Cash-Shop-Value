@@ -1,5 +1,6 @@
 <script lang="ts">
   import { hasIcon, iconUrl, displayName, isPreframed } from "$lib/catalog";
+  import { base } from "$app/paths";
   let { slug, size = 34 }: { slug: string; size?: number } = $props();
   let broken = $state(false);
   const initials = $derived(
@@ -11,7 +12,7 @@
   const framed = $derived(showImg && !isPreframed(slug));
 </script>
 
-<span class="icon-box" class:framed style="width: {size}px; height: {size}px;">
+<span class="icon-box" class:framed style="width: {size}px; height: {size}px; --frame-url: url({base}/icons/frame-icon-2.png);">
   {#if showImg}
     <img class="icon" src={iconUrl(slug)} alt={displayName(slug)} onerror={() => (broken = true)} />
   {:else}
@@ -32,6 +33,6 @@
   .icon-box.framed .icon { border-color: transparent; }
   .icon-box.framed::after {
     content: ""; position: absolute; inset: 0; pointer-events: none;
-    background: url(/icons/frame-icon-2.png) center / 100% 100% no-repeat;
+    background: var(--frame-url) center / 100% 100% no-repeat;
   }
 </style>

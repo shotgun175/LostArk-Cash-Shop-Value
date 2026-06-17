@@ -10,6 +10,7 @@
   import type { DetailOption } from "$lib/packs/packDetail";
   import ItemIcon from "../ItemIcon.svelte";
   import GoldRate from "./GoldRate.svelte";
+  import { base } from "$app/paths";
 
   let { row, tradeUpInfo = {}, alts = {}, compact = false }: {
     row: PackRow;
@@ -50,16 +51,16 @@
 
 <div class="card" class:retired={row.retired}>
   <div class="head">
-    <a class="title" href="/pack/{row.slug}">{row.name}</a>
+    <a class="title" href="{base}/pack/{row.slug}">{row.name}</a>
     {#if row.retired}<span class="tag retired-tag">retired</span>{/if}
     {#if row.recurrence}<span class="tag">{row.recurrence}</span>{/if}
     {#if row.limited}<span class="tag">limited</span>{/if}
   </div>
 
   <div class="stats">
-    <span><b class="num accent">{row.royalCrystalCost.toLocaleString("en-US")}</b><img class="ic" src="/icons/royal-crystal.png" alt="RC" /></span>
+    <span><b class="num accent">{row.royalCrystalCost.toLocaleString("en-US")}</b><img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" /></span>
     <span class="sep">·</span>
-    <span><b class="num">{formatGold(row.total)}</b><img class="ic" src="/icons/gold.png" alt="g" /></span>
+    <span><b class="num">{formatGold(row.total)}</b><img class="ic" src="{base}/icons/gold.png" alt="g" /></span>
     <span class="sep">·</span>
     <span><GoldRate value={row.goldPerRc} unit="rc" /></span>
     <span class="sep">·</span>
@@ -67,14 +68,14 @@
   </div>
 
   {#if compact}
-    <p class="ref-note">Open the <a class="ref-link" href="/pack/{row.slug}">drill-down</a> for the full mat breakdown.</p>
+    <p class="ref-note">Open the <a class="ref-link" href="{base}/pack/{row.slug}">drill-down</a> for the full mat breakdown.</p>
   {:else}
   <div class="cmp">
     <span class="pct" class:good={row.vsExchange != null && row.vsExchange >= 0} class:bad={row.vsExchange != null && row.vsExchange < 0}>
       <b class="num">{formatSignedPct(row.vsExchange)}</b> <span class="lbl">vs exchange</span>
     </span>
     <span class="pct" class:good={row.vsG2G != null && row.vsG2G >= 0} class:bad={row.vsG2G != null && row.vsG2G < 0}>
-      <b class="num">{formatSignedPct(row.vsG2G)}</b> <span class="lbl">vs</span><img class="ic g2g" src="/icons/g2g.png" alt="G2G" />
+      <b class="num">{formatSignedPct(row.vsG2G)}</b> <span class="lbl">vs</span><img class="ic g2g" src="{base}/icons/g2g.png" alt="G2G" />
     </span>
   </div>
 

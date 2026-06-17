@@ -12,6 +12,7 @@
   import { packDetail, type DetailOption } from "$lib/packs/packDetail";
   import { PACKS } from "$lib/packs/data/packs";
   import PackCard from "./PackCard.svelte";
+  import { base } from "$app/paths";
 
   // G2G real-money rate: auto-populated from the live feed for the selected region (USD for NA, EUR
   // for EU). A typed value overrides it per region and is remembered; clearing the box returns to the
@@ -121,22 +122,22 @@
     <span class="ex">
       <span class="lbl">Currency exchange (F4, optional):</span>
       <input class="f4" type="number" min="0" value={f4.value} oninput={(e) => (f4.value = e.currentTarget.valueAsNumber)} onfocus={focusExchange} aria-label="F4 exchange gold" />
-      <img class="ic" src="/icons/gold.png" alt="gold" />
-      <span class="lbl">for 238</span><img class="ic" src="/icons/royal-crystal.png" alt="RC" />
-      <span class="lbl">=</span> <b class="num accent">{f4base.toFixed(2)}</b><img class="ic" src="/icons/gold.png" alt="gold" /><span class="lbl">/</span><img class="ic" src="/icons/royal-crystal.png" alt="RC" />
+      <img class="ic" src="{base}/icons/gold.png" alt="gold" />
+      <span class="lbl">for 238</span><img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" />
+      <span class="lbl">=</span> <b class="num accent">{f4base.toFixed(2)}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" /><span class="lbl">/</span><img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" />
     </span>
     <span class="ex">
-      <img class="ic g2g" src="/icons/g2g.png" alt="" title={g2gTooltip} />
+      <img class="ic g2g" src="{base}/icons/g2g.png" alt="" title={g2gTooltip} />
       <span class="lbl">exchange (optional):</span>
       <span class="lbl">{sym}</span><input class="g2g-in" type="number" min="0" step="0.0001" value={g2gValue ?? ""} oninput={onG2gInput} onfocus={focusExchange} aria-label="G2G price per 1,000 gold" />
-      <span class="lbl">for 1k</span><img class="ic" src="/icons/gold.png" alt="gold" />
+      <span class="lbl">for 1k</span><img class="ic" src="{base}/icons/gold.png" alt="gold" />
       <span class="lbl">=</span> <b class="num accent">{g2gOut}</b> <span class="lbl">/ 100k</span>
     </span>
   </div>
 
   <p class="note">
     Sorted by g/RC. Selection chests use their highest-value option. Drill into a pack for all options + screenshot. Conversion:
-    <b class="num">12,000</b> <img class="ic" src="/icons/royal-crystal.png" alt="RC" /> = {sym}{rcCash.toLocaleString("en-US")} ({sym}{rcPerUnit.toFixed(4)}/RC).
+    <b class="num">12,000</b> <img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" /> = {sym}{rcCash.toLocaleString("en-US")} ({sym}{rcPerUnit.toFixed(4)}/RC).
     Click any market price to enter your own AH price.{#if customCount > 0 || tuCount > 0 || pickCount > 0} <span class="custom"><span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && (tuCount > 0 || pickCount > 0)} · {/if}{#if pickCount > 0}<b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"}{/if}{#if pickCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span> <button class="reset-all" onclick={resetAll}>reset all</button></span>{/if}
   </p>
 

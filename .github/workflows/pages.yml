@@ -1,0 +1,66 @@
+name: Deploy UI to GitHub Pages
+
+# The public production UI. Builds the SvelteKit front end with the Pages profile (served under the
+# repo subpath; prices fetched cross-origin from the Cloudflare Worker) and publishes it. Prices are
+# fetched live by the browser, so this never needs to redeploy on a price update -- only on a code
+# push to main. The Cloudflare Worker (npm run deploy) stays the data API + live dev site separately.
+# See docs/Split-Deploy-Plan-2026-06-17.md.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Let the deploy job publish to Pages and mint the OIDC token deploy-pages needs.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One Pages publish at a time; never cancel an in-flight deploy.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Pages build profile. BASE_PATH must match the repo name exactly (Pages paths are
+      # case-sensitive). VITE_API_BASE points the browser's price fetch at the Worker origin.
+      BASE_PATH: /LostArk-Cash-Shop-Value
+      VITE_API_BASE: https://lostark-cash-shop-value.foleyjake50.workers.dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install deps
+        run: npm ci
+        working-directory: web
+      - name: Build
+        run: npm run build
+        working-directory: web
+      - name: SPA + Jekyll fallbacks for Pages
+        # 404.html mirrors the SPA shell so any non-prerendered deep link still boots the app
+        # (pack pages are prerendered, so this is belt-and-suspenders). .nojekyll keeps Pages from
+        # ignoring the _app/ underscore dir -- redundant on the Actions deploy path, but harmless.
+        run: |
+          cp build/200.html build/404.html
+          touch build/.nojekyll
+        working-directory: web
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

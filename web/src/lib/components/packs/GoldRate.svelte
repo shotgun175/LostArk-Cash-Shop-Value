@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { base } from "$app/paths";
   // Gold-per-unit readout shared by the cards and the drill-down: "<value> [gold]/[RC]" in accent
   // gold for the per-Royal-Crystal figure, "<value> [gold]/$" in green for the per-currency figure.
   // Palette vars (--accent/--good/--muted) are inherited from the panel/detail ancestor.
@@ -12,9 +13,9 @@
 {#if value == null}
   <span class="num muted">—</span>
 {:else if unit === "rc"}
-  <b class="num accent">{value.toFixed(1)}</b><img class="ic" src="/icons/gold.png" alt="gold" /><span class="slash">/</span><img class="ic rc" src="/icons/royal-crystal.png" alt="per RC" />
+  <b class="num accent">{value.toFixed(1)}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" /><span class="slash">/</span><img class="ic rc" src="{base}/icons/royal-crystal.png" alt="per RC" />
 {:else}
-  <b class="num good">{Math.round(value).toLocaleString("en-US")}</b><img class="ic" src="/icons/gold.png" alt="gold" /><span class="slash">/{sym}</span>
+  <b class="num good">{Math.round(value).toLocaleString("en-US")}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" /><span class="slash">/{sym}</span>
 {/if}
 
 <style>
