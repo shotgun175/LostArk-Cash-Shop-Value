@@ -81,8 +81,8 @@ export function iconUrl(slug: string): string {
 }
 
 // These icons use TJW's original art, which already bakes in the in-game grade frame. They must NOT
-// receive the overlay frame (icon-frame.png) or they'd be double-framed; every other icon gets it so
-// the whole set matches the framed look.
+// receive the overlay frame (frame-icon-2.png, applied in ItemIcon.svelte) or they'd be double-framed;
+// every other icon gets it so the whole set matches the framed look.
 const PRE_FRAMED = new Set<string>([
   "atropine-potion-bound",
   "stimulant-bound",
