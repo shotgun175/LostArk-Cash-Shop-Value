@@ -446,19 +446,17 @@ export const HELL_KEY_MAP: Record<string, { tierLabel: string; rarityTier: strin
   "splendid-netherworld-frost-key": { tierLabel: "1730 FlameFrost Rewards", rarityTier: "Legendary", probKey: "Frost" },
 };
 
-// Column -> slug/fallback/flat valuation (source B columnToSlug). 1730 tiers use the
-// destiny/Splendid mats; non-1730 tiers use cheaper T4 mats. untradable columns value to 0.
+// Column -> slug/fallback/flat valuation (source B columnToSlug). 1730 is the only (and lowest)
+// hell-key tier, so each priced column uses its 1730 mats; untradable columns value to 0.
 // The Destiny "Juice" column is intentionally absent here (so it values to 0): TJW does not
 // value the Juice column in his pack/EV math, and matching him is the parity bar.
 export const COLUMN_VALUATION: Record<string, ColumnVal> = {
-  Stones: { slug1730: "destiny-crystallized-destruction-stone", slugNon1730: "destiny-destruction-stone", fallback1730: 31.3, fallbackNon1730: 5 },
-  "Base red stones": { slug1730: "destiny-crystallized-destruction-stone", slugNon1730: "destiny-destruction-stone", fallback1730: 31.3, fallbackNon1730: 5 },
-  "Base blue stones": { slug1730: "destiny-crystallized-guardian-stone", slugNon1730: "destiny-guardian-stone", fallback1730: 1.45, fallbackNon1730: 0.1 },
-  Leapstones: { slug1730: "great-destiny-leapstone", slugNon1730: "destiny-leapstone", fallback1730: 107, fallbackNon1730: 13 },
-  "Base leapstones": { slug1730: "great-destiny-leapstone", slugNon1730: "destiny-leapstone", fallback1730: 107, fallbackNon1730: 13 },
-  Fusions: { slug1730: "superior-abidos-fusion-material", slugNon1730: "abidos-fusion-material", fallback1730: 241, fallbackNon1730: 160 },
-  "Red juice": { slug: "lavas-breath", fallback: 400 },
-  "Blue juice": { slug: "glaciers-breath", fallback: 200 },
+  Stones: { slug1730: "destiny-crystallized-destruction-stone", fallback1730: 31.3 },
+  "Base red stones": { slug1730: "destiny-crystallized-destruction-stone", fallback1730: 31.3 },
+  "Base blue stones": { slug1730: "destiny-crystallized-guardian-stone", fallback1730: 1.45 },
+  Leapstones: { slug1730: "great-destiny-leapstone", fallback1730: 107 },
+  "Base leapstones": { slug1730: "great-destiny-leapstone", fallback1730: 107 },
+  Fusions: { slug1730: "superior-abidos-fusion-material", fallback1730: 241 },
   Shards: { slug: "destiny-shard", fallback: 0.265 },
   "Base shards": { slug: "destiny-shard", fallback: 0.265 },
   Gold: { flat: 1, currency: true },

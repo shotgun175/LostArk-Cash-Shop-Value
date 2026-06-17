@@ -9,11 +9,6 @@ export function formatGold(n: number): string {
   return n.toLocaleString("en-US", { maximumFractionDigits: 1 }); // 12 -> "12", 1.45 -> "1.5"
 }
 
-export function formatPct(n: number | null): string {
-  if (n == null || !Number.isFinite(n)) return "—";
-  return `${Math.round(n)}%`;
-}
-
 export function formatSignedPct(n: number | null): string {
   if (n == null || !Number.isFinite(n)) return "—";
   const r = Math.round(n);
@@ -24,7 +19,7 @@ export function formatMoney(n: number, sym: string): string {
   return `${sym}${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-export interface Freshness { label: string; stale: boolean; }
+interface Freshness { label: string; stale: boolean; }
 
 // `now` is injectable for tests; defaults to current time. Time is shown in the viewer's local
 // timezone (with the tz abbreviation) — UTC reads as confusing to most users.

@@ -3,10 +3,6 @@
 export const BAKED: Record<string, number> = {
   "lv-2-gem": 514,
   "lv-3-gem": 1543,
-  "lv-4-gem": 4630,
-  "lv-5-gem": 13889,
-  "lv-6-gem": 41667,
-  "lv-7-gem": 125000,
   "elysian-attempt-plus-1": 3000,
   gold: 1,
   "epic-astrogem": 15000,

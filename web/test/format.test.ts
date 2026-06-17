@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatGold, freshness, formatPct, formatSignedPct, formatMoney } from "../src/lib/format";
+import { formatGold, freshness, formatSignedPct, formatMoney } from "../src/lib/format";
 
 describe("formatGold", () => {
   it("groups thousands", () => {
@@ -30,12 +30,7 @@ describe("freshness", () => {
   });
 });
 
-describe("formatPct / formatSignedPct / formatMoney", () => {
-  it("formatPct rounds to integer percent, em-dash for null", () => {
-    expect(formatPct(258.4)).toBe("258%");
-    expect(formatPct(-43.6)).toBe("-44%");
-    expect(formatPct(null)).toBe("—");
-  });
+describe("formatSignedPct / formatMoney", () => {
   it("formatSignedPct adds an explicit + for non-negative", () => {
     expect(formatSignedPct(258.4)).toBe("+258%");
     expect(formatSignedPct(-43.6)).toBe("-44%");

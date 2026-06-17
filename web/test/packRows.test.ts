@@ -26,10 +26,10 @@ describe("buildPackRows", () => {
     expect(active).toEqual([...active].sort((a, b) => b - a));
   });
 
-  it("vsExchange sign tracks gold/RC vs the 80.67 baseline", () => {
+  it("vsExchange sign tracks gold/RC vs the 84.03 baseline", () => {
     const horizon = rows.find((r) => r.slug === "horizon-growth-support-pack-i")!;
     const t4 = rows.find((r) => r.slug === "monthly-t4-growth-support")!;
-    expect(horizon.vsExchange!).toBeGreaterThan(0); // 289.5 >> 80.67
-    expect(t4.vsExchange!).toBeLessThan(0);          // 45.5 < 80.67
+    expect(horizon.vsExchange!).toBeGreaterThan(0); // 289.5 >> 84.03
+    expect(t4.vsExchange!).toBeLessThan(0);          // 45.5 < 84.03
   });
 });

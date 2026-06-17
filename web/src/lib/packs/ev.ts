@@ -53,18 +53,17 @@ export function G(arr: number[], k: number): number {
   return sum;
 }
 
-/** Per-unit gold value of a tradable column at the given prices / tier. */
+/** Per-unit gold value of a tradable column at the given prices. */
 export function columnPrice(
   column: string,
   prices: Record<string, number>,
-  is1730: boolean,
 ): number {
   const c = COLUMN_VALUATION[column];
   if (!c) return 0;
   if (c.flat !== undefined) return c.flat;
   if (c.untradable) return 0;
-  const slug = c.slug ?? (is1730 ? c.slug1730 : c.slugNon1730);
-  const fb = c.fallback ?? (is1730 ? c.fallback1730 : c.fallbackNon1730) ?? 0;
+  const slug = c.slug ?? c.slug1730;
+  const fb = c.fallback ?? c.fallback1730 ?? 0;
   if (!slug) return 0;
   return prices[slug] ?? fb;
 }
@@ -74,7 +73,6 @@ export function chestVal(
   column: string,
   cellValue: number | string,
   prices: Record<string, number>,
-  is1730: boolean,
 ): number {
   if (typeof cellValue === "string" && cellValue.includes("|")) {
     const [a, b, c] = cellValue.split("|").map(Number);
@@ -83,12 +81,12 @@ export function chestVal(
   const qty = Number(cellValue);
   if (column === "Stones") {
     const x = Math.max(
-      qty * columnPrice("Stones", prices, is1730),
-      qty * 3 * columnPrice("Base blue stones", prices, is1730),
+      qty * columnPrice("Stones", prices),
+      qty * 3 * columnPrice("Base blue stones", prices),
     );
     return Number.isFinite(x) ? x : 0;
   }
-  const x = qty * columnPrice(column, prices, is1730);
+  const x = qty * columnPrice(column, prices);
   return Number.isFinite(x) ? x : 0;
 }
 
@@ -96,12 +94,11 @@ export function chestVal(
 export function baseGold(
   floorRewards: Record<string, number | string>,
   prices: Record<string, number>,
-  is1730: boolean,
 ): number {
   let sum = 0;
   for (const col of BASE_COLUMNS) {
     const v = floorRewards[col];
-    if (typeof v === "number") sum += v * columnPrice(col, prices, is1730);
+    if (typeof v === "number") sum += v * columnPrice(col, prices);
   }
   return sum;
 }
@@ -143,7 +140,6 @@ export function hellKeyBreakdown(
   const m = HELL_KEY_MAP[slug];
   if (!m) return null;
   const tier = HELL_TIERS[m.tierLabel];
-  const is1730 = m.tierLabel.startsWith("1730 ") && !m.tierLabel.includes("Old");
   const probs = PROBABILITIES[m.probKey as keyof typeof PROBABILITIES];
   const floors: FloorBreakdown[] = [];
   let g = 0;
@@ -157,7 +153,7 @@ export function hellKeyBreakdown(
     for (const column of tier.columns) {
       if (SKIP_COLUMNS.has(column)) continue;
       if (!rewards[column]) continue;
-      const v = chestVal(column, rewards[column], prices, is1730);
+      const v = chestVal(column, rewards[column], prices);
       // Only chests with positive gold value count toward the best-of-k pick;
       // zero-value (untradable / unpriced) chests are not candidates. This is
       // load-bearing: including them dilutes G and underprices every floor.
@@ -165,7 +161,7 @@ export function hellKeyBreakdown(
     }
     candidates.sort((x, y) => y - x);
     const bestPick = (1 - h) * G(candidates, topK) + h * G(candidates, topK + 1);
-    const base = baseGold(rewards, prices, is1730);
+    const base = baseGold(rewards, prices);
     const floorTotal = bestPick + base;
     floors.push({ range: floorRange, p, bestPick, base, floorTotal, contribution: floorTotal * p });
     g += floorTotal * p;
@@ -179,7 +175,6 @@ export function hellKeyColumnPrices(slug: string, prices: Record<string, number>
   const m = HELL_KEY_MAP[slug];
   if (!m) return [];
   const tier = HELL_TIERS[m.tierLabel];
-  const is1730 = m.tierLabel.startsWith("1730 ") && !m.tierLabel.includes("Old");
   const out: ColumnPrice[] = [];
   for (const column of tier.columns) {
     if (SKIP_COLUMNS.has(column)) continue;
@@ -190,10 +185,10 @@ export function hellKeyColumnPrices(slug: string, prices: Record<string, number>
     } else if (c.untradable) {
       out.push({ column, slug: null, perUnit: 0, source: "untradable" });
     } else {
-      const s = c.slug ?? (is1730 ? c.slug1730 : c.slugNon1730) ?? null;
-      const fb = c.fallback ?? (is1730 ? c.fallback1730 : c.fallbackNon1730);
+      const s = c.slug ?? c.slug1730 ?? null;
+      const fb = c.fallback ?? c.fallback1730;
       const source: ColumnPrice["source"] = s && prices[s] !== undefined ? "live" : fb !== undefined ? "fallback" : "—";
-      out.push({ column, slug: s, perUnit: columnPrice(column, prices, is1730), source });
+      out.push({ column, slug: s, perUnit: columnPrice(column, prices), source });
     }
   }
   return out;

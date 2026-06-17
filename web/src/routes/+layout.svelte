@@ -57,8 +57,6 @@
     <MarisShop />
   {:else if active === "Ark Pass"}
     <ArkPass />
-  {:else}
-    <p class="soon">"{active}" — coming soon (Plan 3).</p>
   {/if}
 </div>
 
@@ -72,6 +70,5 @@
   nav button{background:none; border:0; color:var(--muted); padding:8px 16px; border-radius:8px; font:500 13.5px "Sora",sans-serif; cursor:pointer}
   nav button:hover{color:var(--txt); background:var(--panel)}
   nav button.active{color:var(--bg); background:linear-gradient(180deg,var(--gold),var(--gold-2)); font-weight:600}
-  .soon{color:var(--faint); text-align:center; padding:60px 0}
   @media (max-width:640px){ .region-tr{position:static; display:flex; justify-content:center; margin-bottom:14px} }
 </style>

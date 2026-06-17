@@ -1,7 +1,7 @@
 // Mari's Shop — the current rotating wares (transcribed from TheJungleWalrus, 2026-06-16).
 // Static data; refresh when the in-game rotation changes. Each ware costs blue crystals (BC);
 // gold cost = bc * (F4 gold input / BC_PER_BUNDLE). Value shown = savings vs the AH price.
-export interface MariWare {
+interface MariWare {
   slug: string | null; // unbound AH slug for valuation; null = no market price (bound-only)
   name: string;
   qty: number; // units per purchase

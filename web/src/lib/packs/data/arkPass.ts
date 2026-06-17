@@ -2,7 +2,7 @@
 // Static data; refresh when a new Ark Pass season starts. Premium gives a reward at every level;
 // Super Premium adds the same plus milestone rewards at 5/10/15/20/25/30 (currently unvalued, TBD).
 // Each reward is a chest our RESOLVER already knows, so the gold value is computed from live prices.
-export interface ArkLevel {
+interface ArkLevel {
   level: number;
   chest: string; // RESOLVER key
   qty: number; // number of chests granted

@@ -47,7 +47,7 @@ const ONE_TO_ONE: readonly string[] = [
   "superior-abidos-fusion-material",
 ];
 
-export const ICON_FILES: Readonly<Record<string, string>> = {
+const ICON_FILES: Readonly<Record<string, string>> = {
   ...SHARED,
   ...Object.fromEntries(ONE_TO_ONE.map((s) => [s, `${s}.png`])),
 };

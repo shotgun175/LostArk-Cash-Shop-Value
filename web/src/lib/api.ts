@@ -1,7 +1,8 @@
 export type Region = "nae" | "euc";
 export interface RegionSnapshot { source_valid_at: string; prices: Record<string, number>; }
 export interface PricePayload {
-  schema_version: number;
+  // Wire shape is produced by the worker (src/normalize.ts) — keep this in lockstep with it.
+  schema_version: 1;
   generated_at: string;
   regions: Partial<Record<Region, RegionSnapshot>>;
   bundles: Record<string, number>;

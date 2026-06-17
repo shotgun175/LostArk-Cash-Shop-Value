@@ -5,11 +5,11 @@ import {
 } from "../src/lib/packs/exchange";
 
 describe("F4 exchange", () => {
-  it("baseline = input / 238 (default 19200 -> 80.67)", () => {
-    expect(f4Baseline(F4_DEFAULT_INPUT)).toBeCloseTo(19200 / 238, 6);
+  it("baseline = input / 238 (default 20000 -> 84.03)", () => {
+    expect(f4Baseline(F4_DEFAULT_INPUT)).toBeCloseTo(20000 / 238, 6);
   });
   it("% vs exchange is the relative gap of gold/RC vs baseline", () => {
-    const base = f4Baseline(19200); // 80.672...
+    const base = f4Baseline(20000); // 84.03...
     expect(vsExchangePct(289.5, base)!).toBeCloseTo((289.5 - base) / base * 100, 4);
     expect(vsExchangePct(45.5, base)!).toBeLessThan(0); // below exchange
   });

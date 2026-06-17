@@ -52,16 +52,16 @@ describe("G (expected best of k)", () => {
 describe("chestVal", () => {
   it("values random astrogems (b=rare @100)", () => {
     // "0|15|0" -> 15 * astrogem.rare(100) = 1500
-    expect(chestVal("Random Astrogems", "0|15|0", {}, true)).toBe(1500);
+    expect(chestVal("Random Astrogems", "0|15|0", {})).toBe(1500);
   });
   it("values selectable astrogems (c=epic @15000)", () => {
     // "0|0|3" -> 3 * astrogem.epic(15000) = 45000
-    expect(chestVal("Selectable Astrogems", "0|0|3", {}, true)).toBe(45000);
+    expect(chestVal("Selectable Astrogems", "0|0|3", {})).toBe(45000);
   });
   it("zeroes the Destiny Juice column (intentionally unvalued to match TJW)", () => {
     // Juice has no COLUMN_VALUATION entry -> columnPrice 0 -> chestVal 0, for any qty/prices.
-    expect(chestVal("Juice", 96, { "glaciers-breath": 319 }, true)).toBe(0);
-    expect(chestVal("Juice", 320, {}, true)).toBe(0);
+    expect(chestVal("Juice", 96, { "glaciers-breath": 319 })).toBe(0);
+    expect(chestVal("Juice", 320, {})).toBe(0);
   });
   it("picks the max of the two Stones valuations", () => {
     // Stones slug cheap, blue-stone slug rich -> blue-stone path (qty*3*blue) wins.
@@ -70,28 +70,28 @@ describe("chestVal", () => {
       "destiny-crystallized-guardian-stone": 10, // Base blue stones per-unit
     };
     // max(100*1, 100*3*10) = max(100, 3000) = 3000
-    expect(chestVal("Stones", 100, prices, true)).toBe(3000);
+    expect(chestVal("Stones", 100, prices)).toBe(3000);
     // Now make the Stones slug rich -> direct path wins.
     const prices2 = {
       "destiny-crystallized-destruction-stone": 50,
       "destiny-crystallized-guardian-stone": 1,
     };
     // max(100*50, 100*3*1) = max(5000, 300) = 5000
-    expect(chestVal("Stones", 100, prices2, true)).toBe(5000);
+    expect(chestVal("Stones", 100, prices2)).toBe(5000);
   });
 });
 
 describe("columnPrice", () => {
   it("returns flat value for flat columns", () => {
-    expect(columnPrice("Karma", {}, true)).toBe(600);
-    expect(columnPrice("Gold", {}, true)).toBe(1);
+    expect(columnPrice("Karma", {})).toBe(600);
+    expect(columnPrice("Gold", {})).toBe(1);
   });
   it("returns 0 for untradable columns", () => {
-    expect(columnPrice("Accessories", {}, true)).toBe(0);
+    expect(columnPrice("Accessories", {})).toBe(0);
   });
   it("uses the 1730 slug when present, else its fallback", () => {
-    expect(columnPrice("Fusions", { "superior-abidos-fusion-material": 171 }, true)).toBe(171);
-    expect(columnPrice("Fusions", {}, true)).toBe(241); // fallback1730
+    expect(columnPrice("Fusions", { "superior-abidos-fusion-material": 171 })).toBe(171);
+    expect(columnPrice("Fusions", {})).toBe(241); // fallback1730
   });
 });
 
@@ -106,9 +106,9 @@ describe("baseGold", () => {
       "destiny-shard": 0.224,
     };
     const expected = 110 * 29 + 680 * 0.92 + 15 * 47 + 18000 * 0.224;
-    expect(baseGold(f, prices, true)).toBeCloseTo(expected, 4);
+    expect(baseGold(f, prices)).toBeCloseTo(expected, 4);
     // matches TJW's displayed "Base" of 8,553 g for the 100 floor (legendary key)
-    expect(Math.round(baseGold(f, prices, true))).toBe(8553);
+    expect(Math.round(baseGold(f, prices))).toBe(8553);
   });
 });
 
@@ -144,7 +144,6 @@ describe("hellKeyEv per-floor reconstruction matches TJW /math", () => {
   function perFloor(slug: string) {
     const m = HELL_KEY_MAP[slug];
     const tier = HELL_TIERS[m.tierLabel];
-    const is1730 = m.tierLabel.startsWith("1730 ") && !m.tierLabel.includes("Old");
     const probs = PROBABILITIES[m.probKey as keyof typeof PROBABILITIES];
     let sump = 0;
     const rows = probs.map((pr) => {
@@ -155,12 +154,12 @@ describe("hellKeyEv per-floor reconstruction matches TJW /math", () => {
       for (const col of tier.columns) {
         if (SKIP_COLUMNS.has(col)) continue;
         if (!rewards[col]) continue;
-        const v = chestVal(col, rewards[col], map, is1730);
+        const v = chestVal(col, rewards[col], map);
         if (v > 0) cands.push(v);
       }
       cands.sort((a, b) => b - a);
       const bestPick = 0.95 * G(cands, 3) + 0.05 * G(cands, 4);
-      const base = baseGold(rewards, map, is1730);
+      const base = baseGold(rewards, map);
       return { range: pr.range, p, bestPick, base };
     });
     return { rows, sump };

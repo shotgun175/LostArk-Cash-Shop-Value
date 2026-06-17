@@ -5,20 +5,22 @@
 
 import type { Chest, Pack } from "./data/types";
 import { RESOLVER } from "./data/resolver";
+import { cashPerRc } from "./exchange";
 
-// NA cost of one Royal Crystal (~$100 / 12000 RC) and the DEFAULT cash-per-RC. Callers pass a
-// region-aware value (cashPerRc in exchange.ts — EU RC is priced in EUR, €94.99 / 12000) so the
-// "% vs G2G" and "g per $/€" figures compare within one currency per region.
-export const USD_PER_RC = 100 / 12000;
+// NA cost of one Royal Crystal and the DEFAULT cash-per-RC. Sourced from the single RC-cash table
+// in exchange.ts (cashPerRc) so the NA rate isn't duplicated here; callers pass a region-aware value
+// (EU RC is priced in EUR, €94.99 / 12000) so the "% vs G2G" and "g per $/€" figures compare within
+// one currency per region.
+export const USD_PER_RC = cashPerRc("nae");
 
-export interface ResolvedLine {
+interface ResolvedLine {
   slug: string;
   qty: number;
   gold: number;
   isBound?: boolean;
 }
 
-export interface ChestResult {
+interface ChestResult {
   gold: number;
   lines: ResolvedLine[];
 }

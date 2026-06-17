@@ -11,7 +11,7 @@ export interface DetailOption {
   chosen: boolean; // the option(s) that count toward the pack total
 }
 
-export interface DetailChest {
+interface DetailChest {
   chest: string; // chest display name
   qty: number; // how many of this chest the pack grants
   type: "fixed" | "selection" | "multi";

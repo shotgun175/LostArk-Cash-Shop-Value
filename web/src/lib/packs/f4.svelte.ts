@@ -1,5 +1,7 @@
 import { app } from "../app.svelte";
 import type { Region } from "../api";
+import { F4_DIVISOR } from "./exchange";
+import { BC_PER_BUNDLE } from "./data/marisShop";
 
 // A round, deliberately-illustrative default — not pulled from any live source. The user tunes it
 // once and it's remembered per region; we don't want the seeded value to look authoritative.
@@ -7,8 +9,8 @@ const DEFAULTS: Record<Region, number> = { nae: 20000, euc: 20000 };
 
 // The one shared F4 currency-exchange gold input, used by Packs, Mari's Shop and Ark Pass (per
 // region, persisted). Royal and blue crystals are valued the same; only the denominator differs:
-//   gold per royal crystal = value / 238  (packs "% vs exchange" basis)
-//   gold per blue crystal  = value / 95   (Mari's / Ark Pass)
+//   gold per royal crystal = value / F4_DIVISOR (238)   (packs "% vs exchange" basis)
+//   gold per blue crystal  = value / BC_PER_BUNDLE (95) (Mari's / Ark Pass)
 // Live accuracy isn't the goal here — it's a manual input the user tunes once.
 class F4 {
   map = $state<Record<Region, number>>({ nae: DEFAULTS.nae, euc: DEFAULTS.euc });
@@ -33,10 +35,10 @@ class F4 {
   }
 
   get perRc(): number {
-    return (this.value > 0 ? this.value : 0) / 238;
+    return (this.value > 0 ? this.value : 0) / F4_DIVISOR;
   }
   get perBc(): number {
-    return (this.value > 0 ? this.value : 0) / 95;
+    return (this.value > 0 ? this.value : 0) / BC_PER_BUNDLE;
   }
 }
 

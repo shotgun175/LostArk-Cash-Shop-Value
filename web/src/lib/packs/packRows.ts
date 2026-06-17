@@ -8,7 +8,7 @@ export interface PackRow extends PackResult {
   vsG2G: number | null;
 }
 
-export interface PackRowOpts {
+interface PackRowOpts {
   f4Input: number;
   g2gInput: number;
   picks?: Record<string, string>;

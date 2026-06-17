@@ -38,9 +38,7 @@ export type FloorProb = { range: string } & Record<string, number | string>;
 
 export interface ColumnVal {
   slug1730?: string;
-  slugNon1730?: string;
   fallback1730?: number;
-  fallbackNon1730?: number;
   slug?: string;
   fallback?: number;
   flat?: number;

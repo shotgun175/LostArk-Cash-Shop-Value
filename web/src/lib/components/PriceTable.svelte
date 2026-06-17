@@ -1,6 +1,7 @@
 <script lang="ts">
   import { app } from "$lib/app.svelte";
-  import { displayName, formatGold } from "$lib/_reexport";
+  import { displayName } from "$lib/catalog";
+  import { formatGold } from "$lib/format";
   import ItemIcon from "./ItemIcon.svelte";
 
   // Sorted [slug, gold] for the active region.
