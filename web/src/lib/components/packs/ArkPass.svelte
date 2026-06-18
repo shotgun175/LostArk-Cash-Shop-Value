@@ -141,7 +141,11 @@
   .note-toggle { display: block; margin-top: 1px; background: none; border: 0; padding: 0;
     cursor: pointer; color: var(--muted); font: inherit; font-size: 11.5px; text-align: left; }
   .note-toggle:hover { color: var(--accent); }
-  tr.alt td { background: rgba(255, 255, 255, .02); padding-top: 4px; padding-bottom: 4px; }
+  /* Expanded options read as a recessed tray: darker inset bg + a gold bar down the left edge
+     tying the choices to the row they dropped out of. */
+  tr.alt td { background: rgba(0, 0, 0, .22); padding-top: 5px; padding-bottom: 5px; }
+  tr.alt td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+  tr.alt:hover td { background: rgba(0, 0, 0, .12); }
   .pick-name { background: none; border: 0; padding: 0; cursor: pointer; color: var(--muted);
     font: inherit; font-size: 12.5px; }
   .pick-name:hover { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
