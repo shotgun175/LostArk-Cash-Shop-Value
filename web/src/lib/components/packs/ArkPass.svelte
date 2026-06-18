@@ -32,7 +32,7 @@
   <p class="note">
     Premium gives a reward at every level; Super Premium adds the same plus milestone rewards at
     levels 5/10/15/20/25/30 (skins/extras — not yet valued). Each selection reward defaults to its
-    highest-value option — expand “pick 1 of N” on a level to value it as a different choice.{#if pickCount > 0} <span class="custom"><b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"} <button class="reset-all" onclick={() => arkSelection.clearAll()}>reset all</button></span>{/if}
+    highest-value option — expand “pick 1 of N” on a level to value it as a different choice.
   </p>
 
   <div class="summary">
@@ -54,6 +54,10 @@
       </dl>
     </div>
   </div>
+
+  {#if pickCount > 0}
+    <div class="picks-bar"><span class="custom"><b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"} <button class="reset-all" onclick={() => arkSelection.clearAll()}>reset all</button></span></div>
+  {/if}
 
   <div class="tscroll">
   <table>
@@ -104,8 +108,9 @@
     color: var(--text); font-family: "Sora", system-ui, sans-serif;
   }
   h2 { font-size: 20px; margin: 8px 0 6px; }
-  .note { color: var(--muted); font-size: 13px; line-height: 1.9; margin: 0 0 16px; }
-  /* Global "reset all picks" affordance, mirroring the Packs tab. */
+  .note { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0 0 16px; }
+  /* Global "reset all picks" affordance, mirroring the Packs tab, sitting just above the table. */
+  .picks-bar { display: flex; justify-content: center; margin: -4px 0 12px; }
   .custom { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; white-space: nowrap;
     vertical-align: middle; color: var(--accent); background: rgba(255, 209, 102, 0.1);
     border: 1px solid rgba(255, 209, 102, 0.4); border-radius: 6px; padding: 3px 10px; }
