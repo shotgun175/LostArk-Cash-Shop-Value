@@ -16,10 +16,10 @@
   const rows = $derived(
     ARK_PASS_LEVELS.map((lvl) => {
       const chest = lvl.unresolved ? undefined : RESOLVER[lvl.chest];
-      if (!chest) return { lvl, slug: null as string | null, qty: 0, gold: 0, optionCount: 0 };
+      if (!chest) return { lvl, slug: null as string | null, icon: lvl.iconSlug ?? null, qty: 0, gold: 0, optionCount: 0 };
       const r = resolveChest(chest, prices, selection.get(lvl.chest));
       const line = r.lines[0];
-      return { lvl, slug: line?.slug ?? null, qty: (line?.qty ?? 0) * lvl.qty, gold: r.gold * lvl.qty, optionCount: chest.outputs.length };
+      return { lvl, slug: line?.slug ?? null, icon: line?.slug ?? null, qty: (line?.qty ?? 0) * lvl.qty, gold: r.gold * lvl.qty, optionCount: chest.outputs.length };
     }),
   );
 
@@ -67,10 +67,10 @@
       {#each rows as r (r.lvl.level)}
         <tr class:milestone={r.lvl.milestone}>
           <td class="right num">{r.lvl.level}{#if r.lvl.milestone}<span class="star" title="Super Premium milestone">★</span>{/if}</td>
-          <td class="ic-col">{#if r.slug}<ItemIcon slug={r.slug} />{/if}</td>
+          <td class="ic-col">{#if r.icon}<ItemIcon slug={r.icon} />{/if}</td>
           <td>
             {#if r.slug}<span class="rname">{displayName(r.slug)}</span>{:else}<span class="muted">{r.lvl.chest}</span>{/if}
-            <span class="chestnote">{r.lvl.qty}× {r.lvl.chest}{#if r.optionCount > 1} (pick 1 of {r.optionCount}){/if}</span>
+            <span class="chestnote">{r.lvl.qty}× {r.lvl.chest}{#if r.optionCount > 1}{" "}(pick 1 of {r.optionCount}){/if}</span>
           </td>
           <td class="right num">{r.qty ? r.qty.toLocaleString("en-US") : "—"}</td>
           <td class="right num accent">{r.gold > 0 ? formatGold(r.gold) : "—"}</td>

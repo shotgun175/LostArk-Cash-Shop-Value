@@ -21,13 +21,16 @@ const SHARED: Record<string, string> = {
   "tailoring-hellfire-15-18": "tailoring-hellfire.png",
   "tailoring-hellfire-19-20": "tailoring-hellfire.png",
   "epic-astrogem": "epic-astrogem-random.png",
+  // Gold only ever appears as a material line via the "10k Gold Bars" chest, so show the
+  // bars art rather than the coin (gold.png is still used directly by the rate/total badges).
+  "gold": "gold-bars.png",
   // Raw shards aren't sold loose — reuse the Large pouch art for the per-shard line.
   "destiny-shard": "destiny-shard-pouch-l.png",
 };
 
 // Items whose icon file is named after the slug (`${slug}.png`): the original set + the 1:1 drops.
 const ONE_TO_ONE: readonly string[] = [
-  "ebony-cube-4th-unlock", "elysian-attempt-plus-1", "gold", "gold-bars",
+  "ebony-cube-4th-unlock", "elysian-attempt-plus-1", "gold-bars",
   "prime-oreha-fusion-material", "relic-combat-engraving-recipe", "royal-crystal", "solar-grace",
   "splendid-hell-key-of-destiny-v", "splendid-hell-key-of-destiny-v-epic",
   "splendid-netherworld-flame-key", "splendid-netherworld-frost-key",
@@ -46,6 +49,9 @@ const ONE_TO_ONE: readonly string[] = [
   "radiant-honor-leapstone", "refined-obliteration-stone", "refined-protection-stone",
   "rest-bonus-recovery-brew-30d", "sidereal-energy", "solar-blessing", "solar-protection",
   "superior-abidos-fusion-material",
+  // Ark Pass card-pack row — icon only, no gold value (see arkPass.ts iconSlug);
+  // generic art shared across the legendary card packs.
+  "legendary-card-pack",
 ];
 
 const ICON_FILES: Readonly<Record<string, string>> = {
