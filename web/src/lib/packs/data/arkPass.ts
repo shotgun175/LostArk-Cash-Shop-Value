@@ -8,6 +8,7 @@ interface ArkLevel {
   qty: number; // number of chests granted
   milestone?: boolean; // a Super-Premium milestone level
   unresolved?: boolean; // chest not in the resolver (astrogems / card packs) — no gold value
+  iconSlug?: string; // display-only icon for an unresolved row; never assigns a gold value
 }
 
 export const ARK_PASS_PREMIUM_RC = 1500; // Premium tier cost (royal crystals)
@@ -31,9 +32,9 @@ export const ARK_PASS_LEVELS: ArkLevel[] = [
   { level: 15, chest: "Wanderer's Shard Box", qty: 6, milestone: true },
   { level: 16, chest: "(NEW) Ebony Cube Entrance Ticket Selection Chest II", qty: 2 },
   { level: 17, chest: "(NEW) Ebony Cube Entrance Ticket Selection Chest II", qty: 2 },
-  { level: 18, chest: "Rare - Epic Astrogem Chest", qty: 5, unresolved: true },
-  { level: 19, chest: "Rare - Epic Astrogem Chest", qty: 5, unresolved: true },
-  { level: 20, chest: "Rare - Epic Astrogem Chest", qty: 2, milestone: true, unresolved: true },
+  { level: 18, chest: "Rare - Epic Astrogem Chest", qty: 5, unresolved: true, iconSlug: "epic-astrogem" },
+  { level: 19, chest: "Rare - Epic Astrogem Chest", qty: 5, unresolved: true, iconSlug: "epic-astrogem" },
+  { level: 20, chest: "Epic Astrogem Selection Chest", qty: 2, milestone: true, unresolved: true, iconSlug: "epic-astrogem-selected" },
   { level: 21, chest: "Wanderer's Special Fusion Material Selection Chest", qty: 3 },
   { level: 22, chest: "Wanderer's Special Breakthrough Stone Selection Chest", qty: 10 },
   { level: 23, chest: "Wanderer's Shard Box", qty: 6 },
@@ -43,5 +44,5 @@ export const ARK_PASS_LEVELS: ArkLevel[] = [
   { level: 27, chest: "Wanderer's Special Fusion Material Selection Chest", qty: 8 },
   { level: 28, chest: "Wanderer's Special Breakthrough Stone Selection Chest", qty: 3 },
   { level: 29, chest: "Wanderer's Special Auxiliary Material Selection Chest", qty: 5 },
-  { level: 30, chest: "Joyful Legendary Card Pack", qty: 1, milestone: true, unresolved: true },
+  { level: 30, chest: "Joyful Legendary Card Pack", qty: 1, milestone: true, unresolved: true, iconSlug: "legendary-card-pack" },
 ];

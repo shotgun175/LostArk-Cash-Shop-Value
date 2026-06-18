@@ -2,18 +2,10 @@ import { base } from "$app/paths";
 import { RELIC_ENGRAVING_SLUGS } from "./packs/data/constants";
 
 // slug -> icon filename under /static/icons. Several item families share one piece of art
-// (all 23 relic engraving recipes; metallurgy+tailoring at each artisan tier; the three hellfire
-// brackets per profession), so this is a slug->file map, not a `${slug}.png` convention.
+// (all 23 relic engraving recipes; the three hellfire brackets per profession), so this is a
+// slug->file map, not a `${slug}.png` convention.
 const SHARED: Record<string, string> = {
   ...Object.fromEntries(RELIC_ENGRAVING_SLUGS.map((s) => [s, "relic-engraving-recipe.png"])),
-  "artisans-metallurgy-level-1": "artisans-level-1.png",
-  "artisans-tailoring-level-1": "artisans-level-1.png",
-  "artisans-metallurgy-level-2": "artisans-level-2.png",
-  "artisans-tailoring-level-2": "artisans-level-2.png",
-  "artisans-metallurgy-level-3": "artisans-level-3.png",
-  "artisans-tailoring-level-3": "artisans-level-3.png",
-  "artisans-metallurgy-level-4": "artisans-level-4.png",
-  "artisans-tailoring-level-4": "artisans-level-4.png",
   "metallurgy-hellfire-11-14": "metallurgy-hellfire.png",
   "metallurgy-hellfire-15-18": "metallurgy-hellfire.png",
   "metallurgy-hellfire-19-20": "metallurgy-hellfire.png",
@@ -21,13 +13,18 @@ const SHARED: Record<string, string> = {
   "tailoring-hellfire-15-18": "tailoring-hellfire.png",
   "tailoring-hellfire-19-20": "tailoring-hellfire.png",
   "epic-astrogem": "epic-astrogem-random.png",
+  // Gold only ever appears as a material line via the "10k Gold Bars" chest, so show the
+  // bars art rather than the coin (gold.png is still used directly by the rate/total badges).
+  "gold": "gold-bars.png",
   // Raw shards aren't sold loose — reuse the Large pouch art for the per-shard line.
   "destiny-shard": "destiny-shard-pouch-l.png",
 };
 
 // Items whose icon file is named after the slug (`${slug}.png`): the original set + the 1:1 drops.
 const ONE_TO_ONE: readonly string[] = [
-  "ebony-cube-4th-unlock", "elysian-attempt-plus-1", "gold", "gold-bars",
+  "artisans-metallurgy-level-1", "artisans-metallurgy-level-2", "artisans-metallurgy-level-3", "artisans-metallurgy-level-4",
+  "artisans-tailoring-level-1", "artisans-tailoring-level-2", "artisans-tailoring-level-3", "artisans-tailoring-level-4",
+  "ebony-cube-4th-unlock", "elysian-attempt-plus-1", "gold-bars",
   "prime-oreha-fusion-material", "relic-combat-engraving-recipe", "royal-crystal", "solar-grace",
   "splendid-hell-key-of-destiny-v", "splendid-hell-key-of-destiny-v-epic",
   "splendid-netherworld-flame-key", "splendid-netherworld-frost-key",
@@ -46,6 +43,9 @@ const ONE_TO_ONE: readonly string[] = [
   "radiant-honor-leapstone", "refined-obliteration-stone", "refined-protection-stone",
   "rest-bonus-recovery-brew-30d", "sidereal-energy", "solar-blessing", "solar-protection",
   "superior-abidos-fusion-material",
+  // Ark Pass card-pack row — icon only, no gold value (see arkPass.ts iconSlug);
+  // generic art shared across the legendary card packs.
+  "legendary-card-pack",
 ];
 
 const ICON_FILES: Readonly<Record<string, string>> = {
