@@ -18,12 +18,17 @@ describe("icons", () => {
     expect(hasIcon("solar-grace")).toBe(true);
     expect(hasIcon("destiny-leapstone")).toBe(true); // now has a real icon
   });
-  it("maps shared art: engravings, artisan tiers, hellfire books", () => {
+  it("maps shared art: engravings and hellfire books", () => {
     expect(iconUrl("grudge")).toBe("/icons/relic-engraving-recipe.png");
     expect(iconUrl("raid-captain")).toBe("/icons/relic-engraving-recipe.png");
-    expect(iconUrl("artisans-metallurgy-level-1")).toBe("/icons/artisans-level-1.png");
-    expect(iconUrl("artisans-tailoring-level-1")).toBe("/icons/artisans-level-1.png");
     expect(iconUrl("tailoring-hellfire-19-20")).toBe("/icons/tailoring-hellfire.png");
+  });
+  it("gives each artisan profession/tier its own icon (metallurgy != tailoring)", () => {
+    expect(iconUrl("artisans-metallurgy-level-1")).toBe("/icons/artisans-metallurgy-level-1.png");
+    expect(iconUrl("artisans-tailoring-level-1")).toBe("/icons/artisans-tailoring-level-1.png");
+    expect(iconUrl("artisans-metallurgy-level-4")).toBe("/icons/artisans-metallurgy-level-4.png");
+    expect(iconUrl("artisans-tailoring-level-4")).toBe("/icons/artisans-tailoring-level-4.png");
+    expect(iconUrl("artisans-metallurgy-level-1")).not.toBe(iconUrl("artisans-tailoring-level-1"));
   });
   it("maps raw destiny-shard to the L-pouch art", () => {
     expect(iconUrl("destiny-shard")).toBe("/icons/destiny-shard-pouch-l.png");

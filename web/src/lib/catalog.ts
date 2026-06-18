@@ -2,18 +2,10 @@ import { base } from "$app/paths";
 import { RELIC_ENGRAVING_SLUGS } from "./packs/data/constants";
 
 // slug -> icon filename under /static/icons. Several item families share one piece of art
-// (all 23 relic engraving recipes; metallurgy+tailoring at each artisan tier; the three hellfire
-// brackets per profession), so this is a slug->file map, not a `${slug}.png` convention.
+// (all 23 relic engraving recipes; the three hellfire brackets per profession), so this is a
+// slug->file map, not a `${slug}.png` convention.
 const SHARED: Record<string, string> = {
   ...Object.fromEntries(RELIC_ENGRAVING_SLUGS.map((s) => [s, "relic-engraving-recipe.png"])),
-  "artisans-metallurgy-level-1": "artisans-level-1.png",
-  "artisans-tailoring-level-1": "artisans-level-1.png",
-  "artisans-metallurgy-level-2": "artisans-level-2.png",
-  "artisans-tailoring-level-2": "artisans-level-2.png",
-  "artisans-metallurgy-level-3": "artisans-level-3.png",
-  "artisans-tailoring-level-3": "artisans-level-3.png",
-  "artisans-metallurgy-level-4": "artisans-level-4.png",
-  "artisans-tailoring-level-4": "artisans-level-4.png",
   "metallurgy-hellfire-11-14": "metallurgy-hellfire.png",
   "metallurgy-hellfire-15-18": "metallurgy-hellfire.png",
   "metallurgy-hellfire-19-20": "metallurgy-hellfire.png",
@@ -30,6 +22,8 @@ const SHARED: Record<string, string> = {
 
 // Items whose icon file is named after the slug (`${slug}.png`): the original set + the 1:1 drops.
 const ONE_TO_ONE: readonly string[] = [
+  "artisans-metallurgy-level-1", "artisans-metallurgy-level-2", "artisans-metallurgy-level-3", "artisans-metallurgy-level-4",
+  "artisans-tailoring-level-1", "artisans-tailoring-level-2", "artisans-tailoring-level-3", "artisans-tailoring-level-4",
   "ebony-cube-4th-unlock", "elysian-attempt-plus-1", "gold-bars",
   "prime-oreha-fusion-material", "relic-combat-engraving-recipe", "royal-crystal", "solar-grace",
   "splendid-hell-key-of-destiny-v", "splendid-hell-key-of-destiny-v-epic",
