@@ -61,18 +61,12 @@
     </thead>
     <tbody>
       {#each rows as r (r.level)}
-        <tr class:milestone={r.milestone}>
+        <tr class:milestone={r.milestone} class:open={expanded[r.level]}>
           <td class="right num">{r.level}{#if r.milestone}<span class="star" title="Super Premium milestone">★</span>{/if}</td>
           <td class="ic-col">{#if r.icon}<ItemIcon slug={r.icon} />{/if}</td>
           <td>
             {#if r.chosenSlug}<span class="rname">{displayName(r.chosenSlug)}</span>{:else}<span class="muted">{r.chest}</span>{/if}
-            {#if r.optionCount > 1}
-              <button class="chestnote note-toggle" aria-expanded={!!expanded[r.level]} onclick={() => toggle(r.level)}>
-                {r.chestQty}× {r.chest}{" "}{expanded[r.level] ? "[− hide options]" : `[+ pick 1 of ${r.optionCount}]`}
-              </button>
-            {:else}
-              <span class="chestnote">{r.chestQty}× {r.chest}</span>
-            {/if}
+            <span class="chestnote">{r.chestQty}× {r.chest}{#if r.optionCount > 1}{" "}<button class="pick-toggle" aria-expanded={!!expanded[r.level]} onclick={() => toggle(r.level)}>{expanded[r.level] ? "[− hide options]" : `[+ pick 1 of ${r.optionCount}]`}</button>{/if}</span>
           </td>
           <td class="right num">{r.qty ? r.qty.toLocaleString("en-US") : "—"}</td>
           <td class="right num accent">{r.gold > 0 ? formatGold(r.gold) : "—"}</td>
@@ -138,9 +132,13 @@
   tr.milestone td { background: rgba(255, 209, 102, .05); }
   .star { color: var(--accent); margin-left: 4px; font-size: 11px; }
   tr:hover td { background: var(--panel-2); }
-  .note-toggle { display: block; margin-top: 1px; background: none; border: 0; padding: 0;
-    cursor: pointer; color: var(--muted); font: inherit; font-size: 11.5px; text-align: left; }
-  .note-toggle:hover { color: var(--accent); }
+  /* Only the gold [+ pick 1 of N] toggle is clickable; the chest name stays plain text. */
+  .pick-toggle { background: none; border: 0; padding: 0; cursor: pointer; color: var(--accent);
+    font: inherit; }
+  .pick-toggle:hover { text-decoration: underline; text-underline-offset: 2px; }
+  /* The expanded parent row and its option tray share a gold left bar so they read as one group. */
+  tr.open td { background: rgba(255, 209, 102, .06); }
+  tr.open td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
   /* Expanded options read as a recessed tray: darker inset bg + a gold bar down the left edge
      tying the choices to the row they dropped out of. */
   tr.alt td { background: rgba(0, 0, 0, .22); padding-top: 5px; padding-bottom: 5px; }
