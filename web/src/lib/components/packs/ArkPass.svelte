@@ -71,7 +71,7 @@
           <td class="ic-col">{#if r.icon}<ItemIcon slug={r.icon} />{/if}</td>
           <td>
             {#if r.chosenSlug}<span class="rname">{displayName(r.chosenSlug)}</span>{:else}<span class="muted">{r.chest}</span>{/if}
-            <span class="chestnote">{r.chestQty}× {r.chest}{#if r.optionCount > 1}{" "}<button class="pick-toggle" aria-expanded={!!expanded[r.level]} onclick={() => toggle(r.level)}>{expanded[r.level] ? "[− hide options]" : `[+ pick 1 of ${r.optionCount}]`}</button>{/if}</span>
+            <span class="chestnote">{r.chestQty}× {r.chest}{#if r.optionCount > 1}{" "}<button class="pick-toggle" class:changed={arkSelection.has(r.level)} aria-expanded={!!expanded[r.level]} onclick={() => toggle(r.level)}>{expanded[r.level] ? "[− hide options]" : `[+ pick 1 of ${r.optionCount}]`}</button>{/if}</span>
           </td>
           <td class="right num">{r.qty ? r.qty.toLocaleString("en-US") : "—"}</td>
           <td class="right num accent">{r.gold > 0 ? formatGold(r.gold) : "—"}</td>
@@ -146,10 +146,13 @@
   tr.milestone td { background: rgba(255, 209, 102, .05); }
   .star { color: var(--accent); margin-left: 4px; font-size: 11px; }
   tr:hover td { background: var(--panel-2); }
-  /* Only the gold [+ pick 1 of N] toggle is clickable; the chest name stays plain text. */
-  .pick-toggle { background: none; border: 0; padding: 0; cursor: pointer; color: var(--accent);
+  /* The [+ pick 1 of N] toggle is the only clickable part (chest name stays plain text). It blends
+     with the text by default and turns gold once that level's pick is changed, so adjusted rows
+     catch the eye at a glance. */
+  .pick-toggle { background: none; border: 0; padding: 0; cursor: pointer; color: var(--muted);
     font: inherit; }
-  .pick-toggle:hover { text-decoration: underline; text-underline-offset: 2px; }
+  .pick-toggle:hover { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
+  .pick-toggle.changed, .pick-toggle.changed:hover { color: var(--accent); }
   /* The expanded parent row and its option tray share a gold left bar so they read as one group. */
   tr.open td { background: rgba(255, 209, 102, .06); }
   tr.open td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
