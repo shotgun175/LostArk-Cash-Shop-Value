@@ -12,6 +12,7 @@
 
   const prices = $derived(effectivePrices());
   const rows = $derived(arkPassRows(prices, arkSelection.map));
+  const pickCount = $derived(arkSelection.count());
 
   // Which level rows have their option list expanded (keyed by level number).
   let expanded = $state<Record<number, boolean>>({});
@@ -31,7 +32,7 @@
   <p class="note">
     Premium gives a reward at every level; Super Premium adds the same plus milestone rewards at
     levels 5/10/15/20/25/30 (skins/extras — not yet valued). Each selection reward defaults to its
-    highest-value option — expand “pick 1 of N” on a level to value it as a different choice.
+    highest-value option — expand “pick 1 of N” on a level to value it as a different choice.{#if pickCount > 0} <span class="custom"><b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"} <button class="reset-all" onclick={() => arkSelection.clearAll()}>reset all</button></span>{/if}
   </p>
 
   <div class="summary">
@@ -99,11 +100,19 @@
 <style>
   .ark {
     --bg: #0e1116; --panel: #161b22; --panel-2: #1f242c; --border: #30363d;
-    --text: #e6edf3; --muted: #9aa4b2; --accent: #ffd166;
+    --text: #e6edf3; --muted: #9aa4b2; --accent: #ffd166; --bad: #ef6f6c;
     color: var(--text); font-family: "Sora", system-ui, sans-serif;
   }
   h2 { font-size: 20px; margin: 8px 0 6px; }
-  .note { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0 0 16px; }
+  .note { color: var(--muted); font-size: 13px; line-height: 1.9; margin: 0 0 16px; }
+  /* Global "reset all picks" affordance, mirroring the Packs tab. */
+  .custom { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; white-space: nowrap;
+    vertical-align: middle; color: var(--accent); background: rgba(255, 209, 102, 0.1);
+    border: 1px solid rgba(255, 209, 102, 0.4); border-radius: 6px; padding: 3px 10px; }
+  .custom .num { color: var(--accent); }
+  .reset-all { background: rgba(255, 209, 102, 0.12); color: var(--accent); border: 1px solid rgba(255, 209, 102, 0.5);
+    padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .reset-all:hover { background: var(--bad); border-color: var(--bad); color: var(--bg); }
   .summary { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px; }
   @media (min-width: 700px) { .summary { grid-template-columns: 1fr 1fr; } }
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }

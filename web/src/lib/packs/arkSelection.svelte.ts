@@ -31,6 +31,10 @@ class ArkSelection {
     return level in this.map;
   }
 
+  count(): number {
+    return Object.keys(this.map).length;
+  }
+
   set(level: number, slug: string): void {
     this.map = { ...this.map, [level]: slug };
     this.persist();
