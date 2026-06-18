@@ -146,12 +146,12 @@
   tr.milestone td { background: rgba(255, 209, 102, .05); }
   .star { color: var(--accent); margin-left: 4px; font-size: 11px; }
   tr:hover td { background: var(--panel-2); }
-  /* The [+ pick 1 of N] toggle is the only clickable part (chest name stays plain text). It blends
-     with the text by default and turns gold once that level's pick is changed, so adjusted rows
-     catch the eye at a glance. */
-  .pick-toggle { background: none; border: 0; padding: 0; cursor: pointer; color: var(--muted);
+  /* The [+ pick 1 of N] toggle is the only clickable part (chest name stays plain text). It shows a
+     faint gold by default (so it reads as selectable) and brightens to full gold once that level's
+     pick is changed, so adjusted rows catch the eye at a glance. */
+  .pick-toggle { background: none; border: 0; padding: 0; cursor: pointer; color: rgba(255, 209, 102, 0.55);
     font: inherit; }
-  .pick-toggle:hover { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
+  .pick-toggle:hover { color: rgba(255, 209, 102, 0.85); text-decoration: underline; text-underline-offset: 2px; }
   .pick-toggle.changed, .pick-toggle.changed:hover { color: var(--accent); }
   /* The expanded parent row and its option tray share a gold left bar so they read as one group. */
   tr.open td { background: rgba(255, 209, 102, .06); }
