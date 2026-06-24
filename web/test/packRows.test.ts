@@ -10,7 +10,7 @@ describe("buildPackRows", () => {
   const rows = buildPackRows(prices, opts);
 
   it("returns one row per pack with all display columns", () => {
-    expect(rows.length).toBe(12);
+    expect(rows.length).toBe(15);
     const r = rows.find((x) => x.slug === "horizon-growth-support-pack-i")!;
     expect(r.total).toBe(1679000);
     expect(r.goldPerRc!).toBeCloseTo(289.5, 1);

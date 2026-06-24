@@ -1,7 +1,8 @@
 import type { Pack } from "./types";
 
-// The 12 live F4 cash-shop packs, transcribed verbatim from TJW's compiled registry
-// (source A: result.packs.packs[]). `contents[].chest` is the chest display-name; resolve
+// The cash-shop pack registry: the original 12 transcribed verbatim from TJW's compiled
+// registry (source A: result.packs.packs[]), plus the three [Weekly] T4 "III" packs added
+// from the live store on 2026-06-24. `contents[].chest` is the chest display-name; resolve
 // via RESOLVER in ./resolver. monthly-t4-growth-support RC (3800) is flagged by the source
 // itself as possibly a placeholder ("RC price was cut off in the screenshot").
 export const PACKS: Pack[] = [
@@ -109,9 +110,11 @@ export const PACKS: Pack[] = [
   {
     name: "[Limited] Paradise Special Pack II",
     slug: "paradise-special-pack-ii",
+    frozenTotal: 711286, // NA card value captured at retirement 2026-06-24 (EU card showed 738,351)
     royalCrystalCost: 4000,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-06-24",
     contents: [
       { chest: "Epic Hell Key of Destiny Exchange Ticket (Season 3)", qty: 2 },
       { chest: "Elysian Attempt +1 Exchange Ticket (Season 3)", qty: 3 },
@@ -173,6 +176,19 @@ export const PACKS: Pack[] = [
     ],
   },
   {
+    name: "[Weekly] T4 Crystallized Stone & Fusion Pack III",
+    slug: "weekly-t4-crystallized-stone-3",
+    royalCrystalCost: 1700,
+    limited: true,
+    recurrence: "weekly",
+    retired: false,
+    contents: [
+      { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 30 },
+      { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 15 },
+      { chest: "Superior Abidos Fusion Material Chest", qty: 10 },
+    ],
+  },
+  {
     name: "[Weekly] T4 Fusion & Leap Pack II",
     slug: "weekly-t4-fusion-leap-pack-2",
     frozenTotal: 164800,
@@ -187,6 +203,18 @@ export const PACKS: Pack[] = [
     ],
   },
   {
+    name: "[Weekly] T4 Fusion & Leap Pack III",
+    slug: "weekly-t4-fusion-leap-pack-3",
+    royalCrystalCost: 1300,
+    limited: true,
+    recurrence: "weekly",
+    retired: false,
+    contents: [
+      { chest: "Superior Abidos Fusion Material Chest", qty: 45 },
+      { chest: "Great Destiny Leapstone Chest", qty: 40 },
+    ],
+  },
+  {
     name: "[Weekly] T4 Shards & Support Materials Pack",
     slug: "weekly-t4-shards-support",
     frozenTotal: 185320,
@@ -198,6 +226,18 @@ export const PACKS: Pack[] = [
     contents: [
       { chest: "T4 Support Materials Selection Chest", qty: 5 },
       { chest: "Destiny Shard Pouch (L)", qty: 60 },
+    ],
+  },
+  {
+    name: "[Weekly] T4 Shards & Support Material Pack III",
+    slug: "weekly-t4-shards-support-3",
+    royalCrystalCost: 1400,
+    limited: true,
+    recurrence: "weekly",
+    retired: false,
+    contents: [
+      { chest: "T4 Support Materials Selection Chest", qty: 5 },
+      { chest: "Destiny Shard Pouch (L)", qty: 65 },
     ],
   },
 ];

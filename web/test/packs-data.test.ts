@@ -6,10 +6,10 @@ import { CUBE_REWARDS } from "../src/lib/packs/data/cube";
 import { BAKED, TRADE_UP, RELIC_ENGRAVING_SLUGS } from "../src/lib/packs/data/constants";
 
 describe("PACKS", () => {
-  it("has all 12 packs", () => {
-    expect(PACKS.length).toBe(12);
+  it("has all 15 packs", () => {
+    expect(PACKS.length).toBe(15);
   });
-  it("lists exactly the 5 non-retired packs", () => {
+  it("lists exactly the 7 non-retired packs", () => {
     const active = PACKS.filter((p) => !p.retired).map((p) => p.slug).sort();
     expect(active).toEqual(
       [
@@ -17,7 +17,9 @@ describe("PACKS", () => {
         "horizon-growth-support-pack-i",
         "horizon-growth-support-pack-ii",
         "monthly-t4-growth-support",
-        "paradise-special-pack-ii",
+        "weekly-t4-crystallized-stone-3",
+        "weekly-t4-fusion-leap-pack-3",
+        "weekly-t4-shards-support-3",
       ].sort(),
     );
   });
