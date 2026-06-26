@@ -26,6 +26,18 @@ describe("buildPackRows", () => {
     expect(active).toEqual([...active].sort((a, b) => b - a));
   });
 
+  it("orders retired packs most-recently-retired first, then gold/RC desc", () => {
+    const retired = rows.filter((r) => r.retired);
+    // Newest retirement leads the section (Paradise Special Pack II, 2026-06-24).
+    expect(retired[0].slug).toBe("paradise-special-pack-ii");
+    // retiredOn is non-increasing across the whole retired group.
+    const dates = retired.map((r) => r.retiredOn ?? "");
+    expect(dates).toEqual([...dates].sort((a, b) => b.localeCompare(a)));
+    // Within a shared retirement date, higher gold/RC wins (the 2026-06-10 cohort).
+    const sameDay = retired.filter((r) => r.retiredOn === "2026-06-10").map((r) => r.goldPerRc ?? 0);
+    expect(sameDay).toEqual([...sameDay].sort((a, b) => b - a));
+  });
+
   it("vsExchange sign tracks gold/RC vs the 84.03 baseline", () => {
     const horizon = rows.find((r) => r.slug === "horizon-growth-support-pack-i")!;
     const t4 = rows.find((r) => r.slug === "monthly-t4-growth-support")!;
