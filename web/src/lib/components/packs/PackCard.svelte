@@ -21,6 +21,14 @@
 
   let expanded = $state<string | null>(null); // material slug whose selection alts are shown
   const sym = $derived(currencySymbol(app.region)); // $ for NA, € for EU — RC priced per region
+
+  // "2026-06-24" -> "6/24/26" for the RETIRED pill. Parsed by parts (not new Date) to avoid the
+  // UTC-midnight-shifts-a-day timezone trap. Falls back to a bare "retired" if the date is absent.
+  function retiredLabel(iso?: string): string {
+    const m = iso?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return "retired";
+    return `retired ${Number(m[2])}/${Number(m[3])}/${m[1].slice(2)}`;
+  }
   function perUnit(gold: number, qty: number): string {
     return gold > 0 && qty > 0 ? formatGold(gold / qty) : "—";
   }
@@ -52,7 +60,7 @@
 <div class="card" class:retired={row.retired}>
   <div class="head">
     <a class="title" href="{base}/pack/{row.slug}">{row.name}</a>
-    {#if row.retired}<span class="tag retired-tag">retired</span>{/if}
+    {#if row.retired}<span class="tag retired-tag">{retiredLabel(row.retiredOn)}</span>{/if}
     {#if row.recurrence}<span class="tag">{row.recurrence}</span>{/if}
     {#if row.limited}<span class="tag">limited</span>{/if}
   </div>

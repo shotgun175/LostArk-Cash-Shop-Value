@@ -39,6 +39,11 @@ export function buildPackRows(
 
   return rows.sort((a, b) => {
     if (a.retired !== b.retired) return a.retired ? 1 : -1;
+    // Retired packs surface most-recently-retired first (ISO dates sort lexically); a shared
+    // retirement date — and the whole active group — falls back to gold-per-RC desc.
+    if (a.retired && b.retired && a.retiredOn !== b.retiredOn) {
+      return (b.retiredOn ?? "").localeCompare(a.retiredOn ?? "");
+    }
     return (b.goldPerRc ?? 0) - (a.goldPerRc ?? 0);
   });
 }
