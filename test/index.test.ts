@@ -1,5 +1,5 @@
 import { env, createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import worker from "../src/index";
 import { writePayload } from "../src/store";
 import type { PricePayload } from "../src/normalize";
@@ -87,6 +87,35 @@ describe("worker fetch", () => {
     const res = await call("/healthz");
     const body = (await res.json()) as { g2g_age_seconds: number | null };
     expect(body.g2g_age_seconds).toBeNull();
+  });
+
+  it("/healthz lets well-behaved clients cache for 30s", async () => {
+    await writePayload(env.PRICES, seed);
+    const res = await call("/healthz");
+    expect(res.headers.get("cache-control")).toContain("max-age=30");
+  });
+
+  it("degrades /v1/prices to a 503 JSON when the KV read fails (no platform error page)", async () => {
+    const getSpy = vi.spyOn(env.PRICES, "get").mockRejectedValue(new Error("kv down"));
+    const res = await call("/v1/prices");
+    expect(res.status).toBe(503);
+    expect(res.headers.get("content-type")).toContain("application/json");
+    expect(res.headers.get("access-control-allow-origin")).toBe("*"); // CORS kept so the SPA sees the failure
+    expect(res.headers.get("cache-control")).toContain("no-store"); // never cache the failure
+    const body = (await res.json()) as { error: { code: string } };
+    expect(body.error.code).toBe("kv_unavailable"); // a 503, NOT a 200-empty payload masquerading as ok
+    getSpy.mockRestore();
+  });
+
+  it("degrades /healthz to a not-ok 503 when the KV read fails", async () => {
+    const getSpy = vi.spyOn(env.PRICES, "get").mockRejectedValue(new Error("kv down"));
+    const res = await call("/healthz");
+    expect(res.status).toBe(503);
+    const body = (await res.json()) as { ok: boolean; source_age_seconds: number | null; g2g_age_seconds: number | null };
+    expect(body.ok).toBe(false);
+    expect(body.source_age_seconds).toBeNull();
+    expect(body.g2g_age_seconds).toBeNull();
+    getSpy.mockRestore();
   });
 
   it("404s unknown routes", async () => {
