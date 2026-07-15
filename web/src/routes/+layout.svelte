@@ -28,9 +28,20 @@
   onMount(() => {
     app.load();
     // Poll in step with the worker's 60s cron so prices + the "prices as of" time stay current
-    // on a page left open, without a manual reload.
-    const id = setInterval(() => app.refresh(), 60_000);
-    return () => clearInterval(id);
+    // on a page left open, without a manual reload. Hidden tabs skip the tick (a backgrounded tab
+    // would otherwise poll forever against the Workers free-tier request cap); returning to the
+    // tab refreshes immediately so it never feels stale.
+    const id = setInterval(() => {
+      if (!document.hidden) app.refresh();
+    }, 60_000);
+    const onVisibility = () => {
+      if (!document.hidden) app.refresh();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   });
 </script>
 
