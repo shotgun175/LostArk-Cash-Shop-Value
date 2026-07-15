@@ -39,6 +39,12 @@ describe("icons", () => {
     expect(iconUrl("stone-of-soaring-kit")).toBe("/icons/stone-of-soaring-kit.png");
     expect(iconUrl("basic-life-energy-potion")).toBe("/icons/basic-life-energy-potion.png");
   });
+  it("maps the 2026-07-15 astrogem items (shared chest art + the two ticket crops)", () => {
+    expect(iconUrl("rare-epic-astrogem")).toBe("/icons/epic-astrogem-random.png");
+    expect(displayName("rare-epic-astrogem")).toBe("Rare/Epic Astrogem");
+    expect(iconUrl("astrogem-processing-reset-ticket")).toBe("/icons/astrogem-processing-reset-ticket.png");
+    expect(iconUrl("astrogem-processing-option-refresh-ticket")).toBe("/icons/astrogem-processing-option-refresh-ticket.png");
+  });
 });
 
 describe("isPreframed", () => {

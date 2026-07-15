@@ -2,9 +2,11 @@ import type { Pack } from "./types";
 
 // The cash-shop pack registry: the original 12 transcribed verbatim from TJW's compiled
 // registry (source A: result.packs.packs[]), plus the three [Weekly] T4 "III" packs added
-// from the live store on 2026-06-24. `contents[].chest` is the chest display-name; resolve
-// via RESOLVER in ./resolver. monthly-t4-growth-support RC (3800) is flagged by the source
-// itself as possibly a placeholder ("RC price was cut off in the screenshot").
+// from the live store on 2026-06-24 and the four 2026-07-15 summer-rotation packs (Paradise
+// re-release, Summer Growth I/II, Summer Astrogem). `contents[].chest` is the chest
+// display-name; resolve via RESOLVER in ./resolver. monthly-t4-growth-support RC (3800) is
+// flagged by the source itself as possibly a placeholder ("RC price was cut off in the
+// screenshot").
 export const PACKS: Pack[] = [
   {
     name: "[Limited] Adventurer's Path Package",
@@ -23,9 +25,11 @@ export const PACKS: Pack[] = [
   {
     name: "[Limited] Horizon Growth Support Pack I",
     slug: "horizon-growth-support-pack-i",
+    frozenTotal: 1537150, // NA card value captured at retirement 2026-07-15 (EU card showed 1,590,600)
     royalCrystalCost: 5800,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-07-15",
     contents: [
       { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 25 },
       { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 50 },
@@ -39,9 +43,11 @@ export const PACKS: Pack[] = [
   {
     name: "[Limited] Horizon Growth Support Pack II",
     slug: "horizon-growth-support-pack-ii",
+    frozenTotal: 738450, // NA card value captured at retirement 2026-07-15 (EU card showed 780,350)
     royalCrystalCost: 3800,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-07-15",
     contents: [
       { chest: "Destiny Destruction Stone Bundle", qty: 60 },
       { chest: "Destiny Guardian Stone Bundle", qty: 120 },
@@ -90,6 +96,25 @@ export const PACKS: Pack[] = [
       { chest: "T4 Support Materials Selection Chest", qty: 10 },
       { chest: "Legendary Hell Key of Destiny Exchange Ticket II (Season 3)", qty: 2 },
       { chest: "Epic Hell Key of Destiny Exchange Ticket II (Season 3)", qty: 2 },
+    ],
+  },
+  {
+    // 2026-07-15 re-release of the monthly Paradise pack (same display name; the retired
+    // 2026-06-10 entry above keeps its frozen history) with Season 4 tickets and a lower RC.
+    name: "[Monthly] Paradise Special Pack",
+    slug: "monthly-paradise-special-pack-2",
+    royalCrystalCost: 6300,
+    limited: true,
+    recurrence: "monthly",
+    retired: false,
+    contents: [
+      { chest: "Epic Hell Key of Destiny Exchange Ticket (Season 4)", qty: 3 },
+      { chest: "Legendary Hell Key of Destiny Exchange Ticket (Season 4)", qty: 1 },
+      { chest: "Legendary Netherworld Key Exchange Ticket (Season 4)", qty: 1 },
+      { chest: "(NEW) Ebony Cube Entrance Ticket Selection Chest II", qty: 10 },
+      { chest: "T4 Gem Chest (Lv. 3)", qty: 120 },
+      { chest: "Abidos Fusion Material Chest", qty: 30 },
+      { chest: "T4 Support Materials Selection Chest", qty: 10 },
     ],
   },
   {
@@ -158,6 +183,53 @@ export const PACKS: Pack[] = [
       { chest: "Abidos Fusion Material Chest", qty: 15 },
       { chest: "Artisan's Support Materials Selection Chest: Weapon", qty: 5 },
       { chest: "Artisan's Support Materials Selection Chest: Armor", qty: 5 },
+    ],
+  },
+  {
+    name: "[Limited] Summer Growth Support Pack I",
+    slug: "summer-growth-support-pack-i",
+    royalCrystalCost: 7900,
+    limited: true,
+    retired: false,
+    contents: [
+      { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 40 },
+      { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 60 },
+      { chest: "Great Destiny Leapstone Chest", qty: 65 },
+      { chest: "Superior Abidos Fusion Material Chest", qty: 100 },
+      { chest: "Destiny Shard Pouch (L)", qty: 200 },
+      { chest: "Glacier's Breath Chest", qty: 150 },
+      { chest: "Lava's Breath Chest", qty: 100 },
+    ],
+  },
+  {
+    name: "[Limited] Summer Growth Support Pack II",
+    slug: "summer-growth-support-pack-ii",
+    royalCrystalCost: 4900,
+    limited: true,
+    retired: false,
+    contents: [
+      { chest: "Destiny Destruction Stone Bundle", qty: 50 },
+      { chest: "Destiny Guardian Stone Bundle", qty: 100 },
+      { chest: "Destiny Leapstone Chest", qty: 40 },
+      { chest: "Abidos Fusion Material Chest", qty: 45 },
+      { chest: "Artisan's Support Materials Selection Chest: Weapon", qty: 5 },
+      { chest: "Artisan's Support Materials Selection Chest: Armor", qty: 5 },
+    ],
+  },
+  {
+    name: "[Weekly] Summer Astrogem Package",
+    slug: "weekly-summer-astrogem-package",
+    royalCrystalCost: 1400,
+    limited: true,
+    recurrence: "weekly",
+    retired: false,
+    contents: [
+      { chest: "Rare - Epic Astrogem Chest", qty: 10 },
+      { chest: "Epic Astrogem Chest", qty: 2 },
+      { chest: "Epic Astrogem Selection Chest", qty: 1 },
+      { chest: "Astrogem Processing Reset Ticket", qty: 3 },
+      { chest: "Astrogem Processing Option Refresh Ticket", qty: 3 },
+      { chest: "T4 Gem Chest (Lv. 3)", qty: 25 },
     ],
   },
   {

@@ -10,12 +10,20 @@ describe("buildPackRows", () => {
   const rows = buildPackRows(prices, opts);
 
   it("returns one row per pack with all display columns", () => {
-    expect(rows.length).toBe(15);
-    const r = rows.find((x) => x.slug === "horizon-growth-support-pack-i")!;
-    expect(r.total).toBe(1679000);
-    expect(r.goldPerRc!).toBeCloseTo(289.5, 1);
+    expect(rows.length).toBe(19);
+    // Sample a still-active pack (horizon-i is retired since 2026-07-15 and displays its
+    // frozen total, covered below); 831,020 / 415.5 is its TJW golden value on this fixture.
+    const r = rows.find((x) => x.slug === "adventurers-path-package")!;
+    expect(r.total).toBe(831020);
+    expect(r.goldPerRc!).toBeCloseTo(415.5, 1);
     expect(r.vsExchange).not.toBeNull();
     expect(r.vsG2G).not.toBeNull();
+  });
+
+  it("shows the frozen total (not fixture math) for a retired pack", () => {
+    const r = rows.find((x) => x.slug === "horizon-growth-support-pack-i")!;
+    expect(r.total).toBe(1537150);
+    expect(r.goldPerRc!).toBeCloseTo(265.0, 1);
   });
 
   it("orders active packs before retired, each by gold/RC desc", () => {
@@ -28,8 +36,10 @@ describe("buildPackRows", () => {
 
   it("orders retired packs most-recently-retired first, then gold/RC desc", () => {
     const retired = rows.filter((r) => r.retired);
-    // Newest retirement leads the section (Paradise Special Pack II, 2026-06-24).
-    expect(retired[0].slug).toBe("paradise-special-pack-ii");
+    // Newest retirement leads the section (the 2026-07-15 Horizon pair); within that shared
+    // date the higher frozen gold/RC wins (Horizon I 265.0 over Horizon II 194.3).
+    expect(retired[0].slug).toBe("horizon-growth-support-pack-i");
+    expect(retired[1].slug).toBe("horizon-growth-support-pack-ii");
     // retiredOn is non-increasing across the whole retired group.
     const dates = retired.map((r) => r.retiredOn ?? "");
     expect(dates).toEqual([...dates].sort((a, b) => b.localeCompare(a)));
