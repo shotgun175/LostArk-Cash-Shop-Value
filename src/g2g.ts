@@ -1,5 +1,6 @@
 import type { FetchLike } from "./feed";
 import type { G2gRate } from "./normalize";
+import { readJsonCapped } from "./http";
 
 // Backend-only live "price per 1,000 gold" reference, polled from a single fixed public marketplace
 // seller. We read converted_unit_price — the price the marketplace actually DISPLAYS to buyers in the
@@ -12,6 +13,7 @@ const BASE =
   "&seo_term=lost-ark-gold&page_size=48&seller=Droku&sort=lowest_price";
 const MIN_RATE = 0.001; // per-1k-gold sanity floor
 const MAX_RATE = 1; // per-1k-gold sanity ceiling
+const MAX_BODY_BYTES = 5_000_000; // same cap as the market feed; an offer page is a few KB
 
 interface G2gOffer {
   title?: unknown;
@@ -43,9 +45,10 @@ async function fetchOne(
   }
   let body: { code?: unknown; payload?: { results?: unknown } };
   try {
-    body = (await res.json()) as typeof body;
+    // Same stream-enforced size cap as the feed: this endpoint is just as untrusted.
+    body = (await readJsonCapped(res, MAX_BODY_BYTES, `g2g ${currency}`)) as typeof body;
   } catch (e) {
-    console.error("g2g: bad JSON", currency, e);
+    console.error("g2g: bad JSON or oversized body", currency, e);
     return null;
   }
   const results = body?.payload?.results;
