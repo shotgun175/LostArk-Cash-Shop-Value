@@ -1,13 +1,11 @@
-export type Region = "nae" | "euc";
-export interface RegionSnapshot { source_valid_at: string; prices: Record<string, number>; }
-export interface PricePayload {
-  // Wire shape is produced by the worker (src/normalize.ts) — keep this in lockstep with it.
-  schema_version: 1;
-  generated_at: string;
-  regions: Partial<Record<Region, RegionSnapshot>>;
-  bundles: Record<string, number>;
-  g2g?: { usdPer1kGold?: number; eurPer1kGold?: number; fetchedAt?: string }; // live per-1,000-gold reference (NA=USD, EU=EUR), polled server-side
-}
+// The wire types are imported type-only from the worker source (src/normalize.ts, src/items.ts),
+// the single source of truth, so the contract is compiler-enforced: payload drift now fails
+// svelte-check instead of breaking at runtime in the browser. Type-only imports are erased at
+// build time, so this adds no runtime coupling between the two npm projects.
+import type { PricePayload } from "../../../src/normalize";
+
+export type { PricePayload, RegionSnapshot } from "../../../src/normalize";
+export type { Region } from "../../../src/items";
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
