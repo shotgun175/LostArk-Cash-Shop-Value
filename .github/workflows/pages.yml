@@ -23,7 +23,41 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Gate on both test suites before anything deploys. build (and therefore deploy) only runs if
+  # this passes, so a regression in the pack-value math, the EV engine, the wire contract, or the
+  # feed hardening is caught before it reaches either production target. Covers the root worker
+  # suite (Cloudflare workers pool) and the web suite + svelte-check.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
+      - name: Install worker deps (root)
+        run: npm ci
+      # wrangler.jsonc points assets.directory at web/build, which is gitignored and absent on a
+      # fresh checkout; the workers pool validates that path at startup, so stub it before testing.
+      - name: Stub the built UI dir for the workers pool
+        run: mkdir -p web/build
+      - name: Worker tests (Cloudflare workers pool)
+        run: npm test
+      - name: Install web deps
+        run: npm ci
+        working-directory: web
+      - name: Web tests
+        run: npm test
+        working-directory: web
+      - name: Web type-check (svelte-check)
+        run: npm run check
+        working-directory: web
+
   build:
+    needs: test
     runs-on: ubuntu-latest
     env:
       # Pages build profile. BASE_PATH must match the repo name exactly (Pages paths are
