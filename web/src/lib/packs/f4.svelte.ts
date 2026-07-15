@@ -1,11 +1,11 @@
 import { app } from "../app.svelte";
 import type { Region } from "../api";
-import { F4_DIVISOR } from "./exchange";
+import { F4_DIVISOR, F4_DEFAULT_INPUT } from "./exchange";
 import { BC_PER_BUNDLE } from "./data/marisShop";
 
 // A round, deliberately-illustrative default — not pulled from any live source. The user tunes it
 // once and it's remembered per region; we don't want the seeded value to look authoritative.
-const DEFAULTS: Record<Region, number> = { nae: 20000, euc: 20000 };
+const DEFAULTS: Record<Region, number> = { nae: F4_DEFAULT_INPUT, euc: F4_DEFAULT_INPUT };
 
 // The one shared F4 currency-exchange gold input, used by Packs, Mari's Shop and Ark Pass (per
 // region, persisted). Royal and blue crystals are valued the same; only the denominator differs:
