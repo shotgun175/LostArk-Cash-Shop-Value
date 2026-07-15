@@ -168,6 +168,59 @@ describe("refresh", () => {
     expect((await readPayload(env.PRICES))?.regions.nae?.prices.grudge).toBe(300);
   });
 
+  it("backs off after a failed g2g poll instead of retrying every cron (incl. first deploy)", async () => {
+    // Start from the first-deploy state: a payload with no g2g block, so no attempt is on record.
+    await writePayload(env.PRICES, buildPayload({}, {}, new Date().toISOString()));
+    let g2gCalls = 0;
+    const failing: FetchLike = async (url, init) => {
+      if (String(url).includes("sls.g2g.com")) {
+        g2gCalls++;
+        throw new Error("down");
+      }
+      const body = JSON.parse(String(init?.body)) as { region_slug: string };
+      const rows = body.region_slug === "nae" ? [{ item_slug: "grudge", price: 100, timestamp: T_NEW }] : [];
+      return new Response(JSON.stringify(rows), { status: 200, headers: { "content-type": "application/json" } });
+    };
+    await refresh(env.PRICES, failing); // due (nothing on record) -> attempt fails but is stamped
+    const afterFirst = g2gCalls;
+    expect(afterFirst).toBeGreaterThan(0);
+    await refresh(env.PRICES, failing); // within the 30-min backoff window -> must NOT re-poll
+    expect(g2gCalls).toBe(afterFirst);
+    // The attempt stamp (and nothing else) is persisted, so the backoff survives across crons.
+    const g = (await readPayload(env.PRICES))?.g2g;
+    expect(g?.fetchedAt).toBeDefined();
+    expect(g?.usdPer1kGold).toBeUndefined();
+    expect(g?.usdFetchedAt).toBeUndefined();
+  });
+
+  it("stamps only the successful currency; a frozen leg keeps its value and old stamp", async () => {
+    // Prime: both legs succeed -> both per-currency stamps set.
+    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }], euc: [] }), 0);
+    const primed = (await readPayload(env.PRICES))?.g2g;
+    expect(primed?.usdFetchedAt).toBeDefined();
+    expect(primed?.eurFetchedAt).toBeDefined();
+    await new Promise((r) => setTimeout(r, 10)); // ISO stamps carry ms precision; force a distinct attempt time
+    // Re-poll with only the USD offer present (the EUR offer delisted).
+    const usdOnly: FetchLike = async (url, init) => {
+      if (String(url).includes("sls.g2g.com")) {
+        return new Response(
+          JSON.stringify({ code: 2000, payload: { results: [{ title: "Balthorr - US East", converted_unit_price: 0.032 }] } }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      }
+      const body = JSON.parse(String(init?.body)) as { region_slug: string };
+      const rows = body.region_slug === "nae" ? [{ item_slug: "grudge", price: 100, timestamp: T_NEW }] : [];
+      return new Response(JSON.stringify(rows), { status: 200, headers: { "content-type": "application/json" } });
+    };
+    await refresh(env.PRICES, usdOnly, 0); // interval 0 -> force the re-poll
+    const g = (await readPayload(env.PRICES))?.g2g;
+    expect(g?.usdPer1kGold).toBe(0.032); // fresh value
+    expect(g?.usdFetchedAt).toBe(g?.fetchedAt); // successful leg stamped with this attempt
+    expect(g?.eurPer1kGold).toBe(G2G_EUR); // frozen leg: value carried forward
+    expect(g?.eurFetchedAt).toBe(primed?.eurFetchedAt); // ...with its OLD stamp intact
+    expect(g?.eurFetchedAt).not.toBe(g?.fetchedAt); // the per-currency freshness signal no longer lies
+  });
+
   it("self-heals a KV key already poisoned with a future source_valid_at", async () => {
     const nowS = Math.floor(Date.now() / 1000);
     const farFuture = new Date((nowS + 100 * 24 * 3600) * 1000).toISOString(); // ~100 days ahead

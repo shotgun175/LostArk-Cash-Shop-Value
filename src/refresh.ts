@@ -43,22 +43,33 @@ export async function refresh(
     }
   }
 
-  // Re-poll the live real-money rates only when the interval has elapsed; otherwise carry the last
-  // values forward. Each currency keeps its own last-good value if that leg of the fetch fails.
+  // Re-poll the live real-money rates only when the interval has elapsed since the last ATTEMPT;
+  // otherwise carry the last values forward. Stamping every attempt (success or failure) is the
+  // backoff: a failing upstream is retried on the slow 30-min cadence, never on every 60s cron
+  // (which used to mean ~2,880 req/day against an anti-scraping marketplace, from first deploy too).
   const prevG2g = prev?.g2g;
-  const lastFetched = prevG2g?.fetchedAt ? Date.parse(prevG2g.fetchedAt) : 0;
-  const due = !Number.isFinite(lastFetched) || Date.now() - lastFetched >= g2gIntervalMs;
+  const lastAttempt = prevG2g?.fetchedAt ? Date.parse(prevG2g.fetchedAt) : 0;
+  const due = !Number.isFinite(lastAttempt) || nowMs - lastAttempt >= g2gIntervalMs;
   let g2g: G2gRate | undefined = prevG2g;
   if (due) {
+    const attemptedAt = new Date().toISOString();
     const fetched = await fetchG2gRates(fetchImpl);
+    // Per currency: a successful leg gets the fresh value and a fresh success stamp; a failed leg
+    // carries BOTH its previous value and its previous stamp forward. The old whole-block re-stamp
+    // marked a frozen leg as freshly updated, so the tooltip's freshness signal lied.
+    g2g = { fetchedAt: attemptedAt };
     const usd = fetched?.usdPer1kGold ?? prevG2g?.usdPer1kGold;
     const eur = fetched?.eurPer1kGold ?? prevG2g?.eurPer1kGold;
-    if (fetched && (usd != null || eur != null)) {
-      g2g = { fetchedAt: new Date().toISOString() };
-      if (usd != null) g2g.usdPer1kGold = usd;
-      if (eur != null) g2g.eurPer1kGold = eur;
+    if (usd != null) {
+      g2g.usdPer1kGold = usd;
+      const stamp = fetched?.usdPer1kGold != null ? attemptedAt : prevG2g?.usdFetchedAt;
+      if (stamp) g2g.usdFetchedAt = stamp;
     }
-    // fetch failed (null) -> keep prevG2g (and its old fetchedAt), so the next cron retries.
+    if (eur != null) {
+      g2g.eurPer1kGold = eur;
+      const stamp = fetched?.eurPer1kGold != null ? attemptedAt : prevG2g?.eurFetchedAt;
+      if (stamp) g2g.eurFetchedAt = stamp;
+    }
   }
   const payload = buildPayload(regions, BUNDLES, new Date().toISOString(), g2g);
 
