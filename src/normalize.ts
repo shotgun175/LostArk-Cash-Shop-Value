@@ -33,10 +33,19 @@ const SLUG_SET: ReadonlySet<string> = new Set(FETCH_SLUGS);
 const DESTINY_SHARD_PER_L_POUCH = 3000;
 const MIN_TS = 1_500_000_000; // ~2017-07; rejects millisecond-scale timestamps and junk
 const MAX_TS = 9_000_000_000; // ~2255; rejects ms-scale (~1.7e12), Infinity, and huge values
+// Accept rows up to 1h ahead of our clock (benign upstream skew) but reject anything further, so a
+// single plausible-but-future row can't become source_valid_at and freeze the region forever.
+// Tradeoff: if the upstream clock genuinely runs >1h fast, every row is rejected and the region
+// serves aging data until it recovers -- the intended stale-beats-frozen behavior, surfaced to users
+// by T5's stale banner.
+export const MAX_FUTURE_SKEW_S = 3600;
 const MAX_PRICE = 1e12; // generous ceiling; rejects Infinity/NaN/absurd magnitudes
 const MAX_ROWS = 5000; // we only ever query ~95 slugs; anything beyond is junk/DoS
 
-export function isValidRow(r: FeedRow): boolean {
+export function isValidRow(r: FeedRow, nowMs: number = Date.now()): boolean {
+  // Cap the timestamp at the lesser of the absolute ceiling and now + skew, so a plausible-but-future
+  // row can't poison source_valid_at and permanently freeze the region (see MAX_FUTURE_SKEW_S).
+  const maxTs = Math.min(MAX_TS, Math.floor(nowMs / 1000) + MAX_FUTURE_SKEW_S);
   return (
     typeof r?.item_slug === "string" &&
     SLUG_SET.has(r.item_slug) && // allowlist: kills __proto__/constructor/unknown keys
@@ -45,15 +54,17 @@ export function isValidRow(r: FeedRow): boolean {
     r.price < MAX_PRICE &&
     Number.isInteger(r.timestamp) &&
     r.timestamp >= MIN_TS &&
-    r.timestamp <= MAX_TS
+    r.timestamp <= maxTs
   );
 }
 
 // Drop malformed/untrusted rows; bound the count first (DoS guard). One bad row
 // no longer discards a whole region — only the bad rows are dropped.
-export function sanitizeRows(rows: FeedRow[]): FeedRow[] {
+export function sanitizeRows(rows: FeedRow[], nowMs: number = Date.now()): FeedRow[] {
   if (!Array.isArray(rows)) return [];
-  return rows.slice(0, MAX_ROWS).filter(isValidRow);
+  // Note: pass an arrow, not `isValidRow` directly -- filter's (value, index) would feed the index in
+  // as nowMs and corrupt the clock check.
+  return rows.slice(0, MAX_ROWS).filter((r) => isValidRow(r, nowMs));
 }
 
 export function maxTimestamp(rows: FeedRow[]): number {

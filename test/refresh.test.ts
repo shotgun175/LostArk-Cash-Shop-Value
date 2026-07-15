@@ -1,7 +1,8 @@
 import { env } from "cloudflare:test";
 import { describe, it, expect, vi } from "vitest";
 import { refresh } from "../src/refresh";
-import { readPayload } from "../src/store";
+import { readPayload, writePayload } from "../src/store";
+import { buildPayload } from "../src/normalize";
 import type { FetchLike } from "../src/feed";
 
 const T_NEW = 1781506594;
@@ -154,5 +155,32 @@ describe("refresh", () => {
     const payload = await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }], euc: [] }));
     expect(payload.bundles["destruction-stone"]).toBe(1000);
     expect(payload.bundles.grudge).toBe(1);
+  });
+
+  it("rejects a plausible-but-future row and never lets it freeze the region", async () => {
+    const nowS = Math.floor(Date.now() / 1000);
+    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 100, timestamp: nowS - 120 }], euc: [] }));
+    // A +2h row is dropped by sanitize -> region stays put, NOT stamped with a far-future source_valid_at.
+    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 200, timestamp: nowS + 7200 }], euc: [] }));
+    expect((await readPayload(env.PRICES))?.regions.nae?.prices.grudge).toBe(100); // unchanged
+    // A later genuine advance still lands (the region is not frozen).
+    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 300, timestamp: nowS - 30 }], euc: [] }));
+    expect((await readPayload(env.PRICES))?.regions.nae?.prices.grudge).toBe(300);
+  });
+
+  it("self-heals a KV key already poisoned with a future source_valid_at", async () => {
+    const nowS = Math.floor(Date.now() / 1000);
+    const farFuture = new Date((nowS + 100 * 24 * 3600) * 1000).toISOString(); // ~100 days ahead
+    // Simulate a key poisoned before the guard existed: an implausibly far-future stored stamp that,
+    // under the old write-on-advance rule, would out-rank and block every genuine future update.
+    await writePayload(
+      env.PRICES,
+      buildPayload({ nae: { source_valid_at: farFuture, prices: { grudge: 100 } } }, {}, new Date().toISOString()),
+    );
+    // A genuine (recent-past) refresh must overwrite the poison rather than being blocked by it.
+    await refresh(env.PRICES, feedStub({ nae: [{ item_slug: "grudge", price: 500, timestamp: nowS - 60 }], euc: [] }));
+    const healed = await readPayload(env.PRICES);
+    expect(healed?.regions.nae?.prices.grudge).toBe(500); // healed
+    expect(Date.parse(healed!.regions.nae!.source_valid_at)).toBeLessThan((nowS + 1) * 1000); // poison gone
   });
 });

@@ -32,6 +32,15 @@ describe("isValidRow", () => {
     expect(isValidRow({ ...good, timestamp: Infinity })).toBe(false);
     expect(isValidRow({ ...good, timestamp: TS + 0.5 })).toBe(false); // non-integer
   });
+
+  it("rejects a plausible-but-future timestamp beyond the skew window, accepts a small skew", () => {
+    const nowMs = Date.parse("2026-06-15T06:00:00.000Z");
+    const nowS = Math.floor(nowMs / 1000);
+    expect(isValidRow({ ...good, timestamp: nowS + 7200 }, nowMs)).toBe(false); // +2h -> rejected
+    expect(isValidRow({ ...good, timestamp: nowS + 300 }, nowMs)).toBe(true); // +5min -> accepted
+    expect(isValidRow({ ...good, timestamp: nowS + 3600 }, nowMs)).toBe(true); // exactly at the skew edge
+    expect(isValidRow({ ...good, timestamp: nowS + 3601 }, nowMs)).toBe(false); // one second past it
+  });
 });
 
 describe("sanitizeRows", () => {
@@ -56,6 +65,18 @@ describe("sanitizeRows", () => {
   it("caps the number of rows (DoS guard)", () => {
     const many = Array.from({ length: 6000 }, () => good);
     expect(sanitizeRows(many)).toHaveLength(5000);
+  });
+
+  it("drops implausibly-future rows using the injected clock", () => {
+    const nowMs = Date.parse("2026-06-15T06:00:00.000Z");
+    const nowS = Math.floor(nowMs / 1000);
+    const rows: FeedRow[] = [
+      { item_slug: "grudge", price: 100, timestamp: nowS - 60 }, // just-past -> kept
+      { item_slug: "grudge", price: 200, timestamp: nowS + 7200 }, // +2h -> dropped
+    ];
+    const out = sanitizeRows(rows, nowMs);
+    expect(out).toHaveLength(1);
+    expect(out[0].price).toBe(100);
   });
 });
 
