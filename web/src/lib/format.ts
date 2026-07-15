@@ -19,7 +19,7 @@ export function formatMoney(n: number, sym: string): string {
   return `${sym}${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-interface Freshness { label: string; stale: boolean; }
+interface Freshness { label: string; time: string; stale: boolean; }
 
 // `now` is injectable for tests; defaults to current time. Time is shown in the viewer's local
 // timezone (with the tz abbreviation) — UTC reads as confusing to most users.
@@ -29,5 +29,5 @@ export function freshness(generatedAt: string, sourceValidAt: string, now = Date
   const time = Number.isNaN(src)
     ? "—"
     : new Date(src).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZoneName: "short" });
-  return { label: `prices as of ${time}`, stale: ageMs > STALE_MS };
+  return { label: `prices as of ${time}`, time, stale: ageMs > STALE_MS };
 }

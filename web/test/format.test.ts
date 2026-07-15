@@ -23,6 +23,7 @@ describe("freshness", () => {
       hour: "2-digit", minute: "2-digit", timeZoneName: "short",
     });
     expect(f.label).toBe(`prices as of ${localTime}`);
+    expect(f.time).toBe(localTime);
   });
   it("flags stale only when far behind (past 90 min)", () => {
     const f = freshness("2026-06-15T06:25:00.000Z", "2026-06-15T04:00:00.000Z", now);

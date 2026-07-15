@@ -11,9 +11,13 @@
 </script>
 
 {#if f}
-  <p class="fresh">{f.label}</p>
+  <p class="fresh" class:stale={f.stale}>
+    {#if f.stale}prices may be outdated - last updated {f.time}{:else}{f.label}{/if}
+  </p>
 {/if}
 
 <style>
   .fresh { color: var(--muted); font-size: 12px; text-align: center; margin: 8px 0 0; }
+  /* Discreet outage signal: silent in normal use, amber only past the 90-min stale threshold. */
+  .fresh.stale { color: var(--gold-2); font-weight: 600; }
 </style>
