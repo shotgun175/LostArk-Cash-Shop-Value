@@ -148,7 +148,7 @@
     <p class="state">Loading prices…</p>
   {:else if app.status === "error"}
     <p class="state bad">Failed to load prices.</p>
-  {:else if app.snapshot?.prices && Object.keys(app.snapshot.prices).length === 0}
+  {:else if !app.snapshot || Object.keys(app.snapshot.prices).length === 0}
     <p class="state">No prices yet — the feed may be refreshing.</p>
   {:else}
     <div class="pack-grid">

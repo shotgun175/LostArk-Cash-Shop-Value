@@ -1,4 +1,5 @@
 import type { Region } from "./items";
+import { readJsonCapped } from "./http";
 
 export interface FeedRow {
   item_slug: string;
@@ -22,9 +23,9 @@ export async function fetchRegion(
     body: JSON.stringify({ region_slug: region, item_slugs: slugs }),
   });
   if (!res.ok) throw new Error(`feed ${region} HTTP ${res.status}`);
-  const len = res.headers.get("content-length");
-  if (len !== null && Number(len) > MAX_BODY_BYTES) throw new Error(`feed ${region} body too large: ${len}`);
-  const data: unknown = await res.json();
+  // Cap enforced on the actual bytes (readJsonCapped), so a chunked response with no Content-Length
+  // or a malformed declared length can't buffer an unbounded body.
+  const data: unknown = await readJsonCapped(res, MAX_BODY_BYTES, `feed ${region}`);
   if (!Array.isArray(data)) throw new Error(`feed ${region} response not an array`);
   return data as FeedRow[];
 }
