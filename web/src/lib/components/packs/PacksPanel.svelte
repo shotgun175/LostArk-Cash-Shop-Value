@@ -53,9 +53,12 @@
   const rcCash = $derived(RC_CASH_PER_12K[app.region]); // 100 (NA) / 94.99 (EU) per 12,000 RC
   const rcPerUnit = $derived(cashPerRc(app.region));
   const g2gOut = $derived(g2gValue ? g2gReadout(g2gValue, sym) : "—");
-  // Discreet hover-only freshness signal for the live rate (no visible text).
+  // Discreet hover-only freshness signal for the live rate (no visible text). Reads the shown
+  // region's per-currency success stamp (USD for NA, EUR for EU); the block-level fetchedAt is the
+  // poll-attempt rate-limiter and would claim a frozen leg was freshly updated.
   const g2gTooltip = $derived.by(() => {
-    const at = app.payload?.g2g?.fetchedAt;
+    const g = app.payload?.g2g;
+    const at = app.region === "euc" ? g?.eurFetchedAt : g?.usdFetchedAt;
     const t = at ? new Date(at) : null;
     if (!t || Number.isNaN(t.getTime())) return "Live exchange rate";
     return `Rate updated ${t.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" })}`;

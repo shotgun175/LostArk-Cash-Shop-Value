@@ -8,13 +8,17 @@ export interface RegionSnapshot {
 }
 
 // Live real-money reference rate (marketplace-displayed price per 1,000 gold), polled server-side on
-// a slow timer (not every cron). USD is the NA (US-East) figure, EUR the EU-Central figure; each is
-// present only when its poll succeeded. fetchedAt stamps the last successful poll — it both rate-limits
-// re-polling and serves as a freshness signal.
+// a slow timer (not every cron). USD is the NA (US-East) figure, EUR the EU-Central figure. A failed
+// leg carries its previous value forward, so a value can be older than the block: usdFetchedAt /
+// eurFetchedAt stamp each currency's last SUCCESSFUL poll and are the only honest freshness signals.
+// fetchedAt stamps the last poll ATTEMPT (success or failure); it exists to rate-limit re-polling
+// (a failing upstream is retried on the slow cadence, never every cron), not to signal freshness.
 export interface G2gRate {
   usdPer1kGold?: number;
   eurPer1kGold?: number;
-  fetchedAt?: string; // ISO-8601 of the last successful poll
+  fetchedAt?: string; // ISO-8601 of the last poll attempt (rate-limiter, not freshness)
+  usdFetchedAt?: string; // ISO-8601 of the last successful USD poll
+  eurFetchedAt?: string; // ISO-8601 of the last successful EUR poll
 }
 
 export interface PricePayload {

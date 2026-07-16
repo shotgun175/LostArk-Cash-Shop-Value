@@ -63,6 +63,32 @@ describe("worker fetch", () => {
     expect(body.source_age_seconds).toBeNull();
   });
 
+  it("/healthz surfaces g2g_age_seconds from the oldest per-currency success stamp", async () => {
+    const now = Date.now();
+    await writePayload(env.PRICES, {
+      ...seed,
+      g2g: {
+        usdPer1kGold: 0.032,
+        eurPer1kGold: 0.03,
+        fetchedAt: new Date(now).toISOString(), // a fresh poll ATTEMPT must not mask...
+        usdFetchedAt: new Date(now - 60_000).toISOString(), // ...a 1-min-old USD leg
+        eurFetchedAt: new Date(now - 7_200_000).toISOString(), // ...or a 2h-frozen EUR leg
+      },
+    });
+    const res = await call("/healthz");
+    const body = (await res.json()) as { ok: boolean; g2g_age_seconds: number | null };
+    expect(body.ok).toBe(true); // advisory only: g2g staleness does not flip ok
+    expect(body.g2g_age_seconds).toBeGreaterThanOrEqual(7200); // worst (oldest) leg wins
+    expect(body.g2g_age_seconds).toBeLessThan(7300); // and it is the leg stamp, not the attempt stamp
+  });
+
+  it("/healthz reports null g2g age when no successful g2g poll is recorded", async () => {
+    await writePayload(env.PRICES, seed); // no g2g block at all
+    const res = await call("/healthz");
+    const body = (await res.json()) as { g2g_age_seconds: number | null };
+    expect(body.g2g_age_seconds).toBeNull();
+  });
+
   it("404s unknown routes", async () => {
     const res = await call("/nope");
     expect(res.status).toBe(404);
