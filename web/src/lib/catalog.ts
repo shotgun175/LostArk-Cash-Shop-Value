@@ -13,6 +13,8 @@ const SHARED: Record<string, string> = {
   "tailoring-hellfire-15-18": "tailoring-hellfire.png",
   "tailoring-hellfire-19-20": "tailoring-hellfire.png",
   "epic-astrogem": "epic-astrogem-random.png",
+  // The in-game "Rare - Epic Astrogem Chest" uses the same blue "?" chest art.
+  "rare-epic-astrogem": "epic-astrogem-random.png",
   // Gold only ever appears as a material line via the "10k Gold Bars" chest, so show the
   // bars art rather than the coin (gold.png is still used directly by the rate/total badges).
   "gold": "gold-bars.png",
@@ -46,6 +48,8 @@ const ONE_TO_ONE: readonly string[] = [
   // Ark Pass card-pack row — icon only, no gold value (see arkPass.ts iconSlug);
   // generic art shared across the legendary card packs.
   "legendary-card-pack",
+  // Summer Astrogem Package (2026-07-15) utility tickets — art cropped from in-game tooltips.
+  "astrogem-processing-reset-ticket", "astrogem-processing-option-refresh-ticket",
 ];
 
 const ICON_FILES: Readonly<Record<string, string>> = {
@@ -60,6 +64,7 @@ const NAME_OVERRIDES: Record<string, string> = {
   "lv-3-doomfire-gem": "Lv. 3 Doomfire Gem",
   "mp-efficiency-increase": "MP Efficiency Increase",
   "elysian-attempt-plus-1": "Elysian Attempt +1",
+  "rare-epic-astrogem": "Rare/Epic Astrogem",
   "metallurgy-hellfire-11-14": "Metallurgy Hellfire 11 - 14",
   "metallurgy-hellfire-15-18": "Metallurgy Hellfire 15 - 18",
   "metallurgy-hellfire-19-20": "Metallurgy Hellfire 19 - 20",

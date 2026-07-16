@@ -5,8 +5,12 @@ export const BAKED: Record<string, number> = {
   "lv-3-gem": 1543,
   "elysian-attempt-plus-1": 3000,
   gold: 1,
-  "epic-astrogem": 15000,
-  "epic-astrogem-selected": 30000,
+  // Astrogem anchors re-based 2026-07-15: the NPC sells a chosen epic astrogem for 43,000g.
+  // Random-of-6 keeps TJW's half-of-selection ratio (was 15,000 vs 30,000); the Summer
+  // Astrogem Package's rare-epic box is ~20% epic x 21,500 (rares aren't worth cutting).
+  "epic-astrogem": 21500,
+  "epic-astrogem-selected": 43000,
+  "rare-epic-astrogem": 4300,
   "relic-combat-engraving-recipe": 30000,
 };
 

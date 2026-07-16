@@ -1,7 +1,9 @@
 import type { Chest } from "./types";
 
-// Chest -> terminal-slug resolver, keyed by chest display-name. 38 chests total
-// (25 fixed, 12 selection, 1 multi), transcribed verbatim from source B (resolverFull).
+// Chest -> terminal-slug resolver, keyed by chest display-name. 43 chests total
+// (30 fixed, 12 selection, 1 multi): the original registry transcribed verbatim from source B
+// (resolverFull), plus manual additions noted inline (gold bars; the 2026-07-15 summer-rotation
+// Season 4 tickets and astrogem chests).
 // Selection chests: use defaultPickSlug if set, else auto-pick the highest line-gold option.
 export const RESOLVER: Record<string, Chest> = {
   "Crystallized Destiny Destruction Stone Pouch": {
@@ -119,6 +121,27 @@ export const RESOLVER: Record<string, Chest> = {
     type: "fixed",
     outputs: [{ slug: "splendid-hell-key-of-destiny-v-epic", qtyPerChest: 1 }],
   },
+  // Season 4 exchange tickets (2026-07-15 Paradise re-release). They exchange for the same
+  // splendid keys as their Season 3 "(Season 3)"/"II (Season 3)" counterparts, so they share
+  // the same terminal slugs and EV path.
+  "Legendary Netherworld Key Exchange Ticket (Season 4)": {
+    name: "Legendary Netherworld Key Exchange Ticket (Season 4)",
+    type: "selection",
+    outputs: [
+      { slug: "splendid-netherworld-flame-key", qtyPerChest: 1 },
+      { slug: "splendid-netherworld-frost-key", qtyPerChest: 1 },
+    ],
+  },
+  "Legendary Hell Key of Destiny Exchange Ticket (Season 4)": {
+    name: "Legendary Hell Key of Destiny Exchange Ticket (Season 4)",
+    type: "fixed",
+    outputs: [{ slug: "splendid-hell-key-of-destiny-v", qtyPerChest: 1 }],
+  },
+  "Epic Hell Key of Destiny Exchange Ticket (Season 4)": {
+    name: "Epic Hell Key of Destiny Exchange Ticket (Season 4)",
+    type: "fixed",
+    outputs: [{ slug: "splendid-hell-key-of-destiny-v-epic", qtyPerChest: 1 }],
+  },
   "Epic Astrogem Chest": {
     name: "Epic Astrogem Chest",
     type: "fixed",
@@ -128,6 +151,29 @@ export const RESOLVER: Record<string, Chest> = {
     name: "Epic Astrogem Selector Chest",
     type: "fixed",
     outputs: [{ slug: "epic-astrogem-selected", qtyPerChest: 1 }],
+  },
+  // 2026-07-15 Summer Astrogem Package. The live store names its pick-one chest "Selection"
+  // (the relic-pack era transcription above says "Selector"); both grant one chosen epic
+  // astrogem. The two processing tickets are untradable utility items with no market value.
+  "Epic Astrogem Selection Chest": {
+    name: "Epic Astrogem Selection Chest",
+    type: "fixed",
+    outputs: [{ slug: "epic-astrogem-selected", qtyPerChest: 1 }],
+  },
+  "Rare - Epic Astrogem Chest": {
+    name: "Rare - Epic Astrogem Chest",
+    type: "fixed",
+    outputs: [{ slug: "rare-epic-astrogem", qtyPerChest: 1 }],
+  },
+  "Astrogem Processing Reset Ticket": {
+    name: "Astrogem Processing Reset Ticket",
+    type: "fixed",
+    outputs: [{ slug: "astrogem-processing-reset-ticket", qtyPerChest: 1, isBound: true }],
+  },
+  "Astrogem Processing Option Refresh Ticket": {
+    name: "Astrogem Processing Option Refresh Ticket",
+    type: "fixed",
+    outputs: [{ slug: "astrogem-processing-option-refresh-ticket", qtyPerChest: 1, isBound: true }],
   },
   "Relic Combat Engraving Recipe Selection Pouch": {
     name: "Relic Combat Engraving Recipe Selection Pouch",

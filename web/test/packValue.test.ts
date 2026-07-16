@@ -117,7 +117,9 @@ describe("packValue golden parity with TJW live pack cards", () => {
     ["adventurers-path-package", 831020, 415.5],
     ["horizon-growth-support-pack-i", 1679000, 289.5],
     ["horizon-growth-support-pack-ii", 864850, 227.6],
-    ["limited-relic-engraving-growth", 1812089, 335.6],
+    // TJW's card showed 1,812,089 / 335.6 on the old astrogem constants (15k/30k); the
+    // 2026-07-15 re-anchor (21.5k/43k, NPC-price-based) adds 2x6,500 + 2x13,000 = +39,000.
+    ["limited-relic-engraving-growth", 1851089, 342.8],
     ["monthly-t4-growth-support", 172875, 45.5],
     ["shadow-growth-support-pack-1", 1459800, 260.7],
     ["shadow-growth-support-pack-2", 626550, 174.0],
@@ -282,9 +284,9 @@ describe("frozen retirement values (display path)", () => {
   });
 
   it("the default (live) path ignores frozenTotal", () => {
-    // relic's live value (golden) is 1,812,089 — distinct from its retirement snapshot (1,769,665).
+    // relic's live value (golden) is 1,851,089 — distinct from its retirement snapshot (1,769,665).
     const relic = pack("limited-relic-engraving-growth");
-    expect(packValue(relic, map).total).toBe(1812089);
+    expect(packValue(relic, map).total).toBe(1851089);
     expect(relic.frozenTotal).toBe(1769665);
   });
 });
