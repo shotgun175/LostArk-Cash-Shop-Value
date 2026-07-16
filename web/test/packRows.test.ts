@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { buildPackRows } from "../src/lib/packs/packRows";
-import { F4_DEFAULT_INPUT, G2G_DEFAULT_INPUT } from "../src/lib/packs/exchange";
+import { F4_DEFAULT_INPUT } from "../src/lib/packs/exchange";
 import fixture from "./fixtures/tjw-nae-prices.json";
 
 const prices = fixture.prices as Record<string, number>;
-const opts = { f4Input: F4_DEFAULT_INPUT, g2gInput: G2G_DEFAULT_INPUT };
+const opts = { f4Input: F4_DEFAULT_INPUT, g2gInput: 0.03268824 }; // arbitrary g2g input (the old spec seed)
 
 describe("buildPackRows", () => {
   const rows = buildPackRows(prices, opts);

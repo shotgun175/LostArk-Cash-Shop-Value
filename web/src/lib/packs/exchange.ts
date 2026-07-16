@@ -2,15 +2,14 @@ import type { Region } from "../api";
 import { formatMoney } from "../format";
 
 // F4 in-game currency-exchange baseline. baseline gold-per-crystal = input gold / F4_DIVISOR;
-// "% vs exchange" compares a pack's gold/RC to it. The /238 divisor is distilled from TJW's compiled
-// app (confirmed 2026-06-15: "19200 gold for 238 crystals = 80.67 gold/crystal"); the live in-game NA
-// rate is ~250 gold/crystal, so the Packs panel makes the input region-aware. F4_DEFAULT_INPUT mirrors
-// the app's per-region default (f4.svelte.ts DEFAULTS = 20000) — a round, illustrative seed.
+// "% vs exchange" compares a pack's gold/RC to it. The /238 divisor is the crystal count in the
+// exchange unit, a fixed game constant distilled from TJW's compiled app (confirmed 2026-06-15:
+// "19200 gold for 238 crystals = 80.67 gold/crystal"); the live ~250 gold/crystal is a RATE the
+// user-adjustable input produces (inputGold / 238), so the Packs panel makes the input region-aware.
+// F4_DEFAULT_INPUT is the app's per-region seed (f4.svelte.ts imports it): a round, illustrative
+// value, not a live rate.
 export const F4_DIVISOR = 238;
 export const F4_DEFAULT_INPUT = 20000;
-
-// G2G real-money basis. Input = price for 1,000 gold in the region currency. Default from spec.
-export const G2G_DEFAULT_INPUT = 0.03268824;
 
 // Real-money cost of 12,000 Royal Crystals per region (NA $100, EU €94.99). Converts a pack's gold
 // value into gold-per-currency-unit so the "% vs G2G" / "g per $/€" columns compare within one

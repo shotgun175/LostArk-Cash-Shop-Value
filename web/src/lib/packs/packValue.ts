@@ -47,45 +47,96 @@ export interface PackResult {
   lines: PackLine[];
 }
 
+export interface ChestOptionValue {
+  slug: string;
+  qtyPerChest: number;
+  perUnit: number;
+  perChestGold: number; // Math.round(perUnit * qtyPerChest): THE rounding point for all consumers
+  lineGold: number; // perChestGold * qty (the chest count the caller is valuing)
+  isBound?: boolean;
+  chosen: boolean; // counts toward the chest gold (selection: exactly one; fixed/multi: all)
+}
+
+export interface ChestValue {
+  options: ChestOptionValue[];
+  chosenIndex: number | null; // selection chests: index of the counted option; null otherwise
+  gold: number; // chest contribution scaled by qty (selection value clamped at 0)
+}
+
 /**
- * Value ONE chest (its per-chest output(s)) against the price map.
+ * The ONE shared pick + rounding rule for valuing a chest's options, consumed by resolveChest
+ * (pack cards), packDetail (drill-down) and arkPassRows (Ark Pass), so the three surfaces can
+ * never silently disagree.
  *
  * Every output is priced uniformly off the map: outputs with no price-map slug resolve to 0
- * (recorded as a line). The isBound flag is preserved on each line for UI display but does NOT
- * force gold to 0 — many "bound" battle-item consumables are AH-tradable and ARE in the price
- * map (TJW prices them); only items genuinely absent from the map (e.g. 30-day brews) show 0.
- * For "fixed" and "multi" chests the gold is the sum of all output lineGolds. For "selection"
- * chests exactly one output is taken: the user's pickSlug if it names a valid output, else the
- * defaultPickSlug output if set, else the output with the highest lineGold (ties -> first). The
- * "highest lineGold" rule is load-bearing for matching TJW, who values a selection chest at its
- * best tradable option; pickSlug lets the user override that to value their own choice instead.
+ * (recorded as an option). The isBound flag is preserved for UI display but does NOT force gold
+ * to 0; many "bound" battle-item consumables are AH-tradable and ARE in the price map (TJW
+ * prices them). Only items genuinely absent from the map (e.g. 30-day brews) show 0. Gold is
+ * rounded per chest, then scaled by qty. For "fixed" and "multi" chests every option counts.
+ * For "selection" chests exactly one output is taken: the user's pickSlug if it names a valid
+ * output, else the defaultPickSlug output if set, else the output with the highest per-chest
+ * gold (ties -> first); the chest gold is clamped at 0. The "highest gold" rule is load-bearing
+ * for matching TJW, who values a selection chest at its best tradable option; pickSlug lets the
+ * user override that to value their own choice instead.
+ */
+export function valueChestOptions(
+  chest: Chest,
+  prices: Record<string, number>,
+  qty: number,
+  pickSlug?: string,
+): ChestValue {
+  const options: ChestOptionValue[] = chest.outputs.map((o) => {
+    const perUnit = prices[o.slug] ?? 0;
+    const perChestGold = Math.round(perUnit * o.qtyPerChest);
+    return {
+      slug: o.slug,
+      qtyPerChest: o.qtyPerChest,
+      perUnit,
+      perChestGold,
+      lineGold: perChestGold * qty,
+      isBound: o.isBound,
+      chosen: false,
+    };
+  });
+
+  if (chest.type === "selection") {
+    let pick = pickSlug !== undefined ? options.findIndex((o) => o.slug === pickSlug) : -1;
+    if (pick < 0) {
+      if (chest.defaultPickSlug !== undefined) {
+        const i = options.findIndex((o) => o.slug === chest.defaultPickSlug);
+        pick = i >= 0 ? i : 0;
+      } else {
+        pick = options.reduce((best, o, i) => (o.perChestGold > options[best].perChestGold ? i : best), 0);
+      }
+    }
+    options[pick].chosen = true;
+    return { options, chosenIndex: pick, gold: Math.max(0, options[pick].lineGold) };
+  }
+
+  // "fixed" and "multi": every output contributes.
+  for (const o of options) o.chosen = true;
+  return { options, chosenIndex: null, gold: options.reduce((sum, o) => sum + o.lineGold, 0) };
+}
+
+/**
+ * Value ONE chest (its per-chest output(s)) against the price map. Thin wrapper over
+ * valueChestOptions (qty 1): selection chests return only the chosen line, fixed/multi all lines.
  */
 export function resolveChest(
   chest: Chest,
   prices: Record<string, number>,
   pickSlug?: string,
 ): ChestResult {
-  const lines: ResolvedLine[] = chest.outputs.map((o) => {
-    const gold = Math.round((prices[o.slug] ?? 0) * o.qtyPerChest);
-    return { slug: o.slug, qty: o.qtyPerChest, gold, isBound: o.isBound };
+  const { options, chosenIndex, gold } = valueChestOptions(chest, prices, 1, pickSlug);
+  const toLine = (o: ChestOptionValue): ResolvedLine => ({
+    slug: o.slug,
+    qty: o.qtyPerChest,
+    gold: o.lineGold, // qty 1 -> lineGold === perChestGold
+    isBound: o.isBound,
   });
-
-  if (chest.type === "selection") {
-    let chosen: ResolvedLine | undefined =
-      pickSlug !== undefined ? lines.find((l) => l.slug === pickSlug) : undefined;
-    if (!chosen) {
-      if (chest.defaultPickSlug !== undefined) {
-        chosen = lines.find((l) => l.slug === chest.defaultPickSlug) ?? lines[0];
-      } else {
-        chosen = lines.reduce((best, l) => (l.gold > best.gold ? l : best), lines[0]);
-      }
-    }
-    return { gold: Math.max(0, chosen.gold), lines: [chosen] };
-  }
-
-  // "fixed" and "multi": every output contributes.
-  const gold = lines.reduce((sum, l) => sum + l.gold, 0);
-  return { gold, lines };
+  return chosenIndex !== null
+    ? { gold, lines: [toLine(options[chosenIndex])] }
+    : { gold, lines: options.map(toLine) };
 }
 
 /**

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   f4Baseline, vsExchangePct, g2gGoldPerDollar, g2gReadout, vsG2GPct,
-  currencySymbol, F4_DEFAULT_INPUT, G2G_DEFAULT_INPUT,
+  currencySymbol, F4_DEFAULT_INPUT,
 } from "../src/lib/packs/exchange";
 
 describe("F4 exchange", () => {
@@ -21,7 +21,7 @@ describe("F4 exchange", () => {
 
 describe("G2G basis", () => {
   it("gold-per-dollar = 1000 / pricePer1k", () => {
-    expect(g2gGoldPerDollar(G2G_DEFAULT_INPUT)!).toBeCloseTo(1000 / 0.03268824, 4);
+    expect(g2gGoldPerDollar(0.03268824)!).toBeCloseTo(1000 / 0.03268824, 4);
   });
   it("readout = sym + (price*100).toFixed(2) per 100k", () => {
     expect(g2gReadout(0.03268824, "$")).toBe("$3.27");
