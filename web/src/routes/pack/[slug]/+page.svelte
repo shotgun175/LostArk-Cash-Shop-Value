@@ -3,6 +3,7 @@
   import { packDetail, type DetailOption } from "$lib/packs/packDetail";
   import { buildPriceMap } from "$lib/packs/priceMap";
   import { effectivePrices } from "$lib/packs/prices.svelte";
+  import { f4 } from "$lib/packs/f4.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
   import { selection } from "$lib/packs/selection.svelte";
@@ -19,7 +20,7 @@
 
   // Mirror the card path: live feed + overrides + trade-ups, then buildPriceMap layers the
   // hell-key / ebony-cube / relic-recipe EVs so the drill-down total matches the all-packs card.
-  const prices = $derived(buildPriceMap(effectivePrices()));
+  const prices = $derived(buildPriceMap(effectivePrices(), { blueCrystalGold: f4.perBc }));
   // Retired packs are a read-only reference: no price edits / picks, and the header shows the frozen
   // value-at-retirement (the breakdown below stays at current prices for reference).
   const readOnly = $derived(pack.retired);

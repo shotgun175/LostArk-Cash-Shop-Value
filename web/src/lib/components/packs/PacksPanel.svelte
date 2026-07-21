@@ -200,8 +200,10 @@
   .reset-all { background: rgba(255, 209, 102, 0.12); color: var(--accent); border: 1px solid rgba(255, 209, 102, 0.5);
     padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
   .reset-all:hover { background: var(--bad); border-color: var(--bad); color: var(--bg); }
-  .pack-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-  @media (min-width: 900px) { .pack-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  /* Fluid grid: 1 column on mobile, 2 on desktop, 3 on wide screens, flowing with the viewport.
+     min(460px, 100%) lets a single column shrink below 460px on narrow phones instead of forcing
+     an overflow / horizontal scroll. */
+  .pack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 1fr)); gap: 12px; }
   .retired-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
     margin: 28px 0 12px; padding-top: 18px; border-top: 1px solid var(--border); }
   .retired-head h3 { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 1.2px;

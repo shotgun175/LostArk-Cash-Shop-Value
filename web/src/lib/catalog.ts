@@ -50,6 +50,9 @@ const ONE_TO_ONE: readonly string[] = [
   "legendary-card-pack",
   // Summer Astrogem Package (2026-07-15) utility tickets — art cropped from in-game tooltips.
   "astrogem-processing-reset-ticket", "astrogem-processing-option-refresh-ticket",
+  // [Monthly] 1200 Crystal Pack: Blue Crystal currency + the Lv.1 T4 gem (Rest Bonus brew reward).
+  // Art pending; until the 128x128 files land in static/icons, ItemIcon's onerror shows a chip.
+  "blue-crystal", "lv-1-gem",
 ];
 
 const ICON_FILES: Readonly<Record<string, string>> = {
