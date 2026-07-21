@@ -2,6 +2,7 @@ import { PACKS } from "./data/packs";
 import { packValue, type PackResult } from "./packValue";
 import { buildPriceMap } from "./priceMap";
 import { f4Baseline, vsExchangePct, g2gGoldPerDollar, vsG2GPct } from "./exchange";
+import { BC_PER_BUNDLE } from "./data/marisShop";
 
 export interface PackRow extends PackResult {
   vsExchange: number | null;
@@ -24,7 +25,8 @@ export function buildPackRows(
   regionPrices: Record<string, number>,
   opts: PackRowOpts,
 ): PackRow[] {
-  const prices = buildPriceMap(regionPrices);
+  // Blue Crystal ("Crystal" packs) tracks the same F4 gold input, at input/95 (vs input/238 for RC).
+  const prices = buildPriceMap(regionPrices, { blueCrystalGold: opts.f4Input / BC_PER_BUNDLE });
   const baseline = f4Baseline(opts.f4Input);
   const g2gGpd = g2gGoldPerDollar(opts.g2gInput);
 

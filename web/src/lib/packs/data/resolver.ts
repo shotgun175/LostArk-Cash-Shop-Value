@@ -292,4 +292,28 @@ export const RESOLVER: Record<string, Chest> = {
       { slug: "rest-bonus-recovery-brew-30d", qtyPerChest: 3, isBound: true },
     ],
   },
+  // [Monthly] 1200 Crystal Pack (2026-07 rotation). "Crystal" is Blue Crystal currency, priced
+  // dynamically at the F4 gold input / 95 (buildPriceMap.blueCrystalGold). The two brews are each
+  // valued as one extra ilvl-1750 run (TJW): Rest Bonus = a Guardian Raid entry (12x Lv.1 T4 gem),
+  // Aura = a Chaos/Frontline run (its per-run mat table). Bound tags are display-only, not zeroing.
+  "Crystal": {
+    name: "Crystal",
+    type: "fixed",
+    outputs: [{ slug: "blue-crystal", qtyPerChest: 1, isCurrency: true }],
+  },
+  "Rest Bonus Recovery Brew": {
+    name: "Rest Bonus Recovery Brew",
+    type: "multi",
+    outputs: [{ slug: "lv-1-gem", qtyPerChest: 12 }],
+  },
+  "Aura of Resonance Recovery Brew": {
+    name: "Aura of Resonance Recovery Brew",
+    type: "multi",
+    outputs: [
+      { slug: "destiny-crystallized-destruction-stone", qtyPerChest: 369, isBound: true },
+      { slug: "destiny-crystallized-guardian-stone", qtyPerChest: 1229, isBound: true },
+      { slug: "great-destiny-leapstone", qtyPerChest: 20, isBound: true },
+      { slug: "destiny-shard", qtyPerChest: 52600, isCurrency: true, isBound: true },
+    ],
+  },
 };

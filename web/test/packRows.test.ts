@@ -10,7 +10,7 @@ describe("buildPackRows", () => {
   const rows = buildPackRows(prices, opts);
 
   it("returns one row per pack with all display columns", () => {
-    expect(rows.length).toBe(19);
+    expect(rows.length).toBe(20);
     // Sample a still-active pack (horizon-i is retired since 2026-07-15 and displays its
     // frozen total, covered below); 831,020 / 415.5 is its TJW golden value on this fixture.
     const r = rows.find((x) => x.slug === "adventurers-path-package")!;

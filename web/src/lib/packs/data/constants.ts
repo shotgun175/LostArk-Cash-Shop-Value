@@ -1,6 +1,9 @@
 // Baked numeric constants from TJW's `ie` object (source B bakedConstants). These seed the
 // price map before the live feed / EV overrides are applied.
 export const BAKED: Record<string, number> = {
+  // T4 gems (Lv.1/2/3). lv-1-gem (171) prices the "Rest Bonus Recovery Brew" run-reward
+  // (12x Lv.1 gem) in the [Monthly] 1200 Crystal Pack; matches TJW's baked 171.
+  "lv-1-gem": 171,
   "lv-2-gem": 514,
   "lv-3-gem": 1543,
   "elysian-attempt-plus-1": 3000,

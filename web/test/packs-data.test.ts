@@ -6,14 +6,15 @@ import { CUBE_REWARDS } from "../src/lib/packs/data/cube";
 import { BAKED, TRADE_UP, RELIC_ENGRAVING_SLUGS } from "../src/lib/packs/data/constants";
 
 describe("PACKS", () => {
-  it("has all 19 packs", () => {
-    expect(PACKS.length).toBe(19);
+  it("has all 20 packs", () => {
+    expect(PACKS.length).toBe(20);
   });
-  it("lists exactly the 9 non-retired packs", () => {
+  it("lists exactly the 10 non-retired packs", () => {
     const active = PACKS.filter((p) => !p.retired).map((p) => p.slug).sort();
     expect(active).toEqual(
       [
         "adventurers-path-package",
+        "monthly-1200-crystal-pack",
         "monthly-paradise-special-pack-2",
         "monthly-t4-growth-support",
         "summer-growth-support-pack-i",
@@ -36,8 +37,9 @@ describe("RESOLVER", () => {
   // Bars" chest (referenced by a pack, valued in grounding doc §5) -> 36. The remaining 2 from
   // the summary were never serialized and can't be reconstructed without fabrication.
   // 2026-07-15 summer rotation adds 7 more (3 Season 4 tickets, 4 astrogem chests) -> 43.
-  it("has all 43 chests", () => {
-    expect(Object.keys(RESOLVER).length).toBe(43);
+  // 2026-07 1200 Crystal Pack adds 3 (Crystal + the two run-reward brews) -> 46.
+  it("has all 46 chests", () => {
+    expect(Object.keys(RESOLVER).length).toBe(46);
   });
   it("resolves a fixed chest's first output", () => {
     expect(RESOLVER["Glacier's Breath Chest"].outputs[0]).toEqual({

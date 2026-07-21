@@ -290,3 +290,51 @@ describe("frozen retirement values (display path)", () => {
     expect(relic.frozenTotal).toBe(1769665);
   });
 });
+
+// ---------------------------------------------------------------------------
+// [Monthly] 1200 Crystal Pack — the "value pack" whose worth is dominated by Blue Crystals (priced
+// off the shared F4 input, NOT the AH) plus two run-reward brews. A live fixture golden can't apply
+// here: TJW's crystal value tracks his own exchangeGold input, so we pin the deterministic
+// composition (resolver wiring, the blue-crystal read, the multi-brew reward tables) instead.
+// ---------------------------------------------------------------------------
+describe("1200 Crystal Pack (blue-crystal + run-reward brews)", () => {
+  // Hand-picked round prices, independent of any fixture.
+  const prices: Record<string, number> = {
+    "blue-crystal": 200, // = F4 input 19,000 / 95
+    "lv-1-gem": 171,
+    "destiny-crystallized-destruction-stone": 20,
+    "destiny-crystallized-guardian-stone": 2,
+    "great-destiny-leapstone": 36,
+    "destiny-shard": 0.17,
+    "ebony-cube-4th-unlock": 17000,
+  };
+
+  it("buildPriceMap injects blue-crystal at input/95, and leaves it unpriced without an input", () => {
+    expect(buildPriceMap({}, { blueCrystalGold: 19000 / 95 })["blue-crystal"]).toBe(200);
+    expect(buildPriceMap({})["blue-crystal"]).toBeUndefined();
+    // A cleared field (NaN) or zero input must not poison the map.
+    expect(buildPriceMap({}, { blueCrystalGold: NaN })["blue-crystal"]).toBeUndefined();
+    expect(buildPriceMap({}, { blueCrystalGold: 0 })["blue-crystal"]).toBeUndefined();
+  });
+
+  it("resolves the Crystal currency chest and the two run-reward brews", () => {
+    expect(resolveChest(RESOLVER["Crystal"], prices).gold).toBe(200); // 1x blue-crystal
+    expect(resolveChest(RESOLVER["Rest Bonus Recovery Brew"], prices).gold).toBe(2052); // 12 * 171
+    // Aura: 369*20 + 1229*2 + 20*36 + 52600*0.17 = 7380 + 2458 + 720 + 8942 = 19500
+    expect(resolveChest(RESOLVER["Aura of Resonance Recovery Brew"], prices).gold).toBe(19500);
+  });
+
+  it("totals the pack from crystals + brews + ebony cubes", () => {
+    // 1200*200 + 4*2052 + 4*19500 + 5*17000 = 240000 + 8208 + 78000 + 85000
+    const expected = 1200 * 200 + 4 * 2052 + 4 * 19500 + 5 * 17000;
+    expect(expected).toBe(411208);
+    const r = packValue(pack("monthly-1200-crystal-pack"), prices);
+    expect(r.total).toBe(expected);
+    expect(r.goldPerRc!).toBeCloseTo(411208 / 2700, 4);
+    // Bound tags on the brew mats must NOT zero their value (they are AH-tradable), and the
+    // 1200 crystals aggregate into a single blue-crystal line.
+    const byslug = Object.fromEntries(r.lines.map((l) => [l.slug, l]));
+    expect(byslug["destiny-shard"].gold).toBeGreaterThan(0);
+    expect(byslug["blue-crystal"].qty).toBe(1200);
+  });
+});

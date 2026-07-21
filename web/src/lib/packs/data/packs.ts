@@ -312,4 +312,21 @@ export const PACKS: Pack[] = [
       { chest: "Destiny Shard Pouch (L)", qty: 65 },
     ],
   },
+  {
+    // 2026-07 rotation. Value is dominated by 1200 Blue Crystals ("Crystal"), priced at the F4
+    // gold input / 95 (one exchange listing = 238 RC = 95 BC). The two brews are one extra
+    // ilvl-1750 run each (see resolver). Recurring monthly, capped at 3 buys; not "limited".
+    name: "[Monthly] 1200 Crystal Pack",
+    slug: "monthly-1200-crystal-pack",
+    royalCrystalCost: 2700,
+    limited: false,
+    recurrence: "monthly",
+    retired: false,
+    contents: [
+      { chest: "Crystal", qty: 1200 },
+      { chest: "Rest Bonus Recovery Brew", qty: 4 },
+      { chest: "Aura of Resonance Recovery Brew", qty: 4 },
+      { chest: "(NEW) Ebony Cube Entrance Ticket Selection Chest II", qty: 5 },
+    ],
+  },
 ];
