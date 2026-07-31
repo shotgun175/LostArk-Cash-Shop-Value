@@ -79,6 +79,13 @@ const NAME_OVERRIDES: Record<string, string> = {
   "tailoring-hellfire-11-14": "Tailoring Hellfire 11 - 14",
   "tailoring-hellfire-15-18": "Tailoring Hellfire 15 - 18",
   "tailoring-hellfire-19-20": "Tailoring Hellfire 19 - 20",
+  // Hell key display names use the datamine labels (no "Splendid", tier numeral appended);
+  // rarity comes from the card pills, with an "(Epic)" disambiguator only where two cards
+  // would otherwise share a name (user 2026-07-30).
+  "splendid-hell-key-of-destiny-v": "Hell Key of Destiny V",
+  "splendid-hell-key-of-destiny-v-epic": "Hell Key of Destiny V (Epic)",
+  "splendid-netherworld-flame-key": "Netherworld Flame Key V",
+  "splendid-netherworld-frost-key": "Netherworld Frost Key V",
   "hell-key-of-destiny-vi": "Hell Key of Destiny VI",
   "hell-key-of-destiny-vi-epic": "Hell Key of Destiny VI (Epic)",
   "netherworld-flame-key-vi": "Netherworld Flame Key VI",
