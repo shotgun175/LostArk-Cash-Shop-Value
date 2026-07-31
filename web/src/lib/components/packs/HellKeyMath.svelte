@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { HELL_KEY_MAP } from "$lib/packs/data/hellRewards";
+  import { HELL_KEY_MAP, HELL_TIERS } from "$lib/packs/data/hellRewards";
   import { hellKeyBreakdown, hellKeyColumnPrices, type HellKeyBreakdown, type ColumnPrice } from "$lib/packs/ev";
   import { effectivePrices } from "$lib/packs/prices.svelte";
   import { formatGold } from "$lib/format";
@@ -7,9 +7,18 @@
   import ItemIcon from "../ItemIcon.svelte";
   import { base } from "$app/paths";
 
+  // Tier picker: one dropdown, newest first; the choice is remembered across visits.
+  const ILVLS = [...new Set(Object.values(HELL_KEY_MAP).map((m) => HELL_TIERS[m.tierLabel].ilvl))].sort((a, b) => b - a);
+  const stored = typeof localStorage !== "undefined" ? Number(localStorage.getItem("csv.hellTier")) : NaN;
+  let ilvl = $state(ILVLS.includes(stored) ? stored : ILVLS[0]);
+  $effect(() => {
+    if (typeof localStorage !== "undefined") localStorage.setItem("csv.hellTier", String(ilvl));
+  });
+
   const prices = $derived(effectivePrices());
   const keys = $derived(
     Object.keys(HELL_KEY_MAP)
+      .filter((slug) => HELL_TIERS[HELL_KEY_MAP[slug].tierLabel].ilvl === ilvl)
       .map((slug) => ({ b: hellKeyBreakdown(slug, prices), cols: hellKeyColumnPrices(slug, prices) }))
       .filter((k): k is { b: HellKeyBreakdown; cols: ColumnPrice[] } => k.b !== null),
   );
@@ -25,6 +34,15 @@
     base rewards, weighted by how likely you are to draw that floor, summed across floors. Prices
     and trade-ups you set on the <a href="{base}/">Packs</a> page flow through here.
   </p>
+
+  <label class="tierpick">
+    Item level
+    <select bind:value={ilvl}>
+      {#each ILVLS as v (v)}
+        <option value={v}>{v}</option>
+      {/each}
+    </select>
+  </label>
 
   {#each keys as k (k.b.slug)}
     <div class="card">
@@ -90,6 +108,11 @@
   h2 { font-size: 20px; margin: 8px 0 6px; }
   .note { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0 0 18px; }
   .note a { color: var(--accent); }
+  .tierpick { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+  .tierpick select {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 10px; font: inherit; cursor: pointer;
+  }
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
   .head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .title { font-weight: 600; }

@@ -54,11 +54,14 @@ describe("RESOLVER", () => {
 });
 
 describe("HELL_TIERS", () => {
-  it("has the two 1730 tiers", () => {
-    expect(Object.keys(HELL_TIERS).length).toBe(2);
+  // 2026-07-30: five ilvl tiers (1640/1680/1700/1730/1750), a Destiny + FlameFrost pair each.
+  it("has all five tier pairs", () => {
+    expect(Object.keys(HELL_TIERS).length).toBe(10);
   });
   it("has 11 floor buckets per tier", () => {
-    expect(Object.keys(HELL_TIERS["1730 Destiny Rewards"].floors).length).toBe(11);
+    for (const tier of Object.values(HELL_TIERS)) {
+      expect(Object.keys(tier.floors).length).toBe(11);
+    }
   });
   it("preserves floor gold values", () => {
     expect(HELL_TIERS["1730 Destiny Rewards"].floors["100"].Gold).toBe(130000);
@@ -85,8 +88,9 @@ describe("PROBABILITIES", () => {
 });
 
 describe("HELL_KEY_MAP", () => {
-  it("has the 4 keys", () => {
-    expect(Object.keys(HELL_KEY_MAP).length).toBe(4);
+  // 2026-07-30: 4 keys per tier x 5 tiers (II/III/IV/V/VI).
+  it("has the 20 keys", () => {
+    expect(Object.keys(HELL_KEY_MAP).length).toBe(20);
   });
   it("maps the Legendary destiny key", () => {
     expect(HELL_KEY_MAP["splendid-hell-key-of-destiny-v"].rarityTier).toBe("Legendary");

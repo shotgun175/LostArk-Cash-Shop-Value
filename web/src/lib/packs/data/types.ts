@@ -30,6 +30,9 @@ export interface HellTier {
   mode: string;
   columns: string[];
   floors: Record<string, Record<string, number | string>>;
+  // Per-tier overrides of COLUMN_VALUATION, for tiers whose columns pay out different mats
+  // (1640-1700 drop raw destiny stones / plain abidos fusions, not crystallized/superior).
+  valuation?: Record<string, ColumnVal>;
 }
 
 // Per-rarity probabilities for one floor bucket. Destiny has Common/Uncommon/Rare/
@@ -44,6 +47,9 @@ export interface ColumnVal {
   flat?: number;
   currency?: boolean;
   untradable?: boolean;
+  // Per-unit values for a two-part "a|b" pick-one cell (1750 "Karma/Quality"): the player
+  // takes one side, so the cell is worth max(a x maxPair[0], b x maxPair[1]).
+  maxPair?: readonly [number, number];
 }
 
 export interface CubeRow {
