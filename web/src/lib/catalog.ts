@@ -20,6 +20,11 @@ const SHARED: Record<string, string> = {
   "gold": "gold-bars.png",
   // Raw shards aren't sold loose — reuse the Large pouch art for the per-shard line.
   "destiny-shard": "destiny-shard-pouch-l.png",
+  // The ilvl-1750 "VI" keys use the same in-game art as their V counterparts (user 2026-07-30).
+  "hell-key-of-destiny-vi": "splendid-hell-key-of-destiny-v.png",
+  "hell-key-of-destiny-vi-epic": "splendid-hell-key-of-destiny-v-epic.png",
+  "netherworld-flame-key-vi": "splendid-netherworld-flame-key.png",
+  "netherworld-frost-key-vi": "splendid-netherworld-frost-key.png",
 };
 
 // Items whose icon file is named after the slug (`${slug}.png`): the original set + the 1:1 drops.
@@ -53,9 +58,6 @@ const ONE_TO_ONE: readonly string[] = [
   // [Monthly] 1200 Crystal Pack: Blue Crystal currency + the Lv.1 T4 gem (Rest Bonus brew reward).
   // Art pending; until the 128x128 files land in static/icons, ItemIcon's onerror shows a chip.
   "blue-crystal", "lv-1-gem",
-  // ilvl-1750 "VI" hell keys (2026-07-30). Art pending, same chip fallback as above.
-  "hell-key-of-destiny-vi", "hell-key-of-destiny-vi-epic",
-  "netherworld-flame-key-vi", "netherworld-frost-key-vi",
 ];
 
 const ICON_FILES: Readonly<Record<string, string>> = {

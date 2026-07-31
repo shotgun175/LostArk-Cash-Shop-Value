@@ -785,15 +785,16 @@ export const PROBABILITIES: Record<"Destiny" | "Flame" | "Frost", FloorProb[]> =
 // Maps each EV key slug to the tier + rarity column + probability table it draws from.
 // The 1750 "VI" keys reuse the 1730 probability tables: the datamine and the Arkemys sheet
 // both confirm P(floor | rarity) is identical across tiers (verified to full precision).
+// Insertion order drives the Hell Key tab card order: newest tier (1750) first (user 2026-07-30).
 export const HELL_KEY_MAP: Record<string, { tierLabel: string; rarityTier: string; probKey: string }> = {
-  "splendid-hell-key-of-destiny-v": { tierLabel: "1730 Destiny Rewards", rarityTier: "Legendary", probKey: "Destiny" },
-  "splendid-hell-key-of-destiny-v-epic": { tierLabel: "1730 Destiny Rewards", rarityTier: "Epic", probKey: "Destiny" },
-  "splendid-netherworld-flame-key": { tierLabel: "1730 FlameFrost Rewards", rarityTier: "Legendary", probKey: "Flame" },
-  "splendid-netherworld-frost-key": { tierLabel: "1730 FlameFrost Rewards", rarityTier: "Legendary", probKey: "Frost" },
   "hell-key-of-destiny-vi": { tierLabel: "1750 Destiny Rewards", rarityTier: "Legendary", probKey: "Destiny" },
   "hell-key-of-destiny-vi-epic": { tierLabel: "1750 Destiny Rewards", rarityTier: "Epic", probKey: "Destiny" },
   "netherworld-flame-key-vi": { tierLabel: "1750 FlameFrost Rewards", rarityTier: "Legendary", probKey: "Flame" },
   "netherworld-frost-key-vi": { tierLabel: "1750 FlameFrost Rewards", rarityTier: "Legendary", probKey: "Frost" },
+  "splendid-hell-key-of-destiny-v": { tierLabel: "1730 Destiny Rewards", rarityTier: "Legendary", probKey: "Destiny" },
+  "splendid-hell-key-of-destiny-v-epic": { tierLabel: "1730 Destiny Rewards", rarityTier: "Epic", probKey: "Destiny" },
+  "splendid-netherworld-flame-key": { tierLabel: "1730 FlameFrost Rewards", rarityTier: "Legendary", probKey: "Flame" },
+  "splendid-netherworld-frost-key": { tierLabel: "1730 FlameFrost Rewards", rarityTier: "Legendary", probKey: "Frost" },
 };
 
 // Column -> slug/fallback/flat valuation (source B columnToSlug). The 1730 and 1750 tiers
