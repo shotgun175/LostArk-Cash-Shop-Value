@@ -1,8 +1,10 @@
 // Expected-value (EV) engine for hell/netherworld keys and ebony cubes.
 // Faithful reimplementation of TheJungleWalrus's verified math: per-floor best-of-3
 // chest pick (with a small epic-rarity blend onto best-of-4), weighted by
-// P(floor | rarity) and summed across floors, then renormalized. Independently
-// verified to reproduce his live /math values exactly (see test/ev.test.ts).
+// P(floor | rarity) and summed across floors, then renormalized. The ALGORITHM was
+// independently verified to reproduce his live /math values exactly; since 2026-07-30
+// the VALUES deliberately diverge from his because Juice is live-priced here (zeroing
+// juice restores his numbers — see test/ev.test.ts).
 
 import {
   HELL_TIERS,

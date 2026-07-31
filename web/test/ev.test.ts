@@ -114,20 +114,20 @@ describe("baseGold", () => {
   });
 });
 
-// 1730 golden EVs. These began as exact parity with TJW's live /math page (captured
-// 2026-06-15: Legendary V = 189,684 | Epic V = 129,295 | Flame = 48,636 | Frost = 50,440,
-// re-verified exact against his current build on 2026-07-30). Since 2026-07-30 the Juice
-// column is live-priced on every tier (user decision, deliberate TJW divergence), which
-// lifts the two Destiny values by exactly the juice contribution (+3,182 / +2,181 at this
-// fixture). Flame/Frost still equal TJW's values because the 1730 FlameFrost table has no
-// Juice column. Zeroing juice reproduces his numbers; the engine is otherwise byte-parity.
-describe("hellKeyEv 1730 goldens (TJW parity + priced juice)", () => {
+// 1730 golden EVs — self-goldens on the Season-4 datamine tables at the pinned fixture.
+// History: the original TJW-verbatim tables reproduced his live /math page exactly
+// (2026-06-15 capture: Legendary V = 189,684 | Epic V = 129,295 | Flame = 48,636 |
+// Frost = 50,440, re-verified to the gold against his current build on 2026-07-30 — the
+// engine ALGORITHM is his, byte-parity). On 2026-07-30 the user moved all tiers to the
+// datamine (merged Karma/Quality, selection-chest astrogems, FlameFrost Juice column,
+// base 26/170) and priced Juice everywhere, so these values deliberately sit above his.
+describe("hellKeyEv 1730 goldens (datamine tables, our model)", () => {
   const map = buildPriceMap(NAE);
   const golden: Record<string, number> = {
-    "splendid-hell-key-of-destiny-v": 192866,
-    "splendid-hell-key-of-destiny-v-epic": 131476,
-    "splendid-netherworld-flame-key": 48636,
-    "splendid-netherworld-frost-key": 50440,
+    "splendid-hell-key-of-destiny-v": 204429,
+    "splendid-hell-key-of-destiny-v-epic": 138919,
+    "splendid-netherworld-flame-key": 103363,
+    "splendid-netherworld-frost-key": 107176,
   };
   for (const [slug, expected] of Object.entries(golden)) {
     it(`reproduces ${slug} = ${expected} (±1)`, () => {
@@ -137,9 +137,9 @@ describe("hellKeyEv 1730 goldens (TJW parity + priced juice)", () => {
 });
 
 // Per-floor cross-check: reconstruct one floor's contribution from the formula and the
-// fixture, and assert it matches TJW's displayed per-floor row exactly. This proves the
-// best-pick blend + base + normalization are correct, not just the summed total.
-describe("hellKeyEv per-floor reconstruction matches TJW /math", () => {
+// fixture, and assert it matches the engine's own row exactly. This proves the best-pick
+// blend + base + normalization are correct, not just the summed total.
+describe("hellKeyEv per-floor reconstruction (engine internals)", () => {
   const map = buildPriceMap(NAE);
 
   // Helper mirroring the inner loop, returning per-floor diagnostics.
@@ -167,24 +167,26 @@ describe("hellKeyEv per-floor reconstruction matches TJW /math", () => {
     return { rows, sump };
   }
 
-  it("legendary destiny floor 70-79: best-pick 150,426 / base 6,433 / contribution 37,832", () => {
-    // TJW's displayed row was 148,053 / 6,433 / 37,260; the delta is the priced Juice chest
-    // (96 units) entering the best-of-3 pool on this floor (2026-07-30 juice decision).
+  it("legendary destiny floor 70-79: best-pick 160,027 / base 6,433 / contribution 40,148", () => {
+    // Reference history: TJW's June-vintage row was 148,053 / 6,433 / 37,260; the shift is
+    // the priced Juice chest plus the datamine table swap (2026-07-30).
     const { rows, sump } = perFloor("splendid-hell-key-of-destiny-v");
     const r = rows.find((x) => x.range === "70 - 79")!;
-    expect(Math.round(r.bestPick)).toBe(150426);
+    expect(Math.round(r.bestPick)).toBe(160027);
     expect(Math.round(r.base)).toBe(6433);
     const contribution = (r.bestPick + r.base) * (r.p / sump);
-    expect(Math.round(contribution)).toBe(37832);
+    expect(Math.round(contribution)).toBe(40148);
   });
 
-  it("flame floor 10-19: best-pick 36,000 / base 0 / contribution 12,691", () => {
+  it("flame floor 10-19: best-pick 72,920 / base 0 / contribution 25,707", () => {
+    // Was 36,000 / 0 / 12,691 on TJW's juice-less table; the datamine 1730 FlameFrost table
+    // gained a Juice column (75 units on this floor) that now leads the best-of-3 pool.
     const { rows, sump } = perFloor("splendid-netherworld-flame-key");
     const r = rows.find((x) => x.range === "10 - 19")!;
-    expect(Math.round(r.bestPick)).toBe(36000);
+    expect(Math.round(r.bestPick)).toBe(72920);
     expect(Math.round(r.base)).toBe(0);
     const contribution = (r.bestPick + r.base) * (r.p / sump);
-    expect(Math.round(contribution)).toBe(12691);
+    expect(Math.round(contribution)).toBe(25707);
   });
 });
 
@@ -200,13 +202,15 @@ describe("hellKeyEv sanity bounds", () => {
     expect(v).toBeGreaterThan(100000);
     expect(v).toBeLessThan(160000);
   });
-  it("flame & frost each in (35000, 65000)", () => {
+  it("flame & frost each in (60000, 160000)", () => {
+    // Bounds widened 2026-07-30: the datamine 1730 FlameFrost table's Juice column roughly
+    // doubles these keys vs the old juice-less values (~48-50k).
     const flame = hellKeyEv("splendid-netherworld-flame-key", map);
     const frost = hellKeyEv("splendid-netherworld-frost-key", map);
-    expect(flame).toBeGreaterThan(35000);
-    expect(flame).toBeLessThan(65000);
-    expect(frost).toBeGreaterThan(35000);
-    expect(frost).toBeLessThan(65000);
+    expect(flame).toBeGreaterThan(60000);
+    expect(flame).toBeLessThan(160000);
+    expect(frost).toBeGreaterThan(60000);
+    expect(frost).toBeLessThan(160000);
   });
   it("returns 0 for an unknown slug", () => {
     expect(hellKeyEv("not-a-key", map)).toBe(0);
@@ -434,6 +438,15 @@ describe("lower-tier hellKeyEv self-goldens (our baseline)", () => {
     const ladder = ["hell-key-of-destiny-ii", "hell-key-of-destiny-iii", "hell-key-of-destiny-iv", "splendid-hell-key-of-destiny-v", "hell-key-of-destiny-vi"]
       .map((s) => hellKeyEv(s, map));
     for (let i = 1; i < ladder.length; i++) expect(ladder[i]).toBeGreaterThan(ladder[i - 1]);
+  });
+  it("netherworld keys rise with ilvl too (fixed by the 1730 datamine swap)", () => {
+    for (const family of [
+      ["netherworld-flame-key-ii", "netherworld-flame-key-iii", "netherworld-flame-key-iv", "splendid-netherworld-flame-key", "netherworld-flame-key-vi"],
+      ["netherworld-frost-key-ii", "netherworld-frost-key-iii", "netherworld-frost-key-iv", "splendid-netherworld-frost-key", "netherworld-frost-key-vi"],
+    ]) {
+      const ladder = family.map((s) => hellKeyEv(s, map));
+      for (let i = 1; i < ladder.length; i++) expect(ladder[i]).toBeGreaterThan(ladder[i - 1]);
+    }
   });
 });
 
