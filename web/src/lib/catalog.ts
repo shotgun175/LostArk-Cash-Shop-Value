@@ -20,11 +20,15 @@ const SHARED: Record<string, string> = {
   "gold": "gold-bars.png",
   // Raw shards aren't sold loose — reuse the Large pouch art for the per-shard line.
   "destiny-shard": "destiny-shard-pouch-l.png",
-  // The ilvl-1750 "VI" keys use the same in-game art as their V counterparts (user 2026-07-30).
-  "hell-key-of-destiny-vi": "splendid-hell-key-of-destiny-v.png",
-  "hell-key-of-destiny-vi-epic": "splendid-hell-key-of-destiny-v-epic.png",
-  "netherworld-flame-key-vi": "splendid-netherworld-flame-key.png",
-  "netherworld-frost-key-vi": "splendid-netherworld-frost-key.png",
+  // All non-1730 key tiers (II/III/IV/VI) share the corresponding V key art (user 2026-07-30).
+  ...Object.fromEntries(
+    ["ii", "iii", "iv", "vi"].flatMap((n) => [
+      [`hell-key-of-destiny-${n}`, "splendid-hell-key-of-destiny-v.png"],
+      [`hell-key-of-destiny-${n}-epic`, "splendid-hell-key-of-destiny-v-epic.png"],
+      [`netherworld-flame-key-${n}`, "splendid-netherworld-flame-key.png"],
+      [`netherworld-frost-key-${n}`, "splendid-netherworld-frost-key.png"],
+    ]),
+  ),
 };
 
 // Items whose icon file is named after the slug (`${slug}.png`): the original set + the 1:1 drops.
@@ -86,10 +90,17 @@ const NAME_OVERRIDES: Record<string, string> = {
   "splendid-hell-key-of-destiny-v-epic": "Hell Key of Destiny V (Epic)",
   "splendid-netherworld-flame-key": "Netherworld Flame Key V",
   "splendid-netherworld-frost-key": "Netherworld Frost Key V",
-  "hell-key-of-destiny-vi": "Hell Key of Destiny VI",
-  "hell-key-of-destiny-vi-epic": "Hell Key of Destiny VI (Epic)",
-  "netherworld-flame-key-vi": "Netherworld Flame Key VI",
-  "netherworld-frost-key-vi": "Netherworld Frost Key VI",
+  ...Object.fromEntries(
+    (["ii", "iii", "iv", "vi"] as const).flatMap((n) => {
+      const R = n.toUpperCase();
+      return [
+        [`hell-key-of-destiny-${n}`, `Hell Key of Destiny ${R}`],
+        [`hell-key-of-destiny-${n}-epic`, `Hell Key of Destiny ${R} (Epic)`],
+        [`netherworld-flame-key-${n}`, `Netherworld Flame Key ${R}`],
+        [`netherworld-frost-key-${n}`, `Netherworld Frost Key ${R}`],
+      ];
+    }),
+  ),
 };
 
 export function displayName(slug: string): string {

@@ -59,10 +59,11 @@ describe("chestVal", () => {
     // "0|0|3" -> 3 * astrogem.epic(15000) = 45000
     expect(chestVal("Selectable Astrogems", "0|0|3", {})).toBe(45000);
   });
-  it("zeroes the Destiny Juice column (intentionally unvalued to match TJW)", () => {
-    // Juice has no COLUMN_VALUATION entry -> columnPrice 0 -> chestVal 0, for any qty/prices.
-    expect(chestVal("Juice", 96, { "glaciers-breath": 319 })).toBe(0);
-    expect(chestVal("Juice", 320, {})).toBe(0);
+  it("prices Juice as 1 lava + 3 glacier per unit on every tier (deliberate TJW divergence)", () => {
+    // 96 x (400 + 3 x 319) = 96 x 1357 = 130,272 — the 1730 destiny floor 70-79 cell.
+    expect(chestVal("Juice", 96, { "lavas-breath": 400, "glaciers-breath": 319 })).toBe(130272);
+    // Falls back to lava 400 / glacier 200 when unpriced: 320 x 1000.
+    expect(chestVal("Juice", 320, {})).toBe(320000);
   });
   it("picks the max of the two Stones valuations", () => {
     // Stones slug cheap, blue-stone slug rich -> blue-stone path (qty*3*blue) wins.
@@ -113,23 +114,23 @@ describe("baseGold", () => {
   });
 });
 
-// Golden EV validation against TheJungleWalrus's live /math page.
-// Captured 2026-06-15 (prices.json generated_at 2026-06-15T06:15:02Z, region NA East),
-// the same snapshot saved in the fixture. His displayed totals were read directly off
-// https://thejunglewalrus.github.io/lostark-cash-shop-value/math :
-//   Legendary V = 189,684 | Epic V = 129,295 | Flame = 48,636 | Frost = 50,440
-// These also equal the documented earlier-verified values (his prices had not drifted).
-describe("hellKeyEv golden parity with TJW /math", () => {
+// 1730 golden EVs. These began as exact parity with TJW's live /math page (captured
+// 2026-06-15: Legendary V = 189,684 | Epic V = 129,295 | Flame = 48,636 | Frost = 50,440,
+// re-verified exact against his current build on 2026-07-30). Since 2026-07-30 the Juice
+// column is live-priced on every tier (user decision, deliberate TJW divergence), which
+// lifts the two Destiny values by exactly the juice contribution (+3,182 / +2,181 at this
+// fixture). Flame/Frost still equal TJW's values because the 1730 FlameFrost table has no
+// Juice column. Zeroing juice reproduces his numbers; the engine is otherwise byte-parity.
+describe("hellKeyEv 1730 goldens (TJW parity + priced juice)", () => {
   const map = buildPriceMap(NAE);
   const golden: Record<string, number> = {
-    "splendid-hell-key-of-destiny-v": 189684,
-    "splendid-hell-key-of-destiny-v-epic": 129295,
+    "splendid-hell-key-of-destiny-v": 192866,
+    "splendid-hell-key-of-destiny-v-epic": 131476,
     "splendid-netherworld-flame-key": 48636,
     "splendid-netherworld-frost-key": 50440,
   };
   for (const [slug, expected] of Object.entries(golden)) {
     it(`reproduces ${slug} = ${expected} (±1)`, () => {
-      // Exact-or-off-by-one vs TJW's displayed total (rounding only).
       expect(Math.abs(Math.round(hellKeyEv(slug, map)) - expected)).toBeLessThanOrEqual(1);
     });
   }
@@ -166,13 +167,15 @@ describe("hellKeyEv per-floor reconstruction matches TJW /math", () => {
     return { rows, sump };
   }
 
-  it("legendary destiny floor 70-79: best-pick 148,053 / base 6,433 / contribution 37,260", () => {
+  it("legendary destiny floor 70-79: best-pick 150,426 / base 6,433 / contribution 37,832", () => {
+    // TJW's displayed row was 148,053 / 6,433 / 37,260; the delta is the priced Juice chest
+    // (96 units) entering the best-of-3 pool on this floor (2026-07-30 juice decision).
     const { rows, sump } = perFloor("splendid-hell-key-of-destiny-v");
     const r = rows.find((x) => x.range === "70 - 79")!;
-    expect(Math.round(r.bestPick)).toBe(148053);
+    expect(Math.round(r.bestPick)).toBe(150426);
     expect(Math.round(r.base)).toBe(6433);
     const contribution = (r.bestPick + r.base) * (r.p / sump);
-    expect(Math.round(contribution)).toBe(37260);
+    expect(Math.round(contribution)).toBe(37832);
   });
 
   it("flame floor 10-19: best-pick 36,000 / base 0 / contribution 12,691", () => {
@@ -249,18 +252,13 @@ describe("Karma/Quality merged column (1750)", () => {
   });
 });
 
-describe("1750 Juice column (live-priced per user decision 2026-07-30)", () => {
-  it("values a 1750 juice unit as 1 lavas-breath + 3 glaciers-breath", () => {
+describe("Juice column (live-priced on all tiers per user decision 2026-07-30)", () => {
+  it("values a juice unit as 1 lavas-breath + 3 glaciers-breath", () => {
     const prices = { "lavas-breath": 400, "glaciers-breath": 300 };
-    // per unit = 400 + 3 x 300 = 1300; destiny floor 0-9 has 12 juice -> 15600
-    expect(chestVal("Juice", 12, prices, 1750)).toBe(15600);
+    // per unit = 400 + 3 x 300 = 1300; 1750 destiny floor 0-9 has 12 juice -> 15600
+    expect(chestVal("Juice", 12, prices)).toBe(15600);
   });
-  it("keeps the 1730 Juice column unvalued (TJW parity)", () => {
-    const prices = { "lavas-breath": 400, "glaciers-breath": 300 };
-    expect(chestVal("Juice", 96, prices)).toBe(0);
-    expect(chestVal("Juice", 96, prices, 1730)).toBe(0);
-  });
-  it("lists Juice with a live source in the 1750 prices-used table", () => {
+  it("lists Juice with a live source in the prices-used table", () => {
     const cols = hellKeyColumnPrices("netherworld-flame-key-vi", {
       "lavas-breath": 400,
       "glaciers-breath": 300,
@@ -268,6 +266,59 @@ describe("1750 Juice column (live-priced per user decision 2026-07-30)", () => {
     const j = cols.find((c) => c.column === "Juice")!;
     expect(j.perUnit).toBe(1300);
     expect(j.source).toBe("live");
+  });
+});
+
+describe("lower tiers (1640/1680/1700, datamine-generated)", () => {
+  it("has all six lower-tier tables with 11 floors each", () => {
+    for (const label of [
+      "1700 Destiny Rewards", "1700 FlameFrost Rewards",
+      "1680 Destiny Rewards", "1680 FlameFrost Rewards",
+      "1640 Destiny Rewards", "1640 FlameFrost Rewards",
+    ]) {
+      expect(Object.keys(HELL_TIERS[label].floors).length).toBe(11);
+    }
+  });
+  it("locks datamine spot cells", () => {
+    const d1700 = HELL_TIERS["1700 Destiny Rewards"].floors;
+    expect(d1700["0 - 9"].Stones).toBe(2000);
+    expect(d1700["0 - 9"].Shards).toBe(12500);
+    expect(d1700["100"].Fusions).toBe(2800);
+    expect(d1700["100"]["Astrogem chests"]).toBe(11);
+    expect(d1700["0 - 9"]["Base shards"]).toBe(4500);
+    expect(HELL_TIERS["1640 FlameFrost Rewards"].floors["100"]["Lv. 8 Gems"]).toBe(3);
+    expect(HELL_TIERS["1680 Destiny Rewards"].floors["0 - 9"]["Karma/Quality"]).toBe("4|1");
+  });
+  it("values lower-tier Stones with the raw destiny-stone override", () => {
+    const tier = HELL_TIERS["1700 Destiny Rewards"];
+    const prices = { "destiny-destruction-stone": 0.06, "destiny-guardian-stone": 0.03 };
+    // max(2000 x 0.06, 2000 x 3 x 0.03) = max(120, 180) = 180
+    expect(chestVal("Stones", 2000, prices, tier)).toBe(180);
+    // 1730 keeps the crystallized slug (no override): unpriced here -> fallback 31.3.
+    expect(chestVal("Stones", 100, {}, HELL_TIERS["1730 Destiny Rewards"])).toBeCloseTo(
+      Math.max(100 * 31.3, 100 * 3 * 1.45), 6,
+    );
+  });
+  it("prices Astrogem chests via the baked rare-epic-astrogem", () => {
+    expect(chestVal("Astrogem chests", 5, { "rare-epic-astrogem": 4300 })).toBe(21500);
+    expect(chestVal("Astrogem chests", 5, {})).toBe(21500); // fallback 4300
+  });
+  it("values lower-tier Free taps at Arkemys' T4 unit of 100, not 1000", () => {
+    expect(chestVal("Free taps", 90, {}, HELL_TIERS["1700 Destiny Rewards"])).toBe(9000);
+    // 1730 keeps the 1000/tap Transferred convention (D6).
+    expect(chestVal("Free taps", 24, {}, HELL_TIERS["1730 Destiny Rewards"])).toBe(24000);
+  });
+  it("maps the twelve lower-tier keys", () => {
+    expect(HELL_KEY_MAP["hell-key-of-destiny-iv"]).toEqual({
+      tierLabel: "1700 Destiny Rewards", rarityTier: "Legendary", probKey: "Destiny",
+    });
+    expect(HELL_KEY_MAP["hell-key-of-destiny-ii-epic"]).toEqual({
+      tierLabel: "1640 Destiny Rewards", rarityTier: "Epic", probKey: "Destiny",
+    });
+    expect(HELL_KEY_MAP["netherworld-flame-key-iii"]).toEqual({
+      tierLabel: "1680 FlameFrost Rewards", rarityTier: "Legendary", probKey: "Flame",
+    });
+    expect(Object.keys(HELL_KEY_MAP).length).toBe(20);
   });
 });
 
@@ -352,6 +403,37 @@ describe("1750 hellKeyEv self-goldens (our baseline)", () => {
     expect(hellKeyEv("hell-key-of-destiny-vi-epic", map)).toBeGreaterThan(hellKeyEv("splendid-hell-key-of-destiny-v-epic", map));
     expect(hellKeyEv("netherworld-flame-key-vi", map)).toBeGreaterThan(hellKeyEv("splendid-netherworld-flame-key", map));
     expect(hellKeyEv("netherworld-frost-key-vi", map)).toBeGreaterThan(hellKeyEv("splendid-netherworld-frost-key", map));
+  });
+});
+
+// Self-goldens for the 1640/1680/1700 keys at the pinned fixture (computed 2026-07-30):
+// datamine tables, juice priced, Circulated taps at 100 (Arkemys T4 unit), astrogem chests
+// at the baked 4300. OUR baseline — no TJW anchor exists for these tiers on Season-4 data.
+describe("lower-tier hellKeyEv self-goldens (our baseline)", () => {
+  const map = buildPriceMap(NAE);
+  const golden: Record<string, number> = {
+    "hell-key-of-destiny-iv": 134778,
+    "hell-key-of-destiny-iv-epic": 93394,
+    "netherworld-flame-key-iv": 96595,
+    "netherworld-frost-key-iv": 100368,
+    "hell-key-of-destiny-iii": 128530,
+    "hell-key-of-destiny-iii-epic": 88213,
+    "netherworld-flame-key-iii": 93292,
+    "netherworld-frost-key-iii": 96510,
+    "hell-key-of-destiny-ii": 92091,
+    "hell-key-of-destiny-ii-epic": 62947,
+    "netherworld-flame-key-ii": 71792,
+    "netherworld-frost-key-ii": 74425,
+  };
+  for (const [slug, expected] of Object.entries(golden)) {
+    it(`${slug} = ${expected} exactly`, () => {
+      expect(Math.round(hellKeyEv(slug, map))).toBe(expected);
+    });
+  }
+  it("destiny keys rise with ilvl (II < III < IV < V < VI)", () => {
+    const ladder = ["hell-key-of-destiny-ii", "hell-key-of-destiny-iii", "hell-key-of-destiny-iv", "splendid-hell-key-of-destiny-v", "hell-key-of-destiny-vi"]
+      .map((s) => hellKeyEv(s, map));
+    for (let i = 1; i < ladder.length; i++) expect(ladder[i]).toBeGreaterThan(ladder[i - 1]);
   });
 });
 

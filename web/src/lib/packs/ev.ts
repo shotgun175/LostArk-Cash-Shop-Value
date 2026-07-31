@@ -14,6 +14,7 @@ import {
 } from "./data/hellRewards";
 import { CUBE_REWARDS, CUBE_MAP } from "./data/cube";
 import { RELIC_ENGRAVING_SLUGS } from "./data/constants";
+import type { HellTier, ColumnVal } from "./data/types";
 
 const { h, topK, astrogem } = EV_CONSTANTS;
 
@@ -53,12 +54,13 @@ export function G(arr: number[], k: number): number {
   return sum;
 }
 
-/** Per-unit gold value of a tradable column at the given prices. */
+/** Per-unit gold value of a tradable column at the given prices (tier-scoped when given). */
 export function columnPrice(
   column: string,
   prices: Record<string, number>,
+  tier?: HellTier,
 ): number {
-  const c = COLUMN_VALUATION[column];
+  const c = colVal(column, tier);
   if (!c) return 0;
   if (c.flat !== undefined) return c.flat;
   if (c.untradable) return 0;
@@ -69,11 +71,17 @@ export function columnPrice(
 }
 
 /**
- * Per-unit gold value of a 1750 Juice chest unit: 1 Lava's Breath + 3 Glacier's Breath
- * (both live-tracked slugs; fallbacks match cubeEv's). 1730 Juice stays unvalued (TJW parity).
+ * Per-unit gold value of a Juice chest unit: 1 Lava's Breath + 3 Glacier's Breath (the 1:3
+ * ratio holds on every floor of every tier; fallbacks match cubeEv's). Priced on ALL tiers
+ * (user 2026-07-30) — this deliberately diverges from TJW, whose engine leaves Juice unvalued.
  */
 export function juiceUnitPrice(prices: Record<string, number>): number {
   return (prices["lavas-breath"] ?? 400) + 3 * (prices["glaciers-breath"] ?? 200);
+}
+
+/** A column's valuation: the tier's override if it has one, else the global map. */
+function colVal(column: string, tier?: HellTier): ColumnVal | undefined {
+  return tier?.valuation?.[column] ?? COLUMN_VALUATION[column];
 }
 
 /** Gold value of one chest cell (a quantity, an astrogem "a|b|c" string, or Stones). */
@@ -81,9 +89,9 @@ export function chestVal(
   column: string,
   cellValue: number | string,
   prices: Record<string, number>,
-  ilvl = 1730,
+  tier?: HellTier,
 ): number {
-  const mp = COLUMN_VALUATION[column]?.maxPair;
+  const mp = colVal(column, tier)?.maxPair;
   if (mp && typeof cellValue === "string" && cellValue.includes("|")) {
     const [a, b] = cellValue.split("|").map(Number);
     const x = Math.max(a * mp[0], b * mp[1]);
@@ -94,30 +102,31 @@ export function chestVal(
     return a * astrogem.uncommon + b * astrogem.rare + c * astrogem.epic;
   }
   const qty = Number(cellValue);
-  if (column === "Juice" && ilvl >= 1750) {
+  if (column === "Juice") {
     const x = qty * juiceUnitPrice(prices);
     return Number.isFinite(x) ? x : 0;
   }
   if (column === "Stones") {
     const x = Math.max(
-      qty * columnPrice("Stones", prices),
-      qty * 3 * columnPrice("Base blue stones", prices),
+      qty * columnPrice("Stones", prices, tier),
+      qty * 3 * columnPrice("Base blue stones", prices, tier),
     );
     return Number.isFinite(x) ? x : 0;
   }
-  const x = qty * columnPrice(column, prices);
+  const x = qty * columnPrice(column, prices, tier);
   return Number.isFinite(x) ? x : 0;
 }
 
-/** Gold value of the four base-reward columns for one floor. */
+/** Gold value of the four base-reward columns for one floor (tier-scoped when given). */
 export function baseGold(
   floorRewards: Record<string, number | string>,
   prices: Record<string, number>,
+  tier?: HellTier,
 ): number {
   let sum = 0;
   for (const col of BASE_COLUMNS) {
     const v = floorRewards[col];
-    if (typeof v === "number") sum += v * columnPrice(col, prices);
+    if (typeof v === "number") sum += v * columnPrice(col, prices, tier);
   }
   return sum;
 }
@@ -172,7 +181,7 @@ export function hellKeyBreakdown(
     for (const column of tier.columns) {
       if (SKIP_COLUMNS.has(column)) continue;
       if (!rewards[column]) continue;
-      const v = chestVal(column, rewards[column], prices, tier.ilvl);
+      const v = chestVal(column, rewards[column], prices, tier);
       // Only chests with positive gold value count toward the best-of-k pick;
       // zero-value (untradable / unpriced) chests are not candidates. This is
       // load-bearing: including them dilutes G and underprices every floor.
@@ -180,7 +189,7 @@ export function hellKeyBreakdown(
     }
     candidates.sort((x, y) => y - x);
     const bestPick = (1 - h) * G(candidates, topK) + h * G(candidates, topK + 1);
-    const base = baseGold(rewards, prices);
+    const base = baseGold(rewards, prices, tier);
     const floorTotal = bestPick + base;
     floors.push({ range: floorRange, p, bestPick, base, floorTotal, contribution: floorTotal * p });
     g += floorTotal * p;
@@ -197,7 +206,7 @@ export function hellKeyColumnPrices(slug: string, prices: Record<string, number>
   const out: ColumnPrice[] = [];
   for (const column of tier.columns) {
     if (SKIP_COLUMNS.has(column)) continue;
-    if (column === "Juice" && tier.ilvl >= 1750) {
+    if (column === "Juice") {
       const live = prices["lavas-breath"] !== undefined && prices["glaciers-breath"] !== undefined;
       out.push({
         column,
@@ -207,7 +216,7 @@ export function hellKeyColumnPrices(slug: string, prices: Record<string, number>
       });
       continue;
     }
-    const c = COLUMN_VALUATION[column];
+    const c = colVal(column, tier);
     if (!c) continue; // e.g. astrogem columns are valued by constants, not a price
     if (c.flat !== undefined) {
       out.push({ column, slug: null, perUnit: c.flat, source: "flat" });
@@ -220,7 +229,7 @@ export function hellKeyColumnPrices(slug: string, prices: Record<string, number>
       const s = c.slug ?? c.slug1730 ?? null;
       const fb = c.fallback ?? c.fallback1730;
       const source: ColumnPrice["source"] = s && prices[s] !== undefined ? "live" : fb !== undefined ? "fallback" : "—";
-      out.push({ column, slug: s, perUnit: columnPrice(column, prices), source });
+      out.push({ column, slug: s, perUnit: columnPrice(column, prices, tier), source });
     }
   }
   return out;

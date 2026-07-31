@@ -195,7 +195,8 @@ describe("paradise-special-pack-ii (EV pack: deterministic engine value)", () =>
       100 * 137 * 10 +
       31900 * 5;
     expect(r.total).toBe(expected);
-    expect(r.total).toBe(783815);
+    // 783,815 pre-juice; +2,181 x2 on the Epic keys since Juice is priced (2026-07-30).
+    expect(r.total).toBe(788177);
     // Frost key matches TJW's card exactly (proves the EV wiring is faithful).
     expect(evFrost).toBe(50440);
   });
