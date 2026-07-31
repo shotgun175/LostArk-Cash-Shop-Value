@@ -292,6 +292,11 @@ describe("1750 reward tables (datamine-locked cells)", () => {
     expect(f["Base red stones"]).toBe(26);
     expect(f["Base blue stones"]).toBe(170);
   });
+  it("floor 100 Ability stones is the datamine 220, not the sheet's 230", () => {
+    // Caught by the 2026-07-30 adversarial verify pass: the Arkemys sheet (and the gap doc's
+    // reconciled table) carried 230; both datamine views say 220. EV-neutral (untradable).
+    expect(HELL_TIERS["1750 Destiny Rewards"].floors["100"]["Ability stones"]).toBe(220);
+  });
   it("FlameFrost VI Lv. 8 Gems are 5/6/7 at 80-89/90-99/Max (was 4/5/6 at 1730)", () => {
     const f = HELL_TIERS["1750 FlameFrost Rewards"].floors;
     expect(f["80 - 89"]["Lv. 8 Gems"]).toBe(5);

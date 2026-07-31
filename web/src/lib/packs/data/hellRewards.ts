@@ -590,7 +590,7 @@ export const HELL_TIERS: Record<string, HellTier> = {
         Leapstones: 1000,
         Gold: 156000,
         "Free taps": 1000,
-        "Ability stones": 230,
+        "Ability stones": 220,
         Bracelets: 220,
         "Karma/Quality": "300|250",
         "Selectable Astrogems": "0|0|7",
@@ -603,7 +603,8 @@ export const HELL_TIERS: Record<string, HellTier> = {
     },
   },
   // One shared rewards table for Flame and Frost VI; only the floor-probability tables
-  // differ (as at 1730). Adds a Juice column (unvalued, same convention as Destiny Juice).
+  // differ (as at 1730). Adds a Juice column, live-priced like all 1750 Juice
+  // (1 lavas-breath + 3 glaciers-breath per unit; only 1730 Juice stays unvalued).
   "1750 FlameFrost Rewards": {
     ilvl: 1750,
     mode: "FlameFrost",
