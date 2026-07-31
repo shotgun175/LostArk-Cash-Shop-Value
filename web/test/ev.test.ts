@@ -6,6 +6,7 @@ import {
   chestVal,
   baseGold,
   hellKeyEv,
+  hellKeyColumnPrices,
   cubeEv,
   relicRecipe,
 } from "../src/lib/packs/ev";
@@ -225,6 +226,127 @@ describe("relicRecipe", () => {
   });
   it("returns 0 when none present", () => {
     expect(relicRecipe({})).toBe(0);
+  });
+});
+
+// ---------------- 1750 tier (the ilvl-1750 "VI" hell keys) ----------------
+// Tables transcribed from the sekwahar datamine; the datamine wins every conflict with the
+// Arkemys sheet (locked in DECISIONS.md, see docs/Hell-1750-Gap-Analysis-2026-07-30.md).
+// EVs for these keys are OUR baseline, deliberately not TJW-anchored (he has no 1750 math yet).
+
+describe("Karma/Quality merged column (1750)", () => {
+  it("values a karma|quality pick-one cell at max(karma x 600, quality x 0)", () => {
+    // Floor 0-9 destiny cell "9|7": karma side 9 x 600 = 5400 always wins (quality unit 0).
+    expect(chestVal("Karma/Quality", "9|7", {})).toBe(5400);
+    // Floor 100 cell "300|250" -> 180000.
+    expect(chestVal("Karma/Quality", "300|250", {})).toBe(180000);
+  });
+  it("lists Karma/Quality as a flat 600 per-unit in the prices-used table", () => {
+    const cols = hellKeyColumnPrices("hell-key-of-destiny-vi", {});
+    const kq = cols.find((c) => c.column === "Karma/Quality")!;
+    expect(kq.perUnit).toBe(600);
+    expect(kq.source).toBe("flat");
+  });
+});
+
+describe("1750 Juice column (live-priced per user decision 2026-07-30)", () => {
+  it("values a 1750 juice unit as 1 lavas-breath + 3 glaciers-breath", () => {
+    const prices = { "lavas-breath": 400, "glaciers-breath": 300 };
+    // per unit = 400 + 3 x 300 = 1300; destiny floor 0-9 has 12 juice -> 15600
+    expect(chestVal("Juice", 12, prices, 1750)).toBe(15600);
+  });
+  it("keeps the 1730 Juice column unvalued (TJW parity)", () => {
+    const prices = { "lavas-breath": 400, "glaciers-breath": 300 };
+    expect(chestVal("Juice", 96, prices)).toBe(0);
+    expect(chestVal("Juice", 96, prices, 1730)).toBe(0);
+  });
+  it("lists Juice with a live source in the 1750 prices-used table", () => {
+    const cols = hellKeyColumnPrices("netherworld-flame-key-vi", {
+      "lavas-breath": 400,
+      "glaciers-breath": 300,
+    });
+    const j = cols.find((c) => c.column === "Juice")!;
+    expect(j.perUnit).toBe(1300);
+    expect(j.source).toBe("live");
+  });
+});
+
+describe("1750 reward tables (datamine-locked cells)", () => {
+  it("both 1750 tiers exist with the same 11 floor brackets as 1730", () => {
+    expect(Object.keys(HELL_TIERS["1750 Destiny Rewards"].floors)).toEqual(
+      Object.keys(HELL_TIERS["1730 Destiny Rewards"].floors),
+    );
+    expect(Object.keys(HELL_TIERS["1750 FlameFrost Rewards"].floors)).toEqual(
+      Object.keys(HELL_TIERS["1730 FlameFrost Rewards"].floors),
+    );
+  });
+  it("uses the datamine Fusions column, not the sheet's stale 1730 copy", () => {
+    const f = HELL_TIERS["1750 Destiny Rewards"].floors;
+    expect(f["0 - 9"].Fusions).toBe(75);
+    expect(f["40 - 49"].Fusions).toBe(270);
+    expect(f["100"].Fusions).toBe(2400);
+  });
+  it("uses the datamine base mats at floor 0-9 (shards 5200 / red 26 / blue 170)", () => {
+    const f = HELL_TIERS["1750 Destiny Rewards"].floors["0 - 9"];
+    expect(f["Base shards"]).toBe(5200);
+    expect(f["Base red stones"]).toBe(26);
+    expect(f["Base blue stones"]).toBe(170);
+  });
+  it("FlameFrost VI Lv. 8 Gems are 5/6/7 at 80-89/90-99/Max (was 4/5/6 at 1730)", () => {
+    const f = HELL_TIERS["1750 FlameFrost Rewards"].floors;
+    expect(f["80 - 89"]["Lv. 8 Gems"]).toBe(5);
+    expect(f["90 - 99"]["Lv. 8 Gems"]).toBe(6);
+    expect(f["100"]["Lv. 8 Gems"]).toBe(7);
+  });
+  it("1750 Destiny drops the Accessories and Random Astrogems columns", () => {
+    const cols = HELL_TIERS["1750 Destiny Rewards"].columns;
+    expect(cols).not.toContain("Accessories");
+    expect(cols).not.toContain("Random Astrogems");
+    expect(cols).toContain("Karma/Quality");
+  });
+});
+
+describe("1750 hell key map", () => {
+  it("maps the four VI keys onto the 1750 tiers with the reused probability tables", () => {
+    expect(HELL_KEY_MAP["hell-key-of-destiny-vi"]).toEqual({
+      tierLabel: "1750 Destiny Rewards", rarityTier: "Legendary", probKey: "Destiny",
+    });
+    expect(HELL_KEY_MAP["hell-key-of-destiny-vi-epic"]).toEqual({
+      tierLabel: "1750 Destiny Rewards", rarityTier: "Epic", probKey: "Destiny",
+    });
+    expect(HELL_KEY_MAP["netherworld-flame-key-vi"]).toEqual({
+      tierLabel: "1750 FlameFrost Rewards", rarityTier: "Legendary", probKey: "Flame",
+    });
+    expect(HELL_KEY_MAP["netherworld-frost-key-vi"]).toEqual({
+      tierLabel: "1750 FlameFrost Rewards", rarityTier: "Legendary", probKey: "Frost",
+    });
+  });
+});
+
+// Self-goldens: OUR baseline, deliberately not TJW-anchored (he has no 1750 math yet).
+// Computed 2026-07-30 on the pinned fixture at the model decisions locked in
+// docs/Hell-1750-Gap-Analysis-2026-07-30.md: datamine tables, live-priced Juice
+// (lava 330 + 3 x glacier 319 = 1287/unit at this fixture), Karma/Quality max(600, 0),
+// taps flat 1000. When TJW ships 1750, diff as a cross-check only (DECISIONS.md);
+// adopt a specific fix only if the diff exposes a real error, never blanket re-anchor.
+describe("1750 hellKeyEv self-goldens (our baseline)", () => {
+  const map = buildPriceMap(NAE);
+  const golden: Record<string, number> = {
+    "hell-key-of-destiny-vi": 247132,
+    "hell-key-of-destiny-vi-epic": 168202,
+    "netherworld-flame-key-vi": 125807,
+    "netherworld-frost-key-vi": 130508,
+  };
+  for (const [slug, expected] of Object.entries(golden)) {
+    it(`${slug} = ${expected} exactly`, () => {
+      expect(Math.round(hellKeyEv(slug, map))).toBe(expected);
+    });
+  }
+  it("each VI key values above its V counterpart at the same prices", () => {
+    expect(hellKeyEv("hell-key-of-destiny-vi", map)).toBeGreaterThan(hellKeyEv("splendid-hell-key-of-destiny-v", map));
+    expect(hellKeyEv("hell-key-of-destiny-vi-epic", map)).toBeGreaterThan(hellKeyEv("splendid-hell-key-of-destiny-v-epic", map));
+    expect(hellKeyEv("netherworld-flame-key-vi", map)).toBeGreaterThan(hellKeyEv("splendid-netherworld-flame-key", map));
+    expect(hellKeyEv("netherworld-frost-key-vi", map)).toBeGreaterThan(hellKeyEv("splendid-netherworld-frost-key", map));
   });
 });
 

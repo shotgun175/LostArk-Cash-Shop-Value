@@ -53,6 +53,9 @@ const ONE_TO_ONE: readonly string[] = [
   // [Monthly] 1200 Crystal Pack: Blue Crystal currency + the Lv.1 T4 gem (Rest Bonus brew reward).
   // Art pending; until the 128x128 files land in static/icons, ItemIcon's onerror shows a chip.
   "blue-crystal", "lv-1-gem",
+  // ilvl-1750 "VI" hell keys (2026-07-30). Art pending, same chip fallback as above.
+  "hell-key-of-destiny-vi", "hell-key-of-destiny-vi-epic",
+  "netherworld-flame-key-vi", "netherworld-frost-key-vi",
 ];
 
 const ICON_FILES: Readonly<Record<string, string>> = {
@@ -74,6 +77,10 @@ const NAME_OVERRIDES: Record<string, string> = {
   "tailoring-hellfire-11-14": "Tailoring Hellfire 11 - 14",
   "tailoring-hellfire-15-18": "Tailoring Hellfire 15 - 18",
   "tailoring-hellfire-19-20": "Tailoring Hellfire 19 - 20",
+  "hell-key-of-destiny-vi": "Hell Key of Destiny VI",
+  "hell-key-of-destiny-vi-epic": "Hell Key of Destiny VI (Epic)",
+  "netherworld-flame-key-vi": "Netherworld Flame Key VI",
+  "netherworld-frost-key-vi": "Netherworld Frost Key VI",
 };
 
 export function displayName(slug: string): string {
