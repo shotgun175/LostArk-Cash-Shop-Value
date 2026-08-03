@@ -2,6 +2,7 @@
   import { HELL_KEY_MAP, HELL_TIERS } from "$lib/packs/data/hellRewards";
   import { hellKeyBreakdown, hellKeyColumnPrices, type HellKeyBreakdown, type ColumnPrice } from "$lib/packs/ev";
   import { effectivePrices } from "$lib/packs/prices.svelte";
+  import { hellSettings, RARITY_OPTIONS, REWARD_DATA_VINTAGE } from "$lib/packs/hellSettings.svelte";
   import { formatGold } from "$lib/format";
   import { displayName } from "$lib/catalog";
   import ItemIcon from "../ItemIcon.svelte";
@@ -16,12 +17,22 @@
   });
 
   const prices = $derived(effectivePrices());
+  // "Actual" passes no opts at all, so the default view is byte-identical to the key's own rarity.
+  const rarityOpts = $derived(hellSettings.rarity === "Actual" ? undefined : { rarity: hellSettings.rarity });
   const keys = $derived(
     Object.keys(HELL_KEY_MAP)
       .filter((slug) => HELL_TIERS[HELL_KEY_MAP[slug].tierLabel].ilvl === ilvl)
-      .map((slug) => ({ b: hellKeyBreakdown(slug, prices), cols: hellKeyColumnPrices(slug, prices) }))
+      .map((slug) => ({ b: hellKeyBreakdown(slug, prices, rarityOpts), cols: hellKeyColumnPrices(slug, prices) }))
       .filter((k): k is { b: HellKeyBreakdown; cols: ColumnPrice[] } => k.b !== null),
   );
+
+  // Flags a card's EV as a what-if, but only where the pick actually changed the weighting:
+  // Netherworld tiers have no Common/Relic/Ancient column, so those cards stay on their own rarity.
+  const rarityTag = (b: HellKeyBreakdown): string | null => {
+    if (hellSettings.rarity === "Actual") return null;
+    if (b.rarityClamped) return "actual (n/a at this rarity)";
+    return b.effectiveRarity !== b.rarityTier ? "what-if" : null;
+  };
 
   const pct = (p: number) => `${(p * 100).toFixed(1)}%`;
 </script>
@@ -34,17 +45,39 @@
     base rewards, weighted by how likely you are to draw that floor, summed across floors. Prices
     and trade-ups you set on the <a href="{base}/">Packs</a> page flow through here.
   </p>
+  <p class="vintage">Reward tables: {REWARD_DATA_VINTAGE} · prices live</p>
 
-  <label class="tierpick">
-    Item level
-    <select bind:value={ilvl}>
-      {#each ILVLS as v (v)}
-        <option value={v}>{v}</option>
-      {/each}
-    </select>
-  </label>
+  <div class="controls">
+    <label class="tierpick">
+      Item level
+      <select bind:value={ilvl}>
+        {#each ILVLS as v (v)}
+          <option value={v}>{v}</option>
+        {/each}
+      </select>
+    </label>
+
+    <label class="tierpick">
+      Rarity
+      <select value={hellSettings.rarity} onchange={(e) => hellSettings.setRarity(e.currentTarget.value)}>
+        {#each RARITY_OPTIONS as r (r)}
+          <option value={r}>{r}</option>
+        {/each}
+      </select>
+    </label>
+
+    <label class="tierpick check">
+      <input
+        type="checkbox"
+        checked={hellSettings.wealth}
+        onchange={(e) => hellSettings.setWealth(e.currentTarget.checked)}
+      />
+      Wealth +1 active
+    </label>
+  </div>
 
   {#each keys as k (k.b.slug)}
+    {@const whatIf = rarityTag(k.b)}
     <div class="card">
       <div class="head">
         <ItemIcon slug={k.b.slug} />
@@ -52,6 +85,9 @@
         <span class="tag">{k.b.rarityTier}</span>
         <span class="tag">{k.b.tierLabel}</span>
         <span class="ev num accent">{formatGold(Math.round(k.b.ev))}<img class="ic" src="{base}/icons/gold.png" alt="g" /></span>
+        {#if whatIf}
+          <span class="tag">{whatIf}</span>
+        {/if}
       </div>
       <details>
         <summary>Draw per floor breakdown</summary>
@@ -64,7 +100,7 @@
               {#each k.b.floors as f (f.range)}
                 <tr class:zero={f.p === 0}>
                   <td>{f.range}</td>
-                  <td class="right num">{pct(f.p)}</td>
+                  <td class="right num">{pct(f.p / k.b.sump)}</td>
                   <td class="right num">{formatGold(Math.round(f.bestPick))}</td>
                   <td class="right num">{formatGold(Math.round(f.base))}</td>
                   <td class="right num">{formatGold(Math.round(f.floorTotal))}</td>
@@ -106,13 +142,17 @@
     color: var(--text); font-family: "Sora", system-ui, sans-serif;
   }
   h2 { font-size: 20px; margin: 8px 0 6px; }
-  .note { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0 0 18px; }
+  .note { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0 0 6px; }
   .note a { color: var(--accent); }
-  .tierpick { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+  .vintage { color: var(--muted); font-size: 12px; margin: 0 0 16px; }
+  .controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 14px; }
+  .tierpick { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
   .tierpick select {
     background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
     border-radius: 6px; padding: 5px 10px; font: inherit; cursor: pointer;
   }
+  .tierpick.check { cursor: pointer; }
+  .tierpick.check input { accent-color: var(--accent); cursor: pointer; }
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
   .head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .title { font-weight: 600; }
