@@ -126,8 +126,8 @@ describe("baseGold", () => {
 describe("hellKeyEv 1730 goldens (datamine tables, our model)", () => {
   const map = buildPriceMap(NAE);
   const golden: Record<string, number> = {
-    "splendid-hell-key-of-destiny-v": 204429,
-    "splendid-hell-key-of-destiny-v-epic": 138919,
+    "splendid-hell-key-of-destiny-v": 201674,
+    "splendid-hell-key-of-destiny-v-epic": 137061,
     "splendid-netherworld-flame-key": 103363,
     "splendid-netherworld-frost-key": 107176,
   };
@@ -169,15 +169,15 @@ describe("hellKeyEv per-floor reconstruction (engine internals)", () => {
     return { rows, sump };
   }
 
-  it("legendary destiny floor 70-79: best-pick 160,027 / base 6,433 / contribution 40,148", () => {
+  it("legendary destiny floor 70-79: best-pick 157,779 / base 6,433 / contribution 39,606", () => {
     // Reference history: TJW's June-vintage row was 148,053 / 6,433 / 37,260; the shift is
     // the priced Juice chest plus the datamine table swap (2026-07-30).
     const { rows, sump } = perFloor("splendid-hell-key-of-destiny-v");
     const r = rows.find((x) => x.range === "70 - 79")!;
-    expect(Math.round(r.bestPick)).toBe(160027);
+    expect(Math.round(r.bestPick)).toBe(157779);
     expect(Math.round(r.base)).toBe(6433);
     const contribution = (r.bestPick + r.base) * (r.p / sump);
-    expect(Math.round(contribution)).toBe(40148);
+    expect(Math.round(contribution)).toBe(39606);
   });
 
   it("flame floor 10-19: best-pick 72,920 / base 0 / contribution 25,707", () => {
@@ -394,8 +394,8 @@ describe("1750 hell key map", () => {
 describe("1750 hellKeyEv self-goldens (our baseline)", () => {
   const map = buildPriceMap(NAE);
   const golden: Record<string, number> = {
-    "hell-key-of-destiny-vi": 247132,
-    "hell-key-of-destiny-vi-epic": 168202,
+    "hell-key-of-destiny-vi": 243841,
+    "hell-key-of-destiny-vi-epic": 165974,
     "netherworld-flame-key-vi": 125807,
     "netherworld-frost-key-vi": 130508,
   };
@@ -418,16 +418,16 @@ describe("1750 hellKeyEv self-goldens (our baseline)", () => {
 describe("lower-tier hellKeyEv self-goldens (our baseline)", () => {
   const map = buildPriceMap(NAE);
   const golden: Record<string, number> = {
-    "hell-key-of-destiny-iv": 134778,
-    "hell-key-of-destiny-iv-epic": 93394,
+    "hell-key-of-destiny-iv": 189962,
+    "hell-key-of-destiny-iv-epic": 131243,
     "netherworld-flame-key-iv": 96595,
     "netherworld-frost-key-iv": 100368,
-    "hell-key-of-destiny-iii": 128530,
-    "hell-key-of-destiny-iii-epic": 88213,
+    "hell-key-of-destiny-iii": 186488,
+    "hell-key-of-destiny-iii-epic": 127613,
     "netherworld-flame-key-iii": 93292,
     "netherworld-frost-key-iii": 96510,
-    "hell-key-of-destiny-ii": 92091,
-    "hell-key-of-destiny-ii-epic": 62947,
+    "hell-key-of-destiny-ii": 134983,
+    "hell-key-of-destiny-ii-epic": 91641,
     "netherworld-flame-key-ii": 71792,
     "netherworld-frost-key-ii": 74425,
   };

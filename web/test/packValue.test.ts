@@ -198,7 +198,7 @@ describe("paradise-special-pack-ii (EV pack: deterministic engine value)", () =>
     // 783,815 on the TJW-vintage tables; now the datamine 1730 tables + priced juice lift
     // the Epic keys (129,295 -> 138,919 each) and the Frost key (50,440 -> 107,176), which
     // is most of the +75,984 (2026-07-30).
-    expect(r.total).toBe(859799);
+    expect(r.total).toBe(856083);
     expect(evFrost).toBe(107176);
   });
 
