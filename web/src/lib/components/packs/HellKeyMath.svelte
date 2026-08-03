@@ -28,6 +28,10 @@
   const keys = $derived(
     Object.keys(HELL_KEY_MAP)
       .filter((slug) => HELL_TIERS[HELL_KEY_MAP[slug].tierLabel].ilvl === ilvl)
+      // Under a rarity what-if every Destiny card is weighted by the same overridden column,
+      // which makes the Epic-variant card an exact duplicate of its Legendary sibling; show
+      // the family once and bring the Epic card back on "Actual" (user 2026-08-03).
+      .filter((slug) => hellSettings.rarity === "Actual" || !slug.endsWith("-epic"))
       .map((slug) => ({ b: hellKeyBreakdown(slug, prices, rarityOpts), cols: hellKeyColumnPrices(slug, prices) }))
       .filter((k): k is { b: HellKeyBreakdown; cols: ColumnPrice[] } => k.b !== null),
   );
