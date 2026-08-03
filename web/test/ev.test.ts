@@ -496,6 +496,15 @@ describe("hellKeyBreakdown candidates / wealth / rarity opts", () => {
     expect(flame.rarityClamped).toBe(true);
     expect(flame.ev).toBeCloseTo(hellKeyBreakdown("netherworld-flame-key-vi", map)!.ev, 9);
   });
+  it("clamps a non-rarity key instead of weighting by it", () => {
+    // "range" is a real field on every probability row, so a membership-only check would accept it
+    // and weight every floor at p = 0 (sump 0 -> NaN ev).
+    const b = hellKeyBreakdown("hell-key-of-destiny-vi", map, { rarity: "range" })!;
+    expect(b.effectiveRarity).toBe("Legendary");
+    expect(b.rarityClamped).toBe(true);
+    expect(Number.isFinite(b.ev)).toBe(true);
+    expect(b.ev).toBeCloseTo(hellKeyBreakdown("hell-key-of-destiny-vi", map)!.ev, 9);
+  });
 });
 
 describe("buildPriceMap", () => {

@@ -232,10 +232,15 @@ export function hellKeyBreakdown(
   if (!m) return null;
   const tier = HELL_TIERS[m.tierLabel];
   const probs = PROBABILITIES[m.probKey as keyof typeof PROBABILITIES];
-  // A rarity is supported only if the tier's probability rows carry that column (Netherworld
-  // tables have Rare/Epic/Legendary only); anything else falls back to the key's own rarity.
+  // A rarity is supported only if the tier's probability rows carry that column as an own numeric
+  // field (Netherworld tables have Rare/Epic/Legendary only); anything else, including the row's
+  // own "range" string and inherited keys like "toString", falls back to the key's own rarity.
   const requested = opts?.rarity;
-  const supported = requested !== undefined && probs.length > 0 && requested in probs[0];
+  const supported =
+    requested !== undefined &&
+    probs.length > 0 &&
+    Object.prototype.hasOwnProperty.call(probs[0], requested) &&
+    typeof probs[0][requested] === "number";
   const effectiveRarity = supported ? requested! : m.rarityTier;
   const rarityClamped = requested !== undefined && !supported;
   const floors: FloorBreakdown[] = [];
