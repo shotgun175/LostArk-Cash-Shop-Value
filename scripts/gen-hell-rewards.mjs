@@ -1,7 +1,9 @@
 #!/usr/bin/env node
-// Regenerates the HELL_TIERS block of web/src/lib/packs/data/hellRewards.ts from the
-// sekwahar Season-4 datamine (docs/hell-1750-sources/hell_tables_v2.json). Check mode
-// (default) exits 1 if the generated block differs from the file; --write applies it.
+// Regenerates the GENERATED_HELL_TIERS block of web/src/lib/packs/data/hellRewards.ts from
+// the sekwahar Season-4 datamine (docs/hell-1750-sources/hell_tables_v2.json). Check mode
+// (default) exits 1 if the generated block differs from the file; --write applies it. The
+// hand-curated structures (TIER_VALUATION, probabilities, key map, ...) live outside the
+// markers and are never touched.
 // Also asserts the Wealth rule: "Additional Rewards (Wealth)" === 10x "Additional Rewards"
 // item-for-item on every floor of every generated tier.
 import { readFileSync, writeFileSync } from "node:fs";
@@ -115,8 +117,9 @@ function encAddl(word) {
 }
 
 // --- Per-tier layout (column order, slot mapping, hand-curated comment blocks) ------------
-// The comment blocks and valuation overrides are curated context, kept verbatim so the
-// emitted block byte-matches the file; only the quantities come from the datamine.
+// The per-tier provenance comments are curated context, kept verbatim so the emitted block
+// byte-matches the file; only the quantities come from the datamine. Valuation overrides are
+// hand-maintained in hellRewards.ts (TIER_VALUATION) and deliberately NOT emitted here.
 
 const ADDL = "Additional Rewards";
 const col = (name, slot, enc) => ({ name, slot, enc });
@@ -126,21 +129,6 @@ const BASE_COLS = [
   col("Base red stones", ADDL, encAddl("Destruction")),
   col("Base blue stones", ADDL, encAddl("Guardian")),
   col("Base leapstones", ADDL, encAddl("Leapstone")),
-];
-
-// Shared by the three sub-1730 Destiny tiers (they drop raw destiny mats).
-const SUB1730_VALUATION = [
-  "    valuation: {",
-  "      // Circulated (sub-1730) free taps: Arkemys' T4 unit of 100/tap, NOT the 1000/tap",
-  "      // Transferred convention of 1730/1750 (D6) \u2014 at 1000 the lower tiers' huge tap counts",
-  "      // (up to 3000) would absurdly outvalue the 1750 keys.",
-  '      "Free taps": { flat: 100 },',
-  '      Stones: { slug: "destiny-destruction-stone", fallback: 5 },',
-  '      "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },',
-  '      "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },',
-  '      "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },',
-  '      Fusions: { slug: "abidos-fusion-material", fallback: 160 },',
-  "    },",
 ];
 
 const FF_NO_MATS_COMMENT =
@@ -265,15 +253,15 @@ const TIERS = [
       "  // carry per-tier valuation overrides. Karma/Quality quality-side counts at these tiers are",
       "  // nested-chest counts (EV-neutral: quality is valued 0, the karma side always wins).",
     ],
-    valuation: true, cols: destinyLowCols(true) },
+    cols: destinyLowCols(true) },
   { key: "Netherworld|1700", label: "1700 FlameFrost Rewards", ilvl: 1700, mode: "FlameFrost",
     ffComment: true, cols: FF_COLS[1700] },
   { key: "Destiny|1680", label: "1680 Destiny Rewards", ilvl: 1680, mode: "Destiny",
-    valuation: true, cols: destinyLowCols(false) },
+    cols: destinyLowCols(false) },
   { key: "Netherworld|1680", label: "1680 FlameFrost Rewards", ilvl: 1680, mode: "FlameFrost",
     ffComment: true, cols: FF_COLS[1680] },
   { key: "Destiny|1640", label: "1640 Destiny Rewards", ilvl: 1640, mode: "Destiny",
-    valuation: true, cols: destinyLowCols(false) },
+    cols: destinyLowCols(false) },
   { key: "Netherworld|1640", label: "1640 FlameFrost Rewards", ilvl: 1640, mode: "FlameFrost",
     ffComment: true, cols: FF_COLS[1640] },
 ];
@@ -290,7 +278,6 @@ function emitTier(cfg, table) {
   lines.push(`  ${JSON.stringify(cfg.label)}: {`);
   lines.push(`    ilvl: ${cfg.ilvl},`);
   lines.push(`    mode: "${cfg.mode}",`);
-  if (cfg.valuation) lines.push(...SUB1730_VALUATION);
   if (cfg.ffComment) lines.push(FF_NO_MATS_COMMENT);
   lines.push("    columns: [");
   for (const c of cfg.cols) lines.push(`      ${JSON.stringify(c.name)},`);
@@ -312,7 +299,7 @@ function emitTier(cfg, table) {
 }
 
 function generateBlock(src) {
-  const lines = ["export const HELL_TIERS: Record<string, HellTier> = {"];
+  const lines = ['const GENERATED_HELL_TIERS: Record<string, Omit<HellTier, "valuation">> = {'];
   let floorCount = 0;
   for (const cfg of TIERS) {
     const table = src[cfg.key];

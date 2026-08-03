@@ -6,7 +6,7 @@ import type { HellTier, FloorProb, ColumnVal } from "./types";
 // DECISIONS.md; see docs/Hell-1750-Gap-Analysis-2026-07-30.md). Astrogem cells are "a|b|c"
 // strings (uncommon|rare|epic); "Karma/Quality" cells are "karma|quality" pick-one pairs.
 // === BEGIN GENERATED: HELL_TIERS (scripts/gen-hell-rewards.mjs) ===
-export const HELL_TIERS: Record<string, HellTier> = {
+const GENERATED_HELL_TIERS: Record<string, Omit<HellTier, "valuation">> = {
   // The 1730 pair was RE-GENERATED from the sekwahar Season-4 datamine on 2026-07-30
   // (user decision: every tier from one source). The original TJW-verbatim transcription is
   // preserved in git history; TJW-visible diffs: merged Karma/Quality, selection-chest
@@ -695,17 +695,6 @@ export const HELL_TIERS: Record<string, HellTier> = {
   "1700 Destiny Rewards": {
     ilvl: 1700,
     mode: "Destiny",
-    valuation: {
-      // Circulated (sub-1730) free taps: Arkemys' T4 unit of 100/tap, NOT the 1000/tap
-      // Transferred convention of 1730/1750 (D6) — at 1000 the lower tiers' huge tap counts
-      // (up to 3000) would absurdly outvalue the 1750 keys.
-      "Free taps": { flat: 100 },
-      Stones: { slug: "destiny-destruction-stone", fallback: 5 },
-      "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
-      "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
-      "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
-      Fusions: { slug: "abidos-fusion-material", fallback: 160 },
-    },
     columns: [
       "Stones",
       "Juice",
@@ -1042,17 +1031,6 @@ export const HELL_TIERS: Record<string, HellTier> = {
   "1680 Destiny Rewards": {
     ilvl: 1680,
     mode: "Destiny",
-    valuation: {
-      // Circulated (sub-1730) free taps: Arkemys' T4 unit of 100/tap, NOT the 1000/tap
-      // Transferred convention of 1730/1750 (D6) — at 1000 the lower tiers' huge tap counts
-      // (up to 3000) would absurdly outvalue the 1750 keys.
-      "Free taps": { flat: 100 },
-      Stones: { slug: "destiny-destruction-stone", fallback: 5 },
-      "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
-      "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
-      "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
-      Fusions: { slug: "abidos-fusion-material", fallback: 160 },
-    },
     columns: [
       "Stones",
       "Juice",
@@ -1365,17 +1343,6 @@ export const HELL_TIERS: Record<string, HellTier> = {
   "1640 Destiny Rewards": {
     ilvl: 1640,
     mode: "Destiny",
-    valuation: {
-      // Circulated (sub-1730) free taps: Arkemys' T4 unit of 100/tap, NOT the 1000/tap
-      // Transferred convention of 1730/1750 (D6) — at 1000 the lower tiers' huge tap counts
-      // (up to 3000) would absurdly outvalue the 1750 keys.
-      "Free taps": { flat: 100 },
-      Stones: { slug: "destiny-destruction-stone", fallback: 5 },
-      "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
-      "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
-      "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
-      Fusions: { slug: "abidos-fusion-material", fallback: 160 },
-    },
     columns: [
       "Stones",
       "Juice",
@@ -1687,6 +1654,54 @@ export const HELL_TIERS: Record<string, HellTier> = {
   },
 };
 // === END GENERATED ===
+
+// Hand-curated per-tier valuation overrides (see HellTier.valuation), kept OUTSIDE the
+// generated block so a regeneration never touches them. The sub-1730 Destiny tiers drop raw
+// destiny mats, so they override the mat-bearing columns.
+const TIER_VALUATION: Record<string, Record<string, ColumnVal>> = {
+  "1700 Destiny Rewards": {
+    // Circulated (sub-1730) free taps: Arkemys' T4 unit of 100/tap, NOT the 1000/tap
+    // Transferred convention of 1730/1750 (D6) — at 1000 the lower tiers' huge tap counts
+    // (up to 3000) would absurdly outvalue the 1750 keys.
+    "Free taps": { flat: 100 },
+    Stones: { slug: "destiny-destruction-stone", fallback: 5 },
+    "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
+    "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
+    "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
+    Fusions: { slug: "abidos-fusion-material", fallback: 160 },
+  },
+  "1680 Destiny Rewards": {
+    // Circulated (sub-1730) free taps: Arkemys' T4 unit of 100/tap, NOT the 1000/tap
+    // Transferred convention of 1730/1750 (D6) — at 1000 the lower tiers' huge tap counts
+    // (up to 3000) would absurdly outvalue the 1750 keys.
+    "Free taps": { flat: 100 },
+    Stones: { slug: "destiny-destruction-stone", fallback: 5 },
+    "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
+    "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
+    "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
+    Fusions: { slug: "abidos-fusion-material", fallback: 160 },
+  },
+  "1640 Destiny Rewards": {
+    // Circulated (sub-1730) free taps: Arkemys' T4 unit of 100/tap, NOT the 1000/tap
+    // Transferred convention of 1730/1750 (D6) — at 1000 the lower tiers' huge tap counts
+    // (up to 3000) would absurdly outvalue the 1750 keys.
+    "Free taps": { flat: 100 },
+    Stones: { slug: "destiny-destruction-stone", fallback: 5 },
+    "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
+    "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
+    "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
+    Fusions: { slug: "abidos-fusion-material", fallback: 160 },
+  },
+};
+
+// The public table: script-generated reward data merged with the hand-curated valuation
+// overrides above, so consumers see the same HellTier shape as before.
+export const HELL_TIERS: Record<string, HellTier> = Object.fromEntries(
+  Object.entries(GENERATED_HELL_TIERS).map(([k, t]) => [
+    k,
+    k in TIER_VALUATION ? { ...t, valuation: TIER_VALUATION[k] } : { ...t },
+  ]),
+);
 
 // The datamine's "Additional Rewards (Wealth)" column is an exact x10 of "Additional Rewards"
 // on every floor of every tier; scripts/gen-hell-rewards.mjs asserts this on every run, so a
