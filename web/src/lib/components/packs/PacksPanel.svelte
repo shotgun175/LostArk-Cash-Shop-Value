@@ -7,6 +7,7 @@
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
   import { selection } from "$lib/packs/selection.svelte";
+  import { hellSettings } from "$lib/packs/hellSettings.svelte";
   import { TRADE_UP } from "$lib/packs/data/constants";
   import { effectivePrices } from "$lib/packs/prices.svelte";
   import { packDetail, type DetailOption } from "$lib/packs/packDetail";
@@ -77,7 +78,9 @@
     return info;
   });
 
-  const rows = $derived(buildPackRows(effectivePrices(), { f4Input: f4.value, g2gInput: g2gValue ?? 0, picks: selection.map, cashPerRc: cashPerRc(app.region) }));
+  // tapOverrides: the Hell Key tab's manual tap price for this region, so overriding it there
+  // also moves every pack card that contains a hell/netherworld key.
+  const rows = $derived(buildPackRows(effectivePrices(), { f4Input: f4.value, g2gInput: g2gValue ?? 0, picks: selection.map, cashPerRc: cashPerRc(app.region), tapOverrides: hellSettings.tapOverride[app.region] }));
   // Retired packs get their own "no longer in the shop" section (compact reference cards) below the
   // active grid, rather than being greyed out inline. buildPackRows already sorts active before retired.
   const activeRows = $derived(rows.filter((r) => !r.retired));

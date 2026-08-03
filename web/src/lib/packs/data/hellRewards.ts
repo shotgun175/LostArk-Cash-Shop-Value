@@ -5,7 +5,8 @@ import type { HellTier, FloorProb, ColumnVal } from "./types";
 // sekwahar Season-4 datamine, which wins every conflict with the Arkemys sheet (locked in
 // DECISIONS.md; see docs/Hell-1750-Gap-Analysis-2026-07-30.md). Astrogem cells are "a|b|c"
 // strings (uncommon|rare|epic); "Karma/Quality" cells are "karma|quality" pick-one pairs.
-export const HELL_TIERS: Record<string, HellTier> = {
+// === BEGIN GENERATED: HELL_TIERS (scripts/gen-hell-rewards.mjs) ===
+const GENERATED_HELL_TIERS: Record<string, Omit<HellTier, "valuation">> = {
   // The 1730 pair was RE-GENERATED from the sekwahar Season-4 datamine on 2026-07-30
   // (user decision: every tier from one source). The original TJW-verbatim transcription is
   // preserved in git history; TJW-visible diffs: merged Karma/Quality, selection-chest
@@ -694,17 +695,6 @@ export const HELL_TIERS: Record<string, HellTier> = {
   "1700 Destiny Rewards": {
     ilvl: 1700,
     mode: "Destiny",
-    valuation: {
-      // Circulated (sub-1730) free taps: Arkemys' T4 unit of 100/tap, NOT the 1000/tap
-      // Transferred convention of 1730/1750 (D6) — at 1000 the lower tiers' huge tap counts
-      // (up to 3000) would absurdly outvalue the 1750 keys.
-      "Free taps": { flat: 100 },
-      Stones: { slug: "destiny-destruction-stone", fallback: 5 },
-      "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
-      "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
-      "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
-      Fusions: { slug: "abidos-fusion-material", fallback: 160 },
-    },
     columns: [
       "Stones",
       "Juice",
@@ -1041,17 +1031,6 @@ export const HELL_TIERS: Record<string, HellTier> = {
   "1680 Destiny Rewards": {
     ilvl: 1680,
     mode: "Destiny",
-    valuation: {
-      // Circulated (sub-1730) free taps: Arkemys' T4 unit of 100/tap, NOT the 1000/tap
-      // Transferred convention of 1730/1750 (D6) — at 1000 the lower tiers' huge tap counts
-      // (up to 3000) would absurdly outvalue the 1750 keys.
-      "Free taps": { flat: 100 },
-      Stones: { slug: "destiny-destruction-stone", fallback: 5 },
-      "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
-      "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
-      "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
-      Fusions: { slug: "abidos-fusion-material", fallback: 160 },
-    },
     columns: [
       "Stones",
       "Juice",
@@ -1364,17 +1343,6 @@ export const HELL_TIERS: Record<string, HellTier> = {
   "1640 Destiny Rewards": {
     ilvl: 1640,
     mode: "Destiny",
-    valuation: {
-      // Circulated (sub-1730) free taps: Arkemys' T4 unit of 100/tap, NOT the 1000/tap
-      // Transferred convention of 1730/1750 (D6) — at 1000 the lower tiers' huge tap counts
-      // (up to 3000) would absurdly outvalue the 1750 keys.
-      "Free taps": { flat: 100 },
-      Stones: { slug: "destiny-destruction-stone", fallback: 5 },
-      "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
-      "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
-      "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
-      Fusions: { slug: "abidos-fusion-material", fallback: 160 },
-    },
     columns: [
       "Stones",
       "Juice",
@@ -1685,6 +1653,60 @@ export const HELL_TIERS: Record<string, HellTier> = {
     },
   },
 };
+// === END GENERATED ===
+
+// Hand-curated per-tier valuation overrides (see HellTier.valuation), kept OUTSIDE the
+// generated block so a regeneration never touches them. The sub-1730 Destiny tiers drop raw
+// destiny mats, so they override the mat-bearing columns.
+const TIER_VALUATION: Record<string, Record<string, ColumnVal>> = {
+  "1700 Destiny Rewards": {
+    // Circulated (sub-1730) free taps: the live special-hone tap price on the T4 track
+    // (tapPrices.ts), which is far below the Transferred track the 1730/1750 tiers use.
+    // 100 is Arkemys' old T4 unit, kept as the missing-inputs fallback.
+    "Free taps": { slug: "special-hone-tap-circulated", fallback: 100 },
+    Stones: { slug: "destiny-destruction-stone", fallback: 5 },
+    "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
+    "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
+    "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
+    Fusions: { slug: "abidos-fusion-material", fallback: 160 },
+  },
+  "1680 Destiny Rewards": {
+    // Circulated (sub-1730) free taps: the live special-hone tap price on the T4 track
+    // (tapPrices.ts), which is far below the Transferred track the 1730/1750 tiers use.
+    // 100 is Arkemys' old T4 unit, kept as the missing-inputs fallback.
+    "Free taps": { slug: "special-hone-tap-circulated", fallback: 100 },
+    Stones: { slug: "destiny-destruction-stone", fallback: 5 },
+    "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
+    "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
+    "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
+    Fusions: { slug: "abidos-fusion-material", fallback: 160 },
+  },
+  "1640 Destiny Rewards": {
+    // Circulated (sub-1730) free taps: the live special-hone tap price on the T4 track
+    // (tapPrices.ts), which is far below the Transferred track the 1730/1750 tiers use.
+    // 100 is Arkemys' old T4 unit, kept as the missing-inputs fallback.
+    "Free taps": { slug: "special-hone-tap-circulated", fallback: 100 },
+    Stones: { slug: "destiny-destruction-stone", fallback: 5 },
+    "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
+    "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
+    "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
+    Fusions: { slug: "abidos-fusion-material", fallback: 160 },
+  },
+};
+
+// The public table: script-generated reward data merged with the hand-curated valuation
+// overrides above, so consumers see the same HellTier shape as before.
+export const HELL_TIERS: Record<string, HellTier> = Object.fromEntries(
+  Object.entries(GENERATED_HELL_TIERS).map(([k, t]) => [
+    k,
+    k in TIER_VALUATION ? { ...t, valuation: TIER_VALUATION[k] } : { ...t },
+  ]),
+);
+
+// The datamine's "Additional Rewards (Wealth)" column is an exact x10 of "Additional Rewards"
+// on every floor of every tier; scripts/gen-hell-rewards.mjs asserts this on every run, so a
+// future regeneration fails loudly if the game ever changes it.
+export const WEALTH_BASE_MULT = 10;
 
 // Per-floor, per-rarity drop probabilities (source B `probabilities`). 11 floors each, in
 // order 0-9 .. 90-99, 100. Destiny has 7 rarities; Flame/Frost have 3. The engine renormalizes
@@ -1781,7 +1803,10 @@ export const COLUMN_VALUATION: Record<string, ColumnVal> = {
   "Karma/Quality": { maxPair: [600, 0] },
   // 1640-1700 random Rare - Epic Astrogem Chest; the item is baked (no AH listing).
   "Astrogem chests": { slug: "rare-epic-astrogem", fallback: 4300 },
-  "Free taps": { flat: 1000 },
+  // Transferred (1730/1750) free taps: the live special-hone tap price (tapPrices.ts
+  // computes it from T4.5 mat prices). 1000 is the old flat D6 convention, kept as the
+  // missing-inputs fallback for when the mats it needs are unpriced.
+  "Free taps": { slug1730: "special-hone-tap-transferred", fallback1730: 1000 },
   Bracelets: { flat: 10 },
   Accessories: { untradable: true },
   "Ability stones": { untradable: true },

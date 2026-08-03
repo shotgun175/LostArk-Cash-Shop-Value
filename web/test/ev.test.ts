@@ -6,6 +6,7 @@ import {
   chestVal,
   baseGold,
   hellKeyEv,
+  hellKeyBreakdown,
   hellKeyColumnPrices,
   cubeEv,
   relicRecipe,
@@ -17,6 +18,7 @@ import {
   PROBABILITIES,
   HELL_KEY_MAP,
   SKIP_COLUMNS,
+  WEALTH_BASE_MULT,
 } from "../src/lib/packs/data/hellRewards";
 import fixture from "./fixtures/tjw-nae-prices.json";
 
@@ -124,8 +126,8 @@ describe("baseGold", () => {
 describe("hellKeyEv 1730 goldens (datamine tables, our model)", () => {
   const map = buildPriceMap(NAE);
   const golden: Record<string, number> = {
-    "splendid-hell-key-of-destiny-v": 204429,
-    "splendid-hell-key-of-destiny-v-epic": 138919,
+    "splendid-hell-key-of-destiny-v": 201674,
+    "splendid-hell-key-of-destiny-v-epic": 137061,
     "splendid-netherworld-flame-key": 103363,
     "splendid-netherworld-frost-key": 107176,
   };
@@ -167,15 +169,15 @@ describe("hellKeyEv per-floor reconstruction (engine internals)", () => {
     return { rows, sump };
   }
 
-  it("legendary destiny floor 70-79: best-pick 160,027 / base 6,433 / contribution 40,148", () => {
+  it("legendary destiny floor 70-79: best-pick 157,779 / base 6,433 / contribution 39,606", () => {
     // Reference history: TJW's June-vintage row was 148,053 / 6,433 / 37,260; the shift is
     // the priced Juice chest plus the datamine table swap (2026-07-30).
     const { rows, sump } = perFloor("splendid-hell-key-of-destiny-v");
     const r = rows.find((x) => x.range === "70 - 79")!;
-    expect(Math.round(r.bestPick)).toBe(160027);
+    expect(Math.round(r.bestPick)).toBe(157779);
     expect(Math.round(r.base)).toBe(6433);
     const contribution = (r.bestPick + r.base) * (r.p / sump);
-    expect(Math.round(contribution)).toBe(40148);
+    expect(Math.round(contribution)).toBe(39606);
   });
 
   it("flame floor 10-19: best-pick 72,920 / base 0 / contribution 25,707", () => {
@@ -384,16 +386,20 @@ describe("1750 hell key map", () => {
 });
 
 // Self-goldens: OUR baseline, deliberately not TJW-anchored (he has no 1750 math yet).
-// Computed 2026-07-30 on the pinned fixture at the model decisions locked in
+// Originally computed 2026-07-30 on the pinned fixture at the model decisions locked in
 // docs/Hell-1750-Gap-Analysis-2026-07-30.md: datamine tables, live-priced Juice
 // (lava 330 + 3 x glacier 319 = 1287/unit at this fixture), Karma/Quality max(600, 0),
-// taps flat 1000. When TJW ships 1750, diff as a cross-check only (DECISIONS.md);
-// adopt a specific fix only if the diff exposes a real error, never blanket re-anchor.
+// taps flat 1000 at that point. Re-baselined 2026-08-02 (owner sign-off): taps are now
+// priced by the live special-hone tap engine (Maxroll-model port of TJW's compiled app,
+// see specialHone.ts / tapPrices.ts) instead of the flat 1000, so the values below are
+// the current goldens under that model. When TJW ships 1750, diff as a cross-check only
+// (DECISIONS.md); adopt a specific fix only if the diff exposes a real error, never
+// blanket re-anchor.
 describe("1750 hellKeyEv self-goldens (our baseline)", () => {
   const map = buildPriceMap(NAE);
   const golden: Record<string, number> = {
-    "hell-key-of-destiny-vi": 247132,
-    "hell-key-of-destiny-vi-epic": 168202,
+    "hell-key-of-destiny-vi": 243841,
+    "hell-key-of-destiny-vi-epic": 165974,
     "netherworld-flame-key-vi": 125807,
     "netherworld-frost-key-vi": 130508,
   };
@@ -410,22 +416,25 @@ describe("1750 hellKeyEv self-goldens (our baseline)", () => {
   });
 });
 
-// Self-goldens for the 1640/1680/1700 keys at the pinned fixture (computed 2026-07-30):
-// datamine tables, juice priced, Circulated taps at 100 (Arkemys T4 unit), astrogem chests
-// at the baked 4300. OUR baseline — no TJW anchor exists for these tiers on Season-4 data.
+// Self-goldens for the 1640/1680/1700 keys at the pinned fixture (originally computed
+// 2026-07-30): datamine tables, juice priced, astrogem chests at the baked 4300. Circulated
+// taps were originally valued at the flat 100 (Arkemys T4 unit); re-baselined 2026-08-02
+// (owner sign-off) to the live special-hone tap engine (Maxroll-model port, see
+// specialHone.ts / tapPrices.ts), so the values below price Circulated taps live too.
+// OUR baseline: no TJW anchor exists for these tiers on Season-4 data.
 describe("lower-tier hellKeyEv self-goldens (our baseline)", () => {
   const map = buildPriceMap(NAE);
   const golden: Record<string, number> = {
-    "hell-key-of-destiny-iv": 134778,
-    "hell-key-of-destiny-iv-epic": 93394,
+    "hell-key-of-destiny-iv": 189962,
+    "hell-key-of-destiny-iv-epic": 131243,
     "netherworld-flame-key-iv": 96595,
     "netherworld-frost-key-iv": 100368,
-    "hell-key-of-destiny-iii": 128530,
-    "hell-key-of-destiny-iii-epic": 88213,
+    "hell-key-of-destiny-iii": 186488,
+    "hell-key-of-destiny-iii-epic": 127613,
     "netherworld-flame-key-iii": 93292,
     "netherworld-frost-key-iii": 96510,
-    "hell-key-of-destiny-ii": 92091,
-    "hell-key-of-destiny-ii-epic": 62947,
+    "hell-key-of-destiny-ii": 134983,
+    "hell-key-of-destiny-ii-epic": 91641,
     "netherworld-flame-key-ii": 71792,
     "netherworld-frost-key-ii": 74425,
   };
@@ -447,6 +456,61 @@ describe("lower-tier hellKeyEv self-goldens (our baseline)", () => {
       const ladder = family.map((s) => hellKeyEv(s, map));
       for (let i = 1; i < ladder.length; i++) expect(ladder[i]).toBeGreaterThan(ladder[i - 1]);
     }
+  });
+});
+
+describe("hellKeyBreakdown candidates / wealth / rarity opts", () => {
+  const map = buildPriceMap(NAE);
+  it("exposes DESC-sorted positive candidates whose top value drives bestPick", () => {
+    const b = hellKeyBreakdown("hell-key-of-destiny-vi", map)!;
+    for (const f of b.floors) {
+      const golds = f.candidates.map((c) => c.gold);
+      expect(golds).toEqual([...golds].sort((x, y) => y - x));
+      expect(golds.every((g) => g > 0)).toBe(true);
+      if (golds.length > 0) expect(f.bestPick).toBeLessThanOrEqual(golds[0]);
+    }
+  });
+  it("labels the Stones pick side and the Juice composition", () => {
+    const b = hellKeyBreakdown("hell-key-of-destiny-vi", map)!;
+    const f = b.floors.find((x) => x.range === "50 - 59")!;
+    expect(f.candidates.find((c) => c.column === "Stones")!.note).toMatch(/^Pick (Destruction \(Red\)|Guardian \(Blue\))$/);
+    const juice = f.candidates.find((c) => c.column === "Juice")!;
+    expect(juice.note).toBe(`${juice.qty} Lava's + ${juice.qty * 3} Glacier's`);
+  });
+  it("flips the Stones note to the blue side when 3x guardian stones win", () => {
+    // The regex above accepts either side; pin the other branch with a guardian-rich map.
+    const blueRich = {
+      ...map,
+      "destiny-crystallized-destruction-stone": 0.01,
+      "destiny-crystallized-guardian-stone": 50,
+    };
+    const f = hellKeyBreakdown("hell-key-of-destiny-vi", blueRich)!.floors.find((x) => x.range === "50 - 59")!;
+    expect(f.candidates.find((c) => c.column === "Stones")!.note).toBe("Pick Guardian (Blue)");
+  });
+  it("baseWealth is exactly base x WEALTH_BASE_MULT and never leaks into ev", () => {
+    const plain = hellKeyBreakdown("hell-key-of-destiny-vi", map)!;
+    for (const f of plain.floors) expect(f.baseWealth).toBeCloseTo(f.base * WEALTH_BASE_MULT, 9);
+    expect(plain.ev).toBeCloseTo(hellKeyEv("hell-key-of-destiny-vi", map), 9);
+  });
+  it("rarity override changes the weighting; unsupported columns clamp", () => {
+    const leg = hellKeyBreakdown("hell-key-of-destiny-vi", map)!;
+    const anc = hellKeyBreakdown("hell-key-of-destiny-vi", map, { rarity: "Ancient" })!;
+    expect(anc.ev).toBeGreaterThan(leg.ev);
+    expect(anc.effectiveRarity).toBe("Ancient");
+    expect(anc.rarityClamped).toBe(false);
+    const flame = hellKeyBreakdown("netherworld-flame-key-vi", map, { rarity: "Ancient" })!;
+    expect(flame.effectiveRarity).toBe("Legendary");
+    expect(flame.rarityClamped).toBe(true);
+    expect(flame.ev).toBeCloseTo(hellKeyBreakdown("netherworld-flame-key-vi", map)!.ev, 9);
+  });
+  it("clamps a non-rarity key instead of weighting by it", () => {
+    // "range" is a real field on every probability row, so a membership-only check would accept it
+    // and weight every floor at p = 0 (sump 0 -> NaN ev).
+    const b = hellKeyBreakdown("hell-key-of-destiny-vi", map, { rarity: "range" })!;
+    expect(b.effectiveRarity).toBe("Legendary");
+    expect(b.rarityClamped).toBe(true);
+    expect(Number.isFinite(b.ev)).toBe(true);
+    expect(b.ev).toBeCloseTo(hellKeyBreakdown("hell-key-of-destiny-vi", map)!.ev, 9);
   });
 });
 

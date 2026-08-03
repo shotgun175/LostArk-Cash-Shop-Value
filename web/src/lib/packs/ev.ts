@@ -13,6 +13,7 @@ import {
   COLUMN_VALUATION,
   SKIP_COLUMNS,
   EV_CONSTANTS,
+  WEALTH_BASE_MULT,
 } from "./data/hellRewards";
 import { CUBE_REWARDS, CUBE_MAP } from "./data/cube";
 import { RELIC_ENGRAVING_SLUGS } from "./data/constants";
@@ -86,6 +87,22 @@ function colVal(column: string, tier?: HellTier): ColumnVal | undefined {
   return tier?.valuation?.[column] ?? COLUMN_VALUATION[column];
 }
 
+/**
+ * The Stones pick-one: a stack of red (Destruction) stones OR 3x that many blue (Guardian)
+ * stones, whichever is worth more. `red` says which side won (ties go to red), so the
+ * breakdown can label the pick; `gold` is the raw max (callers guard non-finite).
+ */
+function stonesPick(
+  qty: number,
+  prices: Record<string, number>,
+  tier?: HellTier,
+): { gold: number; red: boolean } {
+  const red = qty * columnPrice("Stones", prices, tier);
+  const blue = qty * 3 * columnPrice("Base blue stones", prices, tier);
+  const gold = Math.max(red, blue);
+  return { gold, red: gold === red };
+}
+
 /** Gold value of one chest cell (a quantity, an astrogem "a|b|c" string, or Stones). */
 export function chestVal(
   column: string,
@@ -109,14 +126,40 @@ export function chestVal(
     return Number.isFinite(x) ? x : 0;
   }
   if (column === "Stones") {
-    const x = Math.max(
-      qty * columnPrice("Stones", prices, tier),
-      qty * 3 * columnPrice("Base blue stones", prices, tier),
-    );
+    const x = stonesPick(qty, prices, tier).gold;
     return Number.isFinite(x) ? x : 0;
   }
   const x = qty * columnPrice(column, prices, tier);
   return Number.isFinite(x) ? x : 0;
+}
+
+/**
+ * Display quantity and explanatory note for one chest cell. `note` is non-null only where the
+ * cell's gold is not "qty x one item": the Stones pick side, the Juice pair, the karma side of
+ * a pick-one cell, and the rarity split of an astrogem cell. `qty` counts the items actually
+ * taken (the karma side of a pick-one, the sum of an astrogem split).
+ */
+function chestLabel(
+  column: string,
+  cellValue: number | string,
+  prices: Record<string, number>,
+  tier?: HellTier,
+): { qty: number; note: string | null } {
+  if (typeof cellValue === "string" && cellValue.includes("|")) {
+    const parts = cellValue.split("|").map(Number);
+    // Pick-one pair ("Karma/Quality"): the karma side is the first part and always wins,
+    // since the quality side is valued 0 (see COLUMN_VALUATION).
+    if (colVal(column, tier)?.maxPair) return { qty: parts[0], note: "Karma side" };
+    const [a, b, c] = parts;
+    return { qty: a + b + c, note: `${a} unc | ${b} rare | ${c} epic` };
+  }
+  const qty = Number(cellValue);
+  if (column === "Juice") return { qty, note: `${qty} Lava's + ${qty * 3} Glacier's` };
+  if (column === "Stones") {
+    const side = stonesPick(qty, prices, tier).red ? "Destruction (Red)" : "Guardian (Blue)";
+    return { qty, note: `Pick ${side}` };
+  }
+  return { qty, note: null };
 }
 
 /** Gold value of the four base-reward columns for one floor (tier-scoped when given). */
@@ -133,13 +176,22 @@ export function baseGold(
   return sum;
 }
 
+export interface ChestCandidate {
+  column: string; // reward column (the chest's name in the tables)
+  qty: number; // items taken from the cell
+  gold: number; // the cell's gold value, exactly as fed to G()
+  note: string | null; // how the gold was reached, when it is not "qty x one item"
+}
+
 export interface FloorBreakdown {
   range: string;
   p: number; // P(floor | rarity)
   bestPick: number; // best-of-k chest pick value
   base: number; // base-reward gold
+  baseWealth: number; // base gold at Wealth +1 (base x WEALTH_BASE_MULT); 0 on Netherworld tiers
   floorTotal: number; // bestPick + base (per-floor value before weighting)
   contribution: number; // floorTotal * p, before renormalization
+  candidates: ChestCandidate[]; // the positive-gold chests, DESC by gold
 }
 
 export interface ColumnPrice {
@@ -149,11 +201,18 @@ export interface ColumnPrice {
   source: "live" | "fallback" | "flat" | "untradable" | "—";
 }
 
+export interface HellKeyBreakdownOpts {
+  /** Weight the floors by this rarity column instead of the key's own rarity (what-if view). */
+  rarity?: string;
+}
+
 export interface HellKeyBreakdown {
   slug: string;
   ev: number; // renormalized expected value (not rounded)
   sump: number; // total probability mass (renormalization divisor)
-  rarityTier: string;
+  rarityTier: string; // the key's own rarity
+  effectiveRarity: string; // the rarity column actually weighted (opts.rarity when supported)
+  rarityClamped: boolean; // true when opts.rarity was asked for but the tier has no such column
   tierLabel: string;
   floors: FloorBreakdown[];
 }
@@ -161,25 +220,38 @@ export interface HellKeyBreakdown {
 /**
  * Full per-floor breakdown of a hell/netherworld key's EV (drives the "Hell Key math" view).
  * Each floor's best-of-3 (blended with best-of-4 at weight h) chest pick plus base rewards,
- * weighted by P(floor | rarity); the EV is the renormalized sum.
+ * weighted by P(floor | rarity); the EV is the renormalized sum. `opts.rarity` re-weights the
+ * floors for the rarity what-if; without opts every number matches the key's own rarity.
  */
 export function hellKeyBreakdown(
   slug: string,
   prices: Record<string, number>,
+  opts?: HellKeyBreakdownOpts,
 ): HellKeyBreakdown | null {
   const m = HELL_KEY_MAP[slug];
   if (!m) return null;
   const tier = HELL_TIERS[m.tierLabel];
   const probs = PROBABILITIES[m.probKey as keyof typeof PROBABILITIES];
+  // A rarity is supported only if the tier's probability rows carry that column as an own numeric
+  // field (Netherworld tables have Rare/Epic/Legendary only); anything else, including the row's
+  // own "range" string and inherited keys like "toString", falls back to the key's own rarity.
+  const requested = opts?.rarity;
+  const supported =
+    requested !== undefined &&
+    probs.length > 0 &&
+    Object.prototype.hasOwnProperty.call(probs[0], requested) &&
+    typeof probs[0][requested] === "number";
+  const effectiveRarity = supported ? requested! : m.rarityTier;
+  const rarityClamped = requested !== undefined && !supported;
   const floors: FloorBreakdown[] = [];
   let g = 0;
   let sump = 0;
   for (let i = 0; i < probs.length; i++) {
     const floorRange = probs[i].range;
     const rewards = tier.floors[floorRange];
-    const p = Number(probs[i][m.rarityTier]) || 0;
+    const p = Number(probs[i][effectiveRarity]) || 0;
     sump += p;
-    const candidates: number[] = [];
+    const candidates: ChestCandidate[] = [];
     for (const column of tier.columns) {
       if (SKIP_COLUMNS.has(column)) continue;
       if (!rewards[column]) continue;
@@ -187,17 +259,27 @@ export function hellKeyBreakdown(
       // Only chests with positive gold value count toward the best-of-k pick;
       // zero-value (untradable / unpriced) chests are not candidates. This is
       // load-bearing: including them dilutes G and underprices every floor.
-      if (v > 0) candidates.push(v);
+      if (v > 0) candidates.push({ column, ...chestLabel(column, rewards[column], prices, tier), gold: v });
     }
-    candidates.sort((x, y) => y - x);
-    const bestPick = (1 - h) * G(candidates, topK) + h * G(candidates, topK + 1);
+    candidates.sort((x, y) => y.gold - x.gold);
+    const golds = candidates.map((c) => c.gold);
+    const bestPick = (1 - h) * G(golds, topK) + h * G(golds, topK + 1);
     const base = baseGold(rewards, prices, tier);
     const floorTotal = bestPick + base;
-    floors.push({ range: floorRange, p, bestPick, base, floorTotal, contribution: floorTotal * p });
+    floors.push({
+      range: floorRange,
+      p,
+      bestPick,
+      base,
+      baseWealth: base * WEALTH_BASE_MULT,
+      floorTotal,
+      contribution: floorTotal * p,
+      candidates,
+    });
     g += floorTotal * p;
   }
   const ev = Math.abs(sump - 1) > 0.001 ? g / sump : g;
-  return { slug, ev, sump, rarityTier: m.rarityTier, tierLabel: m.tierLabel, floors };
+  return { slug, ev, sump, rarityTier: m.rarityTier, effectiveRarity, rarityClamped, tierLabel: m.tierLabel, floors };
 }
 
 /** The per-unit price (and its source) used for each priced reward column — the "prices used" table. */

@@ -7,6 +7,7 @@
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
   import { selection } from "$lib/packs/selection.svelte";
+  import { hellSettings } from "$lib/packs/hellSettings.svelte";
   import { cashPerRc, currencySymbol, RC_CASH_PER_12K } from "$lib/packs/exchange";
   import { app } from "$lib/app.svelte";
   import { formatGold } from "$lib/format";
@@ -20,7 +21,14 @@
 
   // Mirror the card path: live feed + overrides + trade-ups, then buildPriceMap layers the
   // hell-key / ebony-cube / relic-recipe EVs so the drill-down total matches the all-packs card.
-  const prices = $derived(buildPriceMap(effectivePrices(), { blueCrystalGold: f4.perBc }));
+  // tapOverrides keeps this in step with the card path: a manual tap price set on the Hell Key
+  // tab applies to every key-bearing pack, here too.
+  const prices = $derived(
+    buildPriceMap(effectivePrices(), {
+      blueCrystalGold: f4.perBc,
+      tapOverrides: hellSettings.tapOverride[app.region],
+    }),
+  );
   // Retired packs are a read-only reference: no price edits / picks, and the header shows the frozen
   // value-at-retirement (the breakdown below stays at current prices for reference).
   const readOnly = $derived(pack.retired);
