@@ -1660,10 +1660,10 @@ const GENERATED_HELL_TIERS: Record<string, Omit<HellTier, "valuation">> = {
 // destiny mats, so they override the mat-bearing columns.
 const TIER_VALUATION: Record<string, Record<string, ColumnVal>> = {
   "1700 Destiny Rewards": {
-    // Circulated (sub-1730) free taps: Arkemys' T4 unit of 100/tap, NOT the 1000/tap
-    // Transferred convention of 1730/1750 (D6) — at 1000 the lower tiers' huge tap counts
-    // (up to 3000) would absurdly outvalue the 1750 keys.
-    "Free taps": { flat: 100 },
+    // Circulated (sub-1730) free taps: the live special-hone tap price on the T4 track
+    // (tapPrices.ts), which is far below the Transferred track the 1730/1750 tiers use.
+    // 100 is Arkemys' old T4 unit, kept as the missing-inputs fallback.
+    "Free taps": { slug: "special-hone-tap-circulated", fallback: 100 },
     Stones: { slug: "destiny-destruction-stone", fallback: 5 },
     "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
     "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
@@ -1671,10 +1671,10 @@ const TIER_VALUATION: Record<string, Record<string, ColumnVal>> = {
     Fusions: { slug: "abidos-fusion-material", fallback: 160 },
   },
   "1680 Destiny Rewards": {
-    // Circulated (sub-1730) free taps: Arkemys' T4 unit of 100/tap, NOT the 1000/tap
-    // Transferred convention of 1730/1750 (D6) — at 1000 the lower tiers' huge tap counts
-    // (up to 3000) would absurdly outvalue the 1750 keys.
-    "Free taps": { flat: 100 },
+    // Circulated (sub-1730) free taps: the live special-hone tap price on the T4 track
+    // (tapPrices.ts), which is far below the Transferred track the 1730/1750 tiers use.
+    // 100 is Arkemys' old T4 unit, kept as the missing-inputs fallback.
+    "Free taps": { slug: "special-hone-tap-circulated", fallback: 100 },
     Stones: { slug: "destiny-destruction-stone", fallback: 5 },
     "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
     "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
@@ -1682,10 +1682,10 @@ const TIER_VALUATION: Record<string, Record<string, ColumnVal>> = {
     Fusions: { slug: "abidos-fusion-material", fallback: 160 },
   },
   "1640 Destiny Rewards": {
-    // Circulated (sub-1730) free taps: Arkemys' T4 unit of 100/tap, NOT the 1000/tap
-    // Transferred convention of 1730/1750 (D6) — at 1000 the lower tiers' huge tap counts
-    // (up to 3000) would absurdly outvalue the 1750 keys.
-    "Free taps": { flat: 100 },
+    // Circulated (sub-1730) free taps: the live special-hone tap price on the T4 track
+    // (tapPrices.ts), which is far below the Transferred track the 1730/1750 tiers use.
+    // 100 is Arkemys' old T4 unit, kept as the missing-inputs fallback.
+    "Free taps": { slug: "special-hone-tap-circulated", fallback: 100 },
     Stones: { slug: "destiny-destruction-stone", fallback: 5 },
     "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
     "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
@@ -1803,7 +1803,10 @@ export const COLUMN_VALUATION: Record<string, ColumnVal> = {
   "Karma/Quality": { maxPair: [600, 0] },
   // 1640-1700 random Rare - Epic Astrogem Chest; the item is baked (no AH listing).
   "Astrogem chests": { slug: "rare-epic-astrogem", fallback: 4300 },
-  "Free taps": { flat: 1000 },
+  // Transferred (1730/1750) free taps: the live special-hone tap price (tapPrices.ts
+  // computes it from T4.5 mat prices). 1000 is the old flat D6 convention, kept as the
+  // missing-inputs fallback for when the mats it needs are unpriced.
+  "Free taps": { slug1730: "special-hone-tap-transferred", fallback1730: 1000 },
   Bracelets: { flat: 10 },
   Accessories: { untradable: true },
   "Ability stones": { untradable: true },
