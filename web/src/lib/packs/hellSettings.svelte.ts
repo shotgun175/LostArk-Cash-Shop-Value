@@ -22,13 +22,15 @@ export const RARITY_OPTIONS: readonly string[] = [
 ];
 
 /**
- * Hell Key tab settings, persisted in localStorage. Three independent knobs:
- *   rarity      what-if rarity to weight every key's floors by; "Actual" = each key's own
+ * Hell Key tab settings. Three independent knobs:
+ *   rarity      what-if rarity to weight every key's floors by; "Actual" = each key's own.
+ *               SESSION-ONLY on purpose: a what-if is a lens, not a preference, so every
+ *               page load starts back at "Actual" (user 2026-08-03)
  *   wealth      whether the Wealth +1 buff is active. A floor-picker display setting ONLY:
  *               headline EVs and the per-floor table never move with it, by design
  *   tapOverride per-region manual override of the special-hone tap prices (see tapPrices.ts)
- * Storage keys: csv.hellRarity (the option string), csv.hellWealth ("1" when on, "0" when off,
- * a single flag that needs no parse guard), csv.tap.<region> (JSON TapOverrides).
+ * Storage keys: csv.hellWealth ("1" when on, "0" when off, a single flag that needs no parse
+ * guard), csv.tap.<region> (JSON TapOverrides).
  */
 class HellSettings {
   rarity = $state<string>("Actual");
@@ -37,8 +39,8 @@ class HellSettings {
 
   constructor() {
     if (typeof localStorage !== "undefined") {
-      const r = localStorage.getItem("csv.hellRarity");
-      if (r && RARITY_OPTIONS.includes(r)) this.rarity = r;
+      // Drop the key an earlier build persisted so old what-if picks cannot linger.
+      localStorage.removeItem("csv.hellRarity");
       this.wealth = localStorage.getItem("csv.hellWealth") === "1";
       this.tapOverride = { nae: this.loadTap("nae"), euc: this.loadTap("euc") };
     }
@@ -62,7 +64,6 @@ class HellSettings {
   setRarity(r: string): void {
     if (!RARITY_OPTIONS.includes(r)) return;
     this.rarity = r;
-    if (typeof localStorage !== "undefined") localStorage.setItem("csv.hellRarity", r);
   }
 
   setWealth(on: boolean): void {

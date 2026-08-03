@@ -46,7 +46,7 @@ describe("hellSettings", () => {
     expect(s.tapOverride).toEqual({ nae: {}, euc: {} });
   });
 
-  it("round-trips rarity, wealth and per-region tap overrides through storage", async () => {
+  it("round-trips wealth and tap overrides through storage; rarity resets to Actual", async () => {
     const a = await freshStore();
     a.setRarity("Ancient");
     a.setWealth(true);
@@ -54,7 +54,8 @@ describe("hellSettings", () => {
     a.setTapOverride("euc", { circulated: 77, target: "auto" });
 
     const b = await freshStore();
-    expect(b.rarity).toBe("Ancient");
+    // A what-if rarity is a lens, not a preference: every load starts at "Actual".
+    expect(b.rarity).toBe("Actual");
     expect(b.wealth).toBe(true);
     expect(b.tapOverride.nae).toEqual({ transferred: 1234, target: 20 });
     expect(b.tapOverride.euc).toEqual({ circulated: 77, target: "auto" });
@@ -85,9 +86,11 @@ describe("hellSettings", () => {
     expect(s.rarity).toBe("Actual");
   });
 
-  it("ignores a stored rarity that is not an offered option", async () => {
-    localStorage.setItem("csv.hellRarity", "__proto__");
+  it("ignores and removes a legacy stored rarity", async () => {
+    // An earlier build persisted csv.hellRarity; loads now discard and delete it.
+    localStorage.setItem("csv.hellRarity", "Ancient");
     expect((await freshStore()).rarity).toBe("Actual");
+    expect(localStorage.getItem("csv.hellRarity")).toBeNull();
   });
 
   it("refuses to set a rarity that is not an offered option", async () => {
