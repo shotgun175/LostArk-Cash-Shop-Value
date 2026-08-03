@@ -2,10 +2,14 @@
   import { HELL_KEY_MAP, HELL_TIERS } from "$lib/packs/data/hellRewards";
   import { hellKeyBreakdown, hellKeyColumnPrices, type HellKeyBreakdown, type ColumnPrice } from "$lib/packs/ev";
   import { effectivePrices } from "$lib/packs/prices.svelte";
+  import { withTapPrices, TAP_SLUGS } from "$lib/packs/tapPrices";
   import { hellSettings, RARITY_OPTIONS, REWARD_DATA_VINTAGE } from "$lib/packs/hellSettings.svelte";
+  import { app } from "$lib/app.svelte";
   import { formatGold } from "$lib/format";
   import { displayName } from "$lib/catalog";
   import ItemIcon from "../ItemIcon.svelte";
+  import HellFloorChests from "./HellFloorChests.svelte";
+  import TapValuePanel from "./TapValuePanel.svelte";
   import { base } from "$app/paths";
 
   // Tier picker: one dropdown, newest first; the choice is remembered across visits.
@@ -16,7 +20,9 @@
     if (typeof localStorage !== "undefined") localStorage.setItem("csv.hellTier", String(ilvl));
   });
 
-  const prices = $derived(effectivePrices());
+  // Same map the pack engine values keys against (priceMap.ts layers withTapPrices too), so a
+  // card's EV here and the same key's line on the Packs page price their free taps identically.
+  const prices = $derived(withTapPrices(effectivePrices(), hellSettings.tapOverride[app.region]));
   // "Actual" passes no opts at all, so the default view is byte-identical to the key's own rarity.
   const rarityOpts = $derived(hellSettings.rarity === "Actual" ? undefined : { rarity: hellSettings.rarity });
   const keys = $derived(
@@ -35,6 +41,19 @@
   };
 
   const pct = (p: number) => `${(p * 100).toFixed(1)}%`;
+
+  // One open floor per card: key slug -> the expanded floor range (or null).
+  let openFloor = $state<Record<string, string | null>>({});
+  const toggleFloor = (slug: string, range: string): void => {
+    openFloor = { ...openFloor, [slug]: openFloor[slug] === range ? null : range };
+  };
+
+  // The two special-hone tap pseudo-slugs are computed, not market items, so the raw slug
+  // reads as a mystery in the prices table; everything else shows its real slug.
+  const SLUG_LABEL: Record<string, string> = {
+    [TAP_SLUGS.transferred]: "special hone tap (transferred)",
+    [TAP_SLUGS.circulated]: "special hone tap (circulated)",
+  };
 </script>
 
 <div class="math">
@@ -76,6 +95,8 @@
     </label>
   </div>
 
+  <TapValuePanel {ilvl} />
+
   {#each keys as k (k.b.slug)}
     {@const whatIf = rarityTag(k.b)}
     <div class="card">
@@ -91,21 +112,47 @@
       </div>
       <details>
         <summary>Draw per floor breakdown</summary>
+        <p class="hint">Pick a floor to see every chest on it, ranked.</p>
         <div class="tscroll">
           <table>
             <thead>
-              <tr><th>Floor</th><th class="right">P(floor)</th><th class="right">Best pick</th><th class="right">Base</th><th class="right">Floor total</th><th class="right">Contribution</th></tr>
+              <tr><th class="chev"><span class="sr">Expand</span></th><th>Floor</th><th class="right">P(floor)</th><th class="right">Best pick</th><th class="right">Base</th><th class="right">Floor total</th><th class="right">Contribution</th></tr>
             </thead>
             <tbody>
               {#each k.b.floors as f (f.range)}
-                <tr class:zero={f.p === 0}>
+                {@const open = openFloor[k.b.slug] === f.range}
+                <tr
+                  class:zero={f.p === 0}
+                  class:open
+                  role="button"
+                  tabindex="0"
+                  aria-expanded={open}
+                  aria-label="Floor {f.range} chests"
+                  onclick={() => toggleFloor(k.b.slug, f.range)}
+                  onkeydown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      toggleFloor(k.b.slug, f.range);
+                    }
+                  }}
+                >
+                  <td class="chev" aria-hidden="true">{open ? "▾" : "▸"}</td>
                   <td>{f.range}</td>
-                  <td class="right num">{pct(f.p / k.b.sump)}</td>
+                  <!-- The bar under P(floor) makes the weighting readable at a glance: how much
+                       of the key's EV this floor can possibly carry. -->
+                  <td class="right num pcell" style="--w: {(f.p / k.b.sump) * 100}%">{pct(f.p / k.b.sump)}</td>
                   <td class="right num">{formatGold(Math.round(f.bestPick))}</td>
                   <td class="right num">{formatGold(Math.round(f.base))}</td>
                   <td class="right num">{formatGold(Math.round(f.floorTotal))}</td>
-                  <td class="right num accent">{formatGold(Math.round(f.contribution))}</td>
+                  <!-- Renormalized like P(floor), so P x Floor total matches what is shown here
+                       and the column sums to the headline EV. -->
+                  <td class="right num accent">{formatGold(Math.round(f.contribution / k.b.sump))}</td>
                 </tr>
+                {#if open}
+                  <tr class="expand">
+                    <td colspan={7}><HellFloorChests floor={f} wealth={hellSettings.wealth} /></td>
+                  </tr>
+                {/if}
               {/each}
             </tbody>
           </table>
@@ -122,7 +169,7 @@
               {#each k.cols as c (c.column)}
                 <tr>
                   <td>{c.column}</td>
-                  <td class="muted">{c.slug ?? "—"}</td>
+                  <td class="muted">{c.slug ? (SLUG_LABEL[c.slug] ?? c.slug) : "—"}</td>
                   <td class="right num">{c.perUnit > 0 ? formatGold(c.perUnit) : "—"}</td>
                   <td><span class="src src-{c.source}">{c.source}</span></td>
                 </tr>
@@ -169,7 +216,21 @@
   .right { text-align: right; }
   td.accent { color: var(--accent); }
   tr.zero td { opacity: .45; }
-  .tscroll { overflow-x: auto; }
+  .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .hint { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
+  tbody tr[role="button"] { cursor: pointer; }
+  tbody tr[role="button"]:hover td, tbody tr.open td { background: var(--panel-2); }
+  tbody tr[role="button"]:focus-visible { outline: 1px solid var(--accent); outline-offset: -1px; }
+  th.chev, td.chev { width: 18px; padding-right: 0; color: var(--muted); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .pcell { position: relative; }
+  /* Right-anchored so the bar sits under the number it annotates: the cell is far wider than
+     the text, and a left-anchored bar reads as a stray dash floating in empty space. */
+  .pcell::after {
+    content: ""; position: absolute; right: 8px; bottom: 2px; height: 2px;
+    width: var(--w); background: var(--accent); opacity: .35;
+  }
+  tr.expand td { padding: 0 8px 10px 26px; background: var(--panel-2); }
   .muted { color: var(--muted); }
   .src { font-size: 11px; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--border); color: var(--muted); }
   .src-live { color: var(--good); border-color: var(--good); }
