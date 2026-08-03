@@ -6,6 +6,7 @@ import {
   chestVal,
   baseGold,
   hellKeyEv,
+  hellKeyBreakdown,
   hellKeyColumnPrices,
   cubeEv,
   relicRecipe,
@@ -17,6 +18,7 @@ import {
   PROBABILITIES,
   HELL_KEY_MAP,
   SKIP_COLUMNS,
+  WEALTH_BASE_MULT,
 } from "../src/lib/packs/data/hellRewards";
 import fixture from "./fixtures/tjw-nae-prices.json";
 
@@ -447,6 +449,52 @@ describe("lower-tier hellKeyEv self-goldens (our baseline)", () => {
       const ladder = family.map((s) => hellKeyEv(s, map));
       for (let i = 1; i < ladder.length; i++) expect(ladder[i]).toBeGreaterThan(ladder[i - 1]);
     }
+  });
+});
+
+describe("hellKeyBreakdown candidates / wealth / rarity opts", () => {
+  const map = buildPriceMap(NAE);
+  it("exposes DESC-sorted positive candidates whose top value drives bestPick", () => {
+    const b = hellKeyBreakdown("hell-key-of-destiny-vi", map)!;
+    for (const f of b.floors) {
+      const golds = f.candidates.map((c) => c.gold);
+      expect(golds).toEqual([...golds].sort((x, y) => y - x));
+      expect(golds.every((g) => g > 0)).toBe(true);
+      if (golds.length > 0) expect(f.bestPick).toBeLessThanOrEqual(golds[0]);
+    }
+  });
+  it("labels the Stones pick side and the Juice composition", () => {
+    const b = hellKeyBreakdown("hell-key-of-destiny-vi", map)!;
+    const f = b.floors.find((x) => x.range === "50 - 59")!;
+    expect(f.candidates.find((c) => c.column === "Stones")!.note).toMatch(/^Pick (Destruction \(Red\)|Guardian \(Blue\))$/);
+    const juice = f.candidates.find((c) => c.column === "Juice")!;
+    expect(juice.note).toBe(`${juice.qty} Lava's + ${juice.qty * 3} Glacier's`);
+  });
+  it("flips the Stones note to the blue side when 3x guardian stones win", () => {
+    // The regex above accepts either side; pin the other branch with a guardian-rich map.
+    const blueRich = {
+      ...map,
+      "destiny-crystallized-destruction-stone": 0.01,
+      "destiny-crystallized-guardian-stone": 50,
+    };
+    const f = hellKeyBreakdown("hell-key-of-destiny-vi", blueRich)!.floors.find((x) => x.range === "50 - 59")!;
+    expect(f.candidates.find((c) => c.column === "Stones")!.note).toBe("Pick Guardian (Blue)");
+  });
+  it("baseWealth is exactly base x WEALTH_BASE_MULT and never leaks into ev", () => {
+    const plain = hellKeyBreakdown("hell-key-of-destiny-vi", map)!;
+    for (const f of plain.floors) expect(f.baseWealth).toBeCloseTo(f.base * WEALTH_BASE_MULT, 9);
+    expect(plain.ev).toBeCloseTo(hellKeyEv("hell-key-of-destiny-vi", map), 9);
+  });
+  it("rarity override changes the weighting; unsupported columns clamp", () => {
+    const leg = hellKeyBreakdown("hell-key-of-destiny-vi", map)!;
+    const anc = hellKeyBreakdown("hell-key-of-destiny-vi", map, { rarity: "Ancient" })!;
+    expect(anc.ev).toBeGreaterThan(leg.ev);
+    expect(anc.effectiveRarity).toBe("Ancient");
+    expect(anc.rarityClamped).toBe(false);
+    const flame = hellKeyBreakdown("netherworld-flame-key-vi", map, { rarity: "Ancient" })!;
+    expect(flame.effectiveRarity).toBe("Legendary");
+    expect(flame.rarityClamped).toBe(true);
+    expect(flame.ev).toBeCloseTo(hellKeyBreakdown("netherworld-flame-key-vi", map)!.ev, 9);
   });
 });
 
