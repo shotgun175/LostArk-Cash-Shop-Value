@@ -5,6 +5,7 @@ import type { HellTier, FloorProb, ColumnVal } from "./types";
 // sekwahar Season-4 datamine, which wins every conflict with the Arkemys sheet (locked in
 // DECISIONS.md; see docs/Hell-1750-Gap-Analysis-2026-07-30.md). Astrogem cells are "a|b|c"
 // strings (uncommon|rare|epic); "Karma/Quality" cells are "karma|quality" pick-one pairs.
+// === BEGIN GENERATED: HELL_TIERS (scripts/gen-hell-rewards.mjs) ===
 export const HELL_TIERS: Record<string, HellTier> = {
   // The 1730 pair was RE-GENERATED from the sekwahar Season-4 datamine on 2026-07-30
   // (user decision: every tier from one source). The original TJW-verbatim transcription is
@@ -1685,6 +1686,12 @@ export const HELL_TIERS: Record<string, HellTier> = {
     },
   },
 };
+// === END GENERATED ===
+
+// The datamine's "Additional Rewards (Wealth)" column is an exact x10 of "Additional Rewards"
+// on every floor of every tier; scripts/gen-hell-rewards.mjs asserts this on every run, so a
+// future regeneration fails loudly if the game ever changes it.
+export const WEALTH_BASE_MULT = 10;
 
 // Per-floor, per-rarity drop probabilities (source B `probabilities`). 11 floors each, in
 // order 0-9 .. 90-99, 100. Destiny has 7 rarities; Flame/Frost have 3. The engine renormalizes
