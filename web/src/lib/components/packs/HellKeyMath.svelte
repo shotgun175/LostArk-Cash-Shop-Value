@@ -33,14 +33,17 @@
       // the family once and bring the Epic card back on "Actual" (user 2026-08-03).
       .filter((slug) => hellSettings.rarity === "Actual" || !slug.endsWith("-epic"))
       .map((slug) => ({ b: hellKeyBreakdown(slug, prices, rarityOpts), cols: hellKeyColumnPrices(slug, prices) }))
-      .filter((k): k is { b: HellKeyBreakdown; cols: ColumnPrice[] } => k.b !== null),
+      .filter((k): k is { b: HellKeyBreakdown; cols: ColumnPrice[] } => k.b !== null)
+      // Same rule for cards the picked rarity cannot apply to at all: a clamped Netherworld
+      // card would just repeat its Actual numbers, so it hides instead (user 2026-08-03).
+      // Common/Uncommon/Relic/Ancient therefore show only the Destiny card.
+      .filter((k) => hellSettings.rarity === "Actual" || !k.b.rarityClamped),
   );
 
-  // Flags a card's EV as a what-if, but only where the pick actually changed the weighting:
-  // Netherworld tiers have no Common/Relic/Ancient column, so those cards stay on their own rarity.
+  // Flags a card's EV as a what-if where the pick actually changed the weighting. Clamped
+  // cards never reach this: the keys filter hides them under an inapplicable rarity.
   const rarityTag = (b: HellKeyBreakdown): string | null => {
     if (hellSettings.rarity === "Actual") return null;
-    if (b.rarityClamped) return "actual (n/a at this rarity)";
     return b.effectiveRarity !== b.rarityTier ? "what-if" : null;
   };
 
