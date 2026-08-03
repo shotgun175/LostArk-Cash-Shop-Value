@@ -126,7 +126,10 @@ describe("withTapPrices", () => {
     expect(out[TAP_SLUGS.transferred]).not.toBeCloseTo(TRANSFERRED_GOLD, 6);
   });
 
-  it("tracks every input slug (a memo must never serve a stale price)", () => {
+  // Explicit timeout: this test deliberately runs the unmemoized DP as its oracle for all
+  // 11 slugs (about 22 cold solves at ~200ms each), which sits right at vitest's 5s default
+  // on a loaded machine and would flake on slower CI runners.
+  it("tracks every input slug (a memo must never serve a stale price)", { timeout: 30_000 }, () => {
     // Results are memoized on the input tuple, so every slug that feeds the engine has to be
     // part of the key. Oracle: the raw, unmemoized engine at the same bumped inputs.
     for (const slug of [
