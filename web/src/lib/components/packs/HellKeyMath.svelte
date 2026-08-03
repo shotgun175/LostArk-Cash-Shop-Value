@@ -89,14 +89,6 @@
       </select>
     </label>
 
-    <label class="tierpick check">
-      <input
-        type="checkbox"
-        checked={hellSettings.wealth}
-        onchange={(e) => hellSettings.setWealth(e.currentTarget.checked)}
-      />
-      Wealth +1 active
-    </label>
   </div>
 
   <TapValuePanel {ilvl} />
@@ -116,7 +108,20 @@
       </div>
       <details>
         <summary>Draw per floor breakdown</summary>
-        <p class="hint">Pick a floor to see every chest on it, ranked.</p>
+        <!-- The Wealth toggle lives here, next to the only thing it changes (the base line in
+             the per-floor chest list); at the top of the tab it read as doing nothing (user
+             2026-08-03). One shared, persisted state: ticking it in any card flips all cards. -->
+        <div class="beltline">
+          <p class="hint">Pick a floor to see every chest on it, ranked.</p>
+          <label class="tierpick check">
+            <input
+              type="checkbox"
+              checked={hellSettings.wealth}
+              onchange={(e) => hellSettings.setWealth(e.currentTarget.checked)}
+            />
+            Wealth +1 active
+          </label>
+        </div>
         <div class="tscroll">
           <table>
             <thead>
@@ -224,6 +229,8 @@
   tr.zero td { opacity: .45; }
   .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .hint { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
+  .beltline { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 28px; }
+  .beltline .check { margin-top: 8px; }
   tbody tr.floorrow { cursor: pointer; }
   tbody tr.floorrow:hover td, tbody tr.open td { background: var(--panel-2); }
   th.chev, td.chev { width: 18px; padding-right: 0; color: var(--muted); }
