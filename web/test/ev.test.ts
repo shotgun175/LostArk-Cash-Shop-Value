@@ -386,11 +386,15 @@ describe("1750 hell key map", () => {
 });
 
 // Self-goldens: OUR baseline, deliberately not TJW-anchored (he has no 1750 math yet).
-// Computed 2026-07-30 on the pinned fixture at the model decisions locked in
+// Originally computed 2026-07-30 on the pinned fixture at the model decisions locked in
 // docs/Hell-1750-Gap-Analysis-2026-07-30.md: datamine tables, live-priced Juice
 // (lava 330 + 3 x glacier 319 = 1287/unit at this fixture), Karma/Quality max(600, 0),
-// taps flat 1000. When TJW ships 1750, diff as a cross-check only (DECISIONS.md);
-// adopt a specific fix only if the diff exposes a real error, never blanket re-anchor.
+// taps flat 1000 at that point. Re-baselined 2026-08-02 (owner sign-off): taps are now
+// priced by the live special-hone tap engine (Maxroll-model port of TJW's compiled app,
+// see specialHone.ts / tapPrices.ts) instead of the flat 1000, so the values below are
+// the current goldens under that model. When TJW ships 1750, diff as a cross-check only
+// (DECISIONS.md); adopt a specific fix only if the diff exposes a real error, never
+// blanket re-anchor.
 describe("1750 hellKeyEv self-goldens (our baseline)", () => {
   const map = buildPriceMap(NAE);
   const golden: Record<string, number> = {
@@ -412,9 +416,12 @@ describe("1750 hellKeyEv self-goldens (our baseline)", () => {
   });
 });
 
-// Self-goldens for the 1640/1680/1700 keys at the pinned fixture (computed 2026-07-30):
-// datamine tables, juice priced, Circulated taps at 100 (Arkemys T4 unit), astrogem chests
-// at the baked 4300. OUR baseline — no TJW anchor exists for these tiers on Season-4 data.
+// Self-goldens for the 1640/1680/1700 keys at the pinned fixture (originally computed
+// 2026-07-30): datamine tables, juice priced, astrogem chests at the baked 4300. Circulated
+// taps were originally valued at the flat 100 (Arkemys T4 unit); re-baselined 2026-08-02
+// (owner sign-off) to the live special-hone tap engine (Maxroll-model port, see
+// specialHone.ts / tapPrices.ts), so the values below price Circulated taps live too.
+// OUR baseline: no TJW anchor exists for these tiers on Season-4 data.
 describe("lower-tier hellKeyEv self-goldens (our baseline)", () => {
   const map = buildPriceMap(NAE);
   const golden: Record<string, number> = {

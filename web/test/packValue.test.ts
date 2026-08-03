@@ -195,9 +195,12 @@ describe("paradise-special-pack-ii (EV pack: deterministic engine value)", () =>
       100 * 137 * 10 +
       31900 * 5;
     expect(r.total).toBe(expected);
-    // 783,815 on the TJW-vintage tables; now the datamine 1730 tables + priced juice lift
+    // 783,815 on the TJW-vintage tables; the datamine 1730 tables + priced juice lifted
     // the Epic keys (129,295 -> 138,919 each) and the Frost key (50,440 -> 107,176), which
-    // is most of the +75,984 (2026-07-30).
+    // was most of the +75,984 to 859,799 (2026-07-30). Re-baselined 2026-08-02 (owner
+    // sign-off) to the live special-hone tap engine: the Epic key drops to 137,061 (was
+    // 138,919 under flat-1000 taps), pulling the total to the current 856,083; the Frost
+    // key is unaffected and stays at 107,176.
     expect(r.total).toBe(856083);
     expect(evFrost).toBe(107176);
   });
