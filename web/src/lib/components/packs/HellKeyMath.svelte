@@ -121,22 +121,24 @@
             <tbody>
               {#each k.b.floors as f (f.range)}
                 {@const open = openFloor[k.b.slug] === f.range}
-                <tr
-                  class:zero={f.p === 0}
-                  class:open
-                  role="button"
-                  tabindex="0"
-                  aria-expanded={open}
-                  aria-label="Floor {f.range} chests"
-                  onclick={() => toggleFloor(k.b.slug, f.range)}
-                  onkeydown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      toggleFloor(k.b.slug, f.range);
-                    }
-                  }}
-                >
-                  <td class="chev" aria-hidden="true">{open ? "▾" : "▸"}</td>
+                {@const panelId = `hf-${k.b.slug}-${f.range.replace(/\W+/g, "-")}`}
+                <!-- The row keeps its table semantics (its cells stay real cells for screen-reader
+                     table navigation); the chevron button is the keyboard-reachable control, so the
+                     row-level click is a mouse convenience only. -->
+                <tr class="floorrow" class:zero={f.p === 0} class:open onclick={() => toggleFloor(k.b.slug, f.range)}>
+                  <td class="chev">
+                    <button
+                      type="button"
+                      class="chevbtn"
+                      aria-expanded={open}
+                      aria-controls={panelId}
+                      aria-label="Floor {f.range} chests"
+                      onclick={(e) => {
+                        e.stopPropagation();
+                        toggleFloor(k.b.slug, f.range);
+                      }}
+                    >{open ? "▾" : "▸"}</button>
+                  </td>
                   <td>{f.range}</td>
                   <!-- The bar under P(floor) makes the weighting readable at a glance: how much
                        of the key's EV this floor can possibly carry. -->
@@ -150,7 +152,7 @@
                 </tr>
                 {#if open}
                   <tr class="expand">
-                    <td colspan={7}><HellFloorChests floor={f} wealth={hellSettings.wealth} /></td>
+                    <td id={panelId} colspan={7}><HellFloorChests floor={f} wealth={hellSettings.wealth} /></td>
                   </tr>
                 {/if}
               {/each}
@@ -218,10 +220,14 @@
   tr.zero td { opacity: .45; }
   .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .hint { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
-  tbody tr[role="button"] { cursor: pointer; }
-  tbody tr[role="button"]:hover td, tbody tr.open td { background: var(--panel-2); }
-  tbody tr[role="button"]:focus-visible { outline: 1px solid var(--accent); outline-offset: -1px; }
+  tbody tr.floorrow { cursor: pointer; }
+  tbody tr.floorrow:hover td, tbody tr.open td { background: var(--panel-2); }
   th.chev, td.chev { width: 18px; padding-right: 0; color: var(--muted); }
+  .chevbtn {
+    background: none; border: 0; padding: 0; color: inherit; font: inherit;
+    line-height: 1; cursor: pointer;
+  }
+  .chevbtn:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .pcell { position: relative; }
   /* Right-anchored so the bar sits under the number it annotates: the cell is far wider than
