@@ -53,9 +53,10 @@
   <div class="line" class:superseded={on}>
     <span class="lbl">Special hone tap ({track}):</span>
     <b class="num accent">{formatGold(Math.round(shown))}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" /><span class="lbl">/tap</span>
-    {#if derivation}
-      <span class="lbl">({derivation.slot} +{derivation.level}, {target === "auto" ? "auto" : `lv ${target}`})</span>
-    {:else}
+    <!-- No derivation caption on purpose: the optimizer's "best use" (slot/level) read as a
+         claim about the player's own honing state, which it is not (user 2026-08-03). The
+         price plus Override says everything the player needs. -->
+    {#if !derivation}
       <span class="badge">fallback</span>
     {/if}
   </div>
