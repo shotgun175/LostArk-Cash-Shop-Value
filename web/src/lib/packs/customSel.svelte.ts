@@ -10,7 +10,15 @@ class CustomSel {
     if (typeof localStorage !== "undefined") {
       try {
         const v = JSON.parse(localStorage.getItem("csv.customSel") ?? "{}");
-        if (v && typeof v === "object") this.map = v;
+        if (v && typeof v === "object") {
+          // Keep only well-formed entries (string arrays): the values are load-bearing in
+          // customChosen, so a corrupted shape must degrade to defaults, never throw.
+          const clean: Record<string, string[]> = {};
+          for (const [slug, val] of Object.entries(v)) {
+            if (Array.isArray(val) && val.every((x) => typeof x === "string")) clean[slug] = val;
+          }
+          this.map = clean;
+        }
       } catch {
         /* ignore malformed */
       }

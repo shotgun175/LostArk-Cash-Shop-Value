@@ -35,8 +35,12 @@ export function buildPriceMap(
   if (typeof bc === "number" && Number.isFinite(bc) && bc > 0) {
     m["blue-crystal"] = bc;
     // BC-store-costed utility items (the Arkgrid processing tickets): gold = BC cost x gold/BC.
-    // Priced only when the exchange input is set, like blue-crystal itself.
-    for (const [slug, cost] of Object.entries(BC_COSTS)) m[slug] = cost * bc;
+    // Priced only when the exchange input is set, like blue-crystal itself. A slug already in
+    // regionPrices means the user click-to-edited that line (these items are never in the live
+    // feed), and the override must win — the UI marks it "edited", so it has to take effect.
+    for (const [slug, cost] of Object.entries(BC_COSTS)) {
+      if (!(slug in regionPrices)) m[slug] = cost * bc;
+    }
   }
   return m;
 }

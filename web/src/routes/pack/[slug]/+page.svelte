@@ -148,9 +148,11 @@
       <div class="chest-head">
         {#if pack.customSelection && !readOnly}
           <label class="cs-check" title={c.counted ? "Counts toward the pack total" : "Not picked"}>
+            <!-- preventDefault keeps the box fully state-driven (see PackCard.svelte): the DOM
+                 must never self-flip, or the uncheck-last-pick path desyncs it from the store. -->
             <input type="checkbox" checked={c.counted}
               disabled={!c.counted && countedChests.length >= pack.customSelection.pick}
-              onchange={() => customSel.toggle(pack.slug, c.chest, pack.customSelection!.pick, countedChests)} />
+              onclick={(e) => { e.preventDefault(); customSel.toggle(pack.slug, c.chest, pack.customSelection!.pick, countedChests); }} />
           </label>
         {/if}
         <span class="chest-name">{c.qty}× {c.chest}</span>

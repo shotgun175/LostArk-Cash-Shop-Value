@@ -168,9 +168,10 @@ export const RESOLVER: Record<string, Chest> = {
     type: "fixed",
     outputs: [{ slug: "epic-astrogem-selected", qtyPerChest: 1 }],
   },
-  // 2026-07-15 Summer Astrogem Package. The live store names its pick-one chest "Selection"
-  // (the relic-pack era transcription above says "Selector"); both grant one chosen epic
-  // astrogem. The two processing tickets are untradable utility items with no market value.
+  // Astrogem chests added 2026-07-15 (now used by the [Limited] Astrogem Package). The live
+  // store names its pick-one chest "Selection" (the relic-pack era transcription above says
+  // "Selector"); both grant one chosen epic astrogem. The two processing tickets are
+  // untradable BC-store items, priced via BC_COSTS x gold/BC when the exchange input is set.
   "Epic Astrogem Selection Chest": {
     name: "Epic Astrogem Selection Chest",
     type: "fixed",

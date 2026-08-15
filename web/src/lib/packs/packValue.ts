@@ -154,8 +154,13 @@ export function customChosen(
 ): Set<string> | null {
   const cs = pack.customSelection;
   if (!cs) return null;
-  const stored = chosen?.filter((name) => cs.options.some((o) => o.chest === name)) ?? [];
-  if (stored.length > 0) return new Set(stored);
+  // Array.isArray: the stored picks come from localStorage, so a junk shape degrades to the
+  // default instead of throwing inside a $derived. The slice caps a stored set written under a
+  // larger pick count (first-N kept), so a dataset update lowering `pick` self-heals.
+  const stored = (Array.isArray(chosen) ? chosen : []).filter((name) =>
+    cs.options.some((o) => o.chest === name),
+  );
+  if (stored.length > 0) return new Set(stored.slice(0, cs.pick));
   const valued = cs.options.map((o, i) => {
     const chest = RESOLVER[o.chest];
     const gold = chest ? resolveChest(chest, prices, picks[o.chest]).gold * o.qty : 0;

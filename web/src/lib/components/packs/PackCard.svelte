@@ -106,9 +106,15 @@
       </div>
       {#each custom.options as o (o.chest)}
         <label class="cs-opt" class:off={!o.counted}>
+          <!-- Fully state-driven checkbox: preventDefault stops the native flip, so the DOM can
+               never diverge from checked={o.counted}. Without it, unchecking the last stored
+               pick snaps the store back to the default set (which may re-include this chest);
+               Svelte's memoized checked-write then skips the element and the box stays visually
+               unchecked while its gold counts. Space-key toggles dispatch click, so keyboard
+               use is covered. -->
           <input type="checkbox" checked={o.counted}
             disabled={!o.counted && countedChests.length >= custom.pick}
-            onchange={() => customSel.toggle(row.slug, o.chest, custom.pick, countedChests)} />
+            onclick={(e) => { e.preventDefault(); customSel.toggle(row.slug, o.chest, custom.pick, countedChests); }} />
           <span class="cs-name">{o.qty}× {o.chest}</span>
           <span class="cs-gold num">{o.gold > 0 ? formatGold(o.gold) : "—"}</span>
         </label>

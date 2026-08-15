@@ -336,8 +336,8 @@ export const PACKS: Pack[] = [
   // --- 2026-08-12 rotation (all sales periods end 09/16/2026) ---
   {
     // 5 per roster. The two processing tickets are BC-store items valued off the exchange
-    // input (BC_COSTS); the live store names the pick-one chest "Selection" (as on the
-    // weekly astrogem pack), though TJW's dataset calls it "Selector".
+    // input (BC_COSTS); the live store names the pick-one chest "Selection" (verified in the
+    // purchase window), though TJW's dataset calls it "Selector" — both resolve identically.
     name: "[Limited] Astrogem Package",
     slug: "limited-astrogem-package",
     royalCrystalCost: 1100,
@@ -374,10 +374,13 @@ export const PACKS: Pack[] = [
   {
     // Choose-5-of-10 custom pack, 5 per roster. Contents stays empty; the buyer's five picks
     // come from customSelection (the engine defaults to the five highest-gold options).
+    // limited: false — the in-game title carries no [Limited] banner, and the 32d timer on
+    // the purchase window (seen 2026-08-14) could be a sales end OR a reset; user will
+    // re-check around 09/16/2026 and we retire or tag a recurrence then.
     name: "Summer Custom Pack I",
     slug: "summer-custom-pack-1",
     royalCrystalCost: 5200,
-    limited: true,
+    limited: false,
     retired: false,
     contents: [],
     customSelection: {
@@ -399,10 +402,11 @@ export const PACKS: Pack[] = [
   {
     // Choose-4-of-8 custom pack, 5 per roster. The Abidos option is the Epic 100-pack (same
     // in-game display name as the Rare 15-pack; TJW user-confirmed which variant this is).
+    // limited: false for the same reason as Summer Custom Pack I above.
     name: "Summer Custom Pack II",
     slug: "summer-custom-pack-2",
     royalCrystalCost: 2500,
-    limited: true,
+    limited: false,
     retired: false,
     contents: [],
     customSelection: {

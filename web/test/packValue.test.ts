@@ -311,6 +311,17 @@ describe("2026-08-12 rotation packs (self-goldens at the pinned fixture)", () =>
     const mapBc = buildPriceMap(NAE, { blueCrystalGold: 200 });
     expect(packValue(pack("limited-astrogem-package"), mapBc).total).toBe(137075 + 70800);
   });
+
+  it("a user click-to-edit override on a BC-costed ticket wins over the BC derivation", () => {
+    // Overrides arrive merged into regionPrices (effectivePrices), so the injection must not
+    // clobber them — the UI marks the line "edited" and the number has to actually move.
+    const m = buildPriceMap(
+      { ...NAE, "astrogem-processing-reset-ticket": 5000 },
+      { blueCrystalGold: 200 },
+    );
+    expect(m["astrogem-processing-reset-ticket"]).toBe(5000);
+    expect(m["astrogem-processing-option-refresh-ticket"]).toBe(3600); // untouched one still derived
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -364,6 +375,25 @@ describe("custom_selection packs (choose N of M)", () => {
       "summer-custom-pack-1": ["Not A Chest Anymore"],
     });
     expect(withBad.total).toBe(packValue(pack("summer-custom-pack-1"), map).total);
+  });
+
+  it("caps an oversized stored set at pick (first N kept) and survives junk shapes", () => {
+    // A stored set written under a larger pick count (or tampered storage) must not let the
+    // pack count more than `pick` options.
+    const six = [
+      "Crystallized Destiny Destruction Stone Pouch",
+      "Crystallized Destiny Guardian Stone Pouch",
+      "Great Destiny Leapstone Chest",
+      "Superior Abidos Fusion Material Chest",
+      "Destiny Shard Pouch (L)",
+      "Glacier's Breath Chest",
+    ];
+    const capped = customChosen(pack("summer-custom-pack-1"), map, {}, six)!;
+    expect(capped.size).toBe(5);
+    expect([...capped]).toEqual(six.slice(0, 5));
+    // A non-array (corrupted storage) degrades to the default instead of throwing.
+    const junk = customChosen(pack("summer-custom-pack-1"), map, {}, "x" as unknown as string[])!;
+    expect(junk).toEqual(customChosen(pack("summer-custom-pack-1"), map)!);
   });
 
   it("packDetail lists every option with counted flags that sum to the pack total", () => {
