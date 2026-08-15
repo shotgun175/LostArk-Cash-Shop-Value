@@ -10,7 +10,9 @@
   import { customSel } from "$lib/packs/customSel.svelte";
   import { hellSettings } from "$lib/packs/hellSettings.svelte";
   import { TRADE_UP } from "$lib/packs/data/constants";
+  import { BC_PER_BUNDLE } from "$lib/packs/data/marisShop";
   import { effectivePrices } from "$lib/packs/prices.svelte";
+  import { buildPriceMap } from "$lib/packs/priceMap";
   import { packDetail, type DetailOption } from "$lib/packs/packDetail";
   import { PACKS } from "$lib/packs/data/packs";
   import PackCard from "./PackCard.svelte";
@@ -89,12 +91,20 @@
 
   // Per pack: chosen-slug -> the selection chest's full option list, for the inline "Show alts";
   // plus the choose-N-of-M option rows (chest name / qty / gold / counted) for the checkbox block.
+  // Both are valued against the SAME fully-layered map buildPackRows uses (baked + live + taps +
+  // key/cube EVs + BC items) — the raw feed alone would zero every EV/baked option and make the
+  // checkbox defaults disagree with the engine's chosen set.
+  const detailPrices = $derived(
+    buildPriceMap(effectivePrices(), {
+      blueCrystalGold: f4.value / BC_PER_BUNDLE,
+      tapOverrides: hellSettings.tapOverride[app.region],
+    }),
+  );
   const altsByPack = $derived.by(() => {
-    const prices = effectivePrices();
     const out: Record<string, Record<string, DetailOption[]>> = {};
     for (const pack of PACKS) {
       const map: Record<string, DetailOption[]> = {};
-      for (const chest of packDetail(pack, prices, selection.map, customSel.map)) {
+      for (const chest of packDetail(pack, detailPrices, selection.map, customSel.map)) {
         if (chest.isSelection && chest.options.length > 1) {
           const chosen = chest.options.find((o) => o.chosen);
           if (chosen) map[chosen.slug] = chest.options;
@@ -105,11 +115,10 @@
     return out;
   });
   const customByPack = $derived.by(() => {
-    const prices = effectivePrices();
     const out: Record<string, { pick: number; options: { chest: string; qty: number; gold: number; counted: boolean }[] }> = {};
     for (const pack of PACKS) {
       if (!pack.customSelection) continue;
-      const options = packDetail(pack, prices, selection.map, customSel.map).map((c) => ({
+      const options = packDetail(pack, detailPrices, selection.map, customSel.map).map((c) => ({
         chest: c.chest, qty: c.qty, gold: c.gold, counted: c.counted,
       }));
       out[pack.slug] = { pick: pack.customSelection.pick, options };
