@@ -299,8 +299,6 @@ describe("2026-08-12 rotation packs (self-goldens at the pinned fixture)", () =>
     ["weekly-summer-t4-fusion-leap", 252200],
     // 7x31,900 (T4 support -> glaciers) + 50x3000x0.224
     ["weekly-summer-t4-shards-support", 256900],
-    // 10x3,750 + 2x33,000 + 43,000 + 25x1,543 (2026-08-14 astrogem anchors)
-    ["weekly-summer-astrogem-package", 185075],
   ];
   for (const [slug, total] of golden) {
     it(`${slug}: total ${total} on the fixture`, () => {
@@ -308,11 +306,10 @@ describe("2026-08-12 rotation packs (self-goldens at the pinned fixture)", () =>
     });
   }
 
-  it("astrogem packs gain the BC-costed processing tickets when the exchange input is set", () => {
-    // gold/BC 200: reset 3x20,000 + refresh 3x3,600 = +70,800 on each astrogem pack.
+  it("the astrogem pack gains the BC-costed processing tickets when the exchange input is set", () => {
+    // gold/BC 200: reset 3x20,000 + refresh 3x3,600 = +70,800.
     const mapBc = buildPriceMap(NAE, { blueCrystalGold: 200 });
     expect(packValue(pack("limited-astrogem-package"), mapBc).total).toBe(137075 + 70800);
-    expect(packValue(pack("weekly-summer-astrogem-package"), mapBc).total).toBe(185075 + 70800);
   });
 });
 

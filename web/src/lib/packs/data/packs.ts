@@ -10,13 +10,13 @@ import type { Pack } from "./types";
 // possibly a placeholder ("RC price was cut off in the screenshot").
 export const PACKS: Pack[] = [
   {
+    // Still sold in the live shop (user-verified 2026-08-15) even though TJW's dataset marks
+    // it retired 2026-08-12 — his flag was not adopted.
     name: "[Limited] Adventurer's Path Package",
     slug: "adventurers-path-package",
-    frozenTotal: 446550, // NA card value captured 2026-08-14 post-Abidos(15)-fix (EU card showed 451,220)
     royalCrystalCost: 2000,
     limited: true,
-    retired: true,
-    retiredOn: "2026-08-12",
+    retired: false,
     contents: [
       { chest: "Artisan's Support Materials Selection Chest: Weapon", qty: 4 },
       { chest: "Artisan's Support Materials Selection Chest: Armor", qty: 4 },
@@ -227,22 +227,9 @@ export const PACKS: Pack[] = [
       { chest: "Artisan's Support Materials Selection Chest: Armor", qty: 5 },
     ],
   },
-  {
-    name: "[Weekly] Summer Astrogem Package",
-    slug: "weekly-summer-astrogem-package",
-    royalCrystalCost: 1400,
-    limited: true,
-    recurrence: "weekly",
-    retired: false,
-    contents: [
-      { chest: "Rare - Epic Astrogem Chest", qty: 10 },
-      { chest: "Epic Astrogem Chest", qty: 2 },
-      { chest: "Epic Astrogem Selection Chest", qty: 1 },
-      { chest: "Astrogem Processing Reset Ticket", qty: 3 },
-      { chest: "Astrogem Processing Option Refresh Ticket", qty: 3 },
-      { chest: "T4 Gem Chest (Lv. 3)", qty: 25 },
-    ],
-  },
+  // The 2026-07-15 "[Weekly] Summer Astrogem Package" entry was removed outright 2026-08-15:
+  // the user confirmed no such product exists in the shop (the 2026-07-15 transcription
+  // mis-modeled what is actually the [Limited] Astrogem Package, added below).
   {
     name: "[Weekly] T4 Crystallized Stone & Fusion Pack II",
     slug: "weekly-t4-crystallized-stone",

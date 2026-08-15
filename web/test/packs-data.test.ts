@@ -6,20 +6,22 @@ import { CUBE_REWARDS } from "../src/lib/packs/data/cube";
 import { BAKED, TRADE_UP, RELIC_ENGRAVING_SLUGS } from "../src/lib/packs/data/constants";
 
 describe("PACKS", () => {
-  it("has all 27 packs", () => {
-    expect(PACKS.length).toBe(27);
+  // 26 = 27 tracked through the 2026-08-12 rotation minus the phantom weekly astrogem pack
+  // (user-confirmed 2026-08-15 that no such shop product exists; entry deleted outright).
+  it("has all 26 packs", () => {
+    expect(PACKS.length).toBe(26);
   });
   it("lists exactly the 10 non-retired packs (post-2026-08-12 rotation)", () => {
     const active = PACKS.filter((p) => !p.retired).map((p) => p.slug).sort();
     expect(active).toEqual(
       [
+        "adventurers-path-package", // still in the live shop despite TJW's retired flag (2026-08-15)
         "limited-astrogem-package",
         "monthly-1200-crystal-pack",
         "monthly-t4-growth-support",
         "paradise-special-pack",
         "summer-custom-pack-1",
         "summer-custom-pack-2",
-        "weekly-summer-astrogem-package",
         "weekly-summer-t4-crystallized-stone",
         "weekly-summer-t4-fusion-leap",
         "weekly-summer-t4-shards-support",
