@@ -108,18 +108,24 @@ describe("resolveChest", () => {
 // All of these reproduce EXACTLY from this fixture (mats + relic-recipe + Frost-key EV).
 // adventurers-path-package also requires pricing the 6 AH-tradable bound consumables in its
 // "Adventurer's Path Chest I — Bound Bundle" (101,700 gold); only its 2 brews zero out.
+// Two rows have since deliberately left the June capture (comments inline): the astrogem
+// re-anchors and the Abidos (15) correction.
 // ---------------------------------------------------------------------------
 describe("packValue golden parity with TJW live pack cards", () => {
   const map = buildPriceMap(NAE);
 
   // [slug, total, goldPerRc] read directly off TJW's live cards.
   const golden: [string, number, number][] = [
-    ["adventurers-path-package", 831020, 415.5],
+    // TJW's June card showed 831,020 / 415.5 with the Abidos line read as the Epic 100-pack.
+    // Corrected 2026-08-14: the pack drops the Rare 15-per-chest variant (same in-game name),
+    // so the line is 40 x 15 x 137 = 82,200, not 548,000. TJW shipped the same fix 2026-08-12.
+    ["adventurers-path-package", 365220, 182.6],
     ["horizon-growth-support-pack-i", 1679000, 289.5],
     ["horizon-growth-support-pack-ii", 864850, 227.6],
-    // TJW's card showed 1,812,089 / 335.6 on the old astrogem constants (15k/30k); the
-    // 2026-07-15 re-anchor (21.5k/43k, NPC-price-based) adds 2x6,500 + 2x13,000 = +39,000.
-    ["limited-relic-engraving-growth", 1851089, 342.8],
+    // TJW's card showed 1,812,089 / 335.6 on his old astrogem constants (15k/30k); the
+    // 2026-07-15 NPC re-anchor made it 1,851,089 (21.5k/43k), and the 2026-08-14 adoption of
+    // the 33k random epic (user sign-off) adds 2 x 11,500 more.
+    ["limited-relic-engraving-growth", 1874089, 347.1],
     ["monthly-t4-growth-support", 172875, 45.5],
     ["shadow-growth-support-pack-1", 1459800, 260.7],
     ["shadow-growth-support-pack-2", 626550, 174.0],
@@ -198,11 +204,11 @@ describe("paradise-special-pack-ii (EV pack: deterministic engine value)", () =>
     // 783,815 on the TJW-vintage tables; the datamine 1730 tables + priced juice lifted
     // the Epic keys (129,295 -> 138,919 each) and the Frost key (50,440 -> 107,176), which
     // was most of the +75,984 to 859,799 (2026-07-30). Re-baselined 2026-08-02 (owner
-    // sign-off) to the live special-hone tap engine: the Epic key drops to 137,061 (was
-    // 138,919 under flat-1000 taps), pulling the total to the current 856,083; the Frost
-    // key is unaffected and stays at 107,176.
-    expect(r.total).toBe(856083);
-    expect(evFrost).toBe(107176);
+    // sign-off) to the live special-hone tap engine (856,083). Re-baselined again 2026-08-14
+    // (user sign-off): the astrogem pipe-EV fix (epic 15k -> 43k) lifts the Epic keys to
+    // 141,600 each and the Frost key to 113,539, for the current 871,524.
+    expect(r.total).toBe(871524);
+    expect(evFrost).toBe(113539);
   });
 
   it("a user pick re-routes a selection chest and changes the pack total", () => {
@@ -289,9 +295,9 @@ describe("frozen retirement values (display path)", () => {
   });
 
   it("the default (live) path ignores frozenTotal", () => {
-    // relic's live value (golden) is 1,851,089 — distinct from its retirement snapshot (1,769,665).
+    // relic's live value (golden) is 1,874,089 — distinct from its retirement snapshot (1,769,665).
     const relic = pack("limited-relic-engraving-growth");
-    expect(packValue(relic, map).total).toBe(1851089);
+    expect(packValue(relic, map).total).toBe(1874089);
     expect(relic.frozenTotal).toBe(1769665);
   });
 });
@@ -320,6 +326,16 @@ describe("1200 Crystal Pack (blue-crystal + run-reward brews)", () => {
     // A cleared field (NaN) or zero input must not poison the map.
     expect(buildPriceMap({}, { blueCrystalGold: NaN })["blue-crystal"]).toBeUndefined();
     expect(buildPriceMap({}, { blueCrystalGold: 0 })["blue-crystal"]).toBeUndefined();
+  });
+
+  it("prices the Arkgrid processing tickets at their BC store cost x gold/BC (2026-08-14)", () => {
+    // gold/BC 200 -> reset (100 BC) = 20,000; refresh (18 BC) = 3,600.
+    const m = buildPriceMap({}, { blueCrystalGold: 200 });
+    expect(m["astrogem-processing-reset-ticket"]).toBe(20000);
+    expect(m["astrogem-processing-option-refresh-ticket"]).toBe(3600);
+    // No exchange input -> unpriced, so the pack lines fall back to 0-gold rows as before.
+    expect(buildPriceMap({})["astrogem-processing-reset-ticket"]).toBeUndefined();
+    expect(buildPriceMap({})["astrogem-processing-option-refresh-ticket"]).toBeUndefined();
   });
 
   it("resolves the Crystal currency chest and the two run-reward brews", () => {

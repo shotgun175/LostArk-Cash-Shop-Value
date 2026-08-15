@@ -8,13 +8,24 @@ export const BAKED: Record<string, number> = {
   "lv-3-gem": 1543,
   "elysian-attempt-plus-1": 3000,
   gold: 1,
-  // Astrogem anchors re-based 2026-07-15: the NPC sells a chosen epic astrogem for 43,000g.
-  // Random-of-6 keeps TJW's half-of-selection ratio (was 15,000 vs 30,000); the Summer
-  // Astrogem Package's rare-epic box is ~20% epic x 21,500 (rares aren't worth cutting).
-  "epic-astrogem": 21500,
+  // Astrogem anchors, re-based 2026-08-14 (user sign-off; DECISIONS.md): the NPC-price anchor
+  // for a chosen epic stays 43,000g; the random epic adopts TJW's 33,000 (his 2026-08-12
+  // re-anchor, which independently converged on our 43,000 for the picked one); the rare-epic
+  // box follows the official KR probability disclosure for the chest (90% rare / 10% epic):
+  // 0.9 x 500 (rare) + 0.1 x 33,000 = 3,750 (replaces the earlier ~20%-epic estimate of 4,300).
+  "epic-astrogem": 33000,
   "epic-astrogem-selected": 43000,
-  "rare-epic-astrogem": 4300,
+  "rare-epic-astrogem": 3750,
   "relic-combat-engraving-recipe": 30000,
+};
+
+// Blue-Crystal store cost of the untradable Arkgrid processing tickets (reset 100 BC; refresh
+// 18 BC each, the store sells a 10-pack for 180 BC). buildPriceMap converts these to gold at the
+// F4 gold-per-BC rate when an exchange input is set; with no input they stay unpriced (0-gold
+// lines), matching the pre-2026-08-14 behavior.
+export const BC_COSTS: Record<string, number> = {
+  "astrogem-processing-reset-ticket": 100,
+  "astrogem-processing-option-refresh-ticket": 18,
 };
 
 // 5:1 NPC trade-up pairs (source B tradeUpTable). Optional UI toggle, not baked into pack math.

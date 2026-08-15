@@ -38,8 +38,9 @@ describe("RESOLVER", () => {
   // the summary were never serialized and can't be reconstructed without fabrication.
   // 2026-07-15 summer rotation adds 7 more (3 Season 4 tickets, 4 astrogem chests) -> 43.
   // 2026-07 1200 Crystal Pack adds 3 (Crystal + the two run-reward brews) -> 46.
-  it("has all 46 chests", () => {
-    expect(Object.keys(RESOLVER).length).toBe(46);
+  // 2026-08-12 rotation adds 3 (Abidos 15-pack, Elysian S4 ticket, Joyful card pack) -> 49.
+  it("has all 49 chests", () => {
+    expect(Object.keys(RESOLVER).length).toBe(49);
   });
   it("resolves a fixed chest's first output", () => {
     expect(RESOLVER["Glacier's Breath Chest"].outputs[0]).toEqual({

@@ -1,9 +1,9 @@
 import type { Chest } from "./types";
 
-// Chest -> terminal-slug resolver, keyed by chest display-name. 43 chests total
-// (30 fixed, 12 selection, 1 multi): the original registry transcribed verbatim from source B
+// Chest -> terminal-slug resolver, keyed by chest display-name. 49 chests total
+// (34 fixed, 12 selection, 3 multi): the original registry transcribed verbatim from source B
 // (resolverFull), plus manual additions noted inline (gold bars; the 2026-07-15 summer-rotation
-// Season 4 tickets and astrogem chests).
+// Season 4 tickets and astrogem chests; the 2026-08-12 rotation chests).
 // Selection chests: use defaultPickSlug if set, else auto-pick the highest line-gold option.
 export const RESOLVER: Record<string, Chest> = {
   "Crystallized Destiny Destruction Stone Pouch": {
@@ -60,6 +60,15 @@ export const RESOLVER: Record<string, Chest> = {
     name: "Abidos Fusion Material Chest",
     type: "fixed",
     outputs: [{ slug: "abidos-fusion-material", qtyPerChest: 100 }],
+  },
+  // Rare-grade 15-per-chest variant; the IN-GAME display name is identical to the Epic
+  // 100-pack above, so the dataset disambiguates with a "(15)" suffix. Tooltip: "grants 15
+  // Abidos Fusion Material (Bound)". Used by the Adventurer's Path Package (correction
+  // 2026-08-14 — its 40 chests are this variant, 600 mats total, not 4,000).
+  "Abidos Fusion Material Chest (15)": {
+    name: "Abidos Fusion Material Chest (15)",
+    type: "fixed",
+    outputs: [{ slug: "abidos-fusion-material", qtyPerChest: 15 }],
   },
   "Artisan's Support Materials Selection Chest: Weapon": {
     name: "Artisan's Support Materials Selection Chest: Weapon",
@@ -121,26 +130,33 @@ export const RESOLVER: Record<string, Chest> = {
     type: "fixed",
     outputs: [{ slug: "splendid-hell-key-of-destiny-v-epic", qtyPerChest: 1 }],
   },
-  // Season 4 exchange tickets (2026-07-15 Paradise re-release). They exchange for the same
-  // splendid keys as their Season 3 "(Season 3)"/"II (Season 3)" counterparts, so they share
-  // the same terminal slugs and EV path.
+  // Season 4 exchange tickets (2026-07-15 Paradise re-release). Corrected 2026-08-14 (user
+  // sign-off): S4 tickets exchange for the Season 4 "VI" (ilvl 1750) keys, not the Season 3
+  // splendid V keys the 2026-07-15 transcription approximated with — so they now point at our
+  // datamine-backed 1750 EV slugs. (TJW shipped the same correction on 2026-08-12.)
   "Legendary Netherworld Key Exchange Ticket (Season 4)": {
     name: "Legendary Netherworld Key Exchange Ticket (Season 4)",
     type: "selection",
     outputs: [
-      { slug: "splendid-netherworld-flame-key", qtyPerChest: 1 },
-      { slug: "splendid-netherworld-frost-key", qtyPerChest: 1 },
+      { slug: "netherworld-flame-key-vi", qtyPerChest: 1 },
+      { slug: "netherworld-frost-key-vi", qtyPerChest: 1 },
     ],
   },
   "Legendary Hell Key of Destiny Exchange Ticket (Season 4)": {
     name: "Legendary Hell Key of Destiny Exchange Ticket (Season 4)",
     type: "fixed",
-    outputs: [{ slug: "splendid-hell-key-of-destiny-v", qtyPerChest: 1 }],
+    outputs: [{ slug: "hell-key-of-destiny-vi", qtyPerChest: 1 }],
   },
   "Epic Hell Key of Destiny Exchange Ticket (Season 4)": {
     name: "Epic Hell Key of Destiny Exchange Ticket (Season 4)",
     type: "fixed",
-    outputs: [{ slug: "splendid-hell-key-of-destiny-v-epic", qtyPerChest: 1 }],
+    outputs: [{ slug: "hell-key-of-destiny-vi-epic", qtyPerChest: 1 }],
+  },
+  // Season 4 reissue of the S3 barter ticket; same output (1 roster-bound Elysian Attempt).
+  "Elysian Attempt +1 Exchange Ticket (Season 4)": {
+    name: "Elysian Attempt +1 Exchange Ticket (Season 4)",
+    type: "fixed",
+    outputs: [{ slug: "elysian-attempt-plus-1", qtyPerChest: 1 }],
   },
   "Epic Astrogem Chest": {
     name: "Epic Astrogem Chest",
@@ -174,6 +190,13 @@ export const RESOLVER: Record<string, Chest> = {
     name: "Astrogem Processing Option Refresh Ticket",
     type: "fixed",
     outputs: [{ slug: "astrogem-processing-option-refresh-ticket", qtyPerChest: 1, isBound: true }],
+  },
+  // Summer Custom Pack II option (2026-08-12 rotation). Random Legendary/Epic card; cards are
+  // untradable with no market gold value, so the line renders as a "no price" row.
+  "Joyful Legendary - Epic Card Pack": {
+    name: "Joyful Legendary - Epic Card Pack",
+    type: "fixed",
+    outputs: [{ slug: "joyful-legendary-epic-card-pack", qtyPerChest: 1, isBound: true }],
   },
   "Relic Combat Engraving Recipe Selection Pouch": {
     name: "Relic Combat Engraving Recipe Selection Pouch",

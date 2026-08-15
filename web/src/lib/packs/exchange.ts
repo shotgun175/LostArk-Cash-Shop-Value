@@ -7,9 +7,10 @@ import { formatMoney } from "../format";
 // "19200 gold for 238 crystals = 80.67 gold/crystal"); the live ~250 gold/crystal is a RATE the
 // user-adjustable input produces (inputGold / 238), so the Packs panel makes the input region-aware.
 // F4_DEFAULT_INPUT is the app's per-region seed (f4.svelte.ts imports it): a round, illustrative
-// value, not a live rate.
+// value, not a live rate. Raised 20000 -> 30000 on 2026-08-14 (user sign-off; DECISIONS.md) to
+// sit nearer the going NA/EU exchange listings.
 export const F4_DIVISOR = 238;
-export const F4_DEFAULT_INPUT = 20000;
+export const F4_DEFAULT_INPUT = 30000;
 
 // Real-money cost of 12,000 Royal Crystals per region (NA $100, EU €94.99). Converts a pack's gold
 // value into gold-per-currency-unit so the "% vs G2G" / "g per $/€" columns compare within one

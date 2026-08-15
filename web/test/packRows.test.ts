@@ -12,10 +12,11 @@ describe("buildPackRows", () => {
   it("returns one row per pack with all display columns", () => {
     expect(rows.length).toBe(20);
     // Sample a still-active pack (horizon-i is retired since 2026-07-15 and displays its
-    // frozen total, covered below); 831,020 / 415.5 is its TJW golden value on this fixture.
+    // frozen total, covered below); 365,220 / 182.6 is its golden value on this fixture
+    // after the 2026-08-14 Abidos (15) correction (see packValue.test.ts).
     const r = rows.find((x) => x.slug === "adventurers-path-package")!;
-    expect(r.total).toBe(831020);
-    expect(r.goldPerRc!).toBeCloseTo(415.5, 1);
+    expect(r.total).toBe(365220);
+    expect(r.goldPerRc!).toBeCloseTo(182.6, 1);
     expect(r.vsExchange).not.toBeNull();
     expect(r.vsG2G).not.toBeNull();
   });

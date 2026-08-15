@@ -18,7 +18,9 @@ export const PACKS: Pack[] = [
       { chest: "Artisan's Support Materials Selection Chest: Weapon", qty: 4 },
       { chest: "Artisan's Support Materials Selection Chest: Armor", qty: 4 },
       { chest: "Destiny Shard Pouch (L)", qty: 40 },
-      { chest: "Abidos Fusion Material Chest", qty: 40 },
+      // Corrected 2026-08-14: the pack's tier chests drop the Rare 15-per-chest Abidos variant
+      // (same in-game display name as the Epic 100-pack), so 40 chests = 600 mats, not 4,000.
+      { chest: "Abidos Fusion Material Chest (15)", qty: 40 },
       { chest: "Adventurer's Path Chest I — Bound Bundle", qty: 1 },
     ],
   },
