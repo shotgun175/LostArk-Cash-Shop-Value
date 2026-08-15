@@ -9,6 +9,13 @@
 // prices and hell keys value their free taps at the live tap price.
 
 import { BAKED, BC_COSTS } from "./data/constants";
+
+// Slugs whose price IS the F4 exchange derivation (user 2026-08-15): the exchange input is
+// the single source of truth, so the pack UIs render these unit prices read-only instead of
+// offering the click-to-edit override (which the injection below would out-layer anyway).
+// The BC_COSTS tickets are NOT here on purpose: their BC store costs are assumptions, so a
+// user override on those is honored.
+export const F4_DERIVED_SLUGS: ReadonlySet<string> = new Set(["blue-crystal"]);
 import { HELL_KEY_MAP } from "./data/hellRewards";
 import { CUBE_MAP } from "./data/cube";
 import { hellKeyEv, cubeEv, relicRecipe } from "./ev";

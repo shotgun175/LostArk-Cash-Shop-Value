@@ -1,7 +1,7 @@
 <script lang="ts">
   import { packValue } from "$lib/packs/packValue";
   import { packDetail, type DetailOption } from "$lib/packs/packDetail";
-  import { buildPriceMap } from "$lib/packs/priceMap";
+  import { buildPriceMap, F4_DERIVED_SLUGS } from "$lib/packs/priceMap";
   import { effectivePrices } from "$lib/packs/prices.svelte";
   import { f4 } from "$lib/packs/f4.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
@@ -202,6 +202,10 @@
                 <td class="right price">
                   {#if readOnly}
                     <span class="num">{o.perUnit > 0 ? formatGold(o.perUnit) : "—"}</span>
+                  {:else if F4_DERIVED_SLUGS.has(o.slug)}
+                    <!-- F4-derived currency (blue crystal): the exchange input is the single
+                         source of truth, so no edit affordance here. -->
+                    <span class="num price-ro" title="Priced from the F4 exchange input (gold / 95). Change the exchange input to change it.">{o.perUnit > 0 ? formatGold(o.perUnit) : "—"}</span>
                   {:else if editing === o.slug}
                     <input class="edit num" type="number" min="0" step="0.01" bind:value={draft} use:focusSelect
                       onblur={() => commit(o.slug)}
@@ -325,6 +329,7 @@
     padding: 1px 9px; font-size: 11px; cursor: pointer; font-family: inherit; }
   .opts-toggle:hover { color: var(--accent); border-color: var(--accent); }
   .unresolved { color: var(--muted); font-size: 13px; margin: 4px 0 0; }
+  .price-ro { color: var(--muted); font-size: 13.5px; cursor: help; }
   .price-btn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--muted); font-size: 13.5px; }
   .price-btn:hover { color: var(--text); text-decoration: underline dotted; text-underline-offset: 3px; }
   .price-btn.edited { color: var(--accent); }

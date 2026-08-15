@@ -49,4 +49,27 @@ describe("PacksPanel custom-pack checkbox block", () => {
     expect(golds.length).toBe(18); // 10 options (pack I) + 8 options (pack II)
     expect(golds.filter((g) => g.includes("—")).length).toBe(1);
   });
+
+  it("renders the Blue Crystal unit price read-only (F4 input is the source of truth)", () => {
+    // user 2026-08-15: no click-to-edit on F4-derived prices — an override would be silently
+    // out-layered by the input/95 injection, so the affordance must not be offered.
+    app.region = "nae";
+    app.status = "ok";
+    app.payload = {
+      schema_version: 1,
+      generated_at: new Date().toISOString(),
+      regions: { nae: { prices: fixture.prices, source_valid_at: new Date().toISOString() } },
+      bundles: {},
+    } as unknown as typeof app.payload;
+    const { body } = render(PacksPanel);
+    const rows = body.match(/<tr[\s\S]*?<\/tr>/g) ?? [];
+    const bcRow = rows.find((r) => r.includes(">Blue Crystal<"));
+    expect(bcRow).toBeDefined();
+    expect(bcRow!).toContain("price-ro");
+    expect(bcRow!).not.toContain("price-btn");
+    // An ordinary editable line keeps the affordance.
+    const gemRow = rows.find((r) => r.includes(">Lv 3 Gem<"));
+    expect(gemRow).toBeDefined();
+    expect(gemRow!).toContain("price-btn");
+  });
 });

@@ -8,6 +8,7 @@
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
   import { customSel } from "$lib/packs/customSel.svelte";
+  import { F4_DERIVED_SLUGS } from "$lib/packs/priceMap";
   import type { DetailOption } from "$lib/packs/packDetail";
   import ItemIcon from "../ItemIcon.svelte";
   import GoldRate from "./GoldRate.svelte";
@@ -134,7 +135,11 @@
           <td>{displayName(line.slug)}{#if line.isBound}<span class="bound"> (Bound)</span>{/if}{#if tradeUpInfo[line.slug]} <button class="tradeup" class:on={tradeUp.has(line.slug)} title="Value as a {tradeUpInfo[line.slug].ratio}:1 trade-up to the next tier" onclick={() => tradeUp.toggle(line.slug)}>{tradeUpInfo[line.slug].ratio}:1 → <span class:good={tradeUpInfo[line.slug].deltaPct >= 0} class:bad={tradeUpInfo[line.slug].deltaPct < 0}>{formatSignedPct(tradeUpInfo[line.slug].deltaPct)}</span></button>{/if}{#if alts[line.slug]} <button class="alts-btn" onclick={() => (expanded = expanded === line.slug ? null : line.slug)}>{expanded === line.slug ? "hide alts" : "show alts"}</button>{/if}</td>
           <td class="right num">{line.qty.toLocaleString("en-US")}</td>
           <td class="right price">
-            {#if editing === line.slug}
+            {#if F4_DERIVED_SLUGS.has(line.slug)}
+              <!-- F4-derived currency: the exchange input is the single source of truth, so no
+                   edit affordance (an override would be silently out-layered anyway). -->
+              <span class="num price-ro" title="Priced from the F4 exchange input (gold / 95). Change the exchange input to change it.">{perUnit(line.gold, line.qty)}</span>
+            {:else if editing === line.slug}
               <input
                 class="edit num" type="number" min="0" step="0.01" bind:value={draft}
                 use:focusSelect
@@ -245,6 +250,7 @@
   tr.alt td { background: rgba(255, 255, 255, .02); padding-top: 4px; padding-bottom: 4px; }
   .altname { color: var(--muted); font-size: 12.5px; }
   td.price { white-space: nowrap; }
+  .price-ro { color: var(--muted); font-size: 14px; cursor: help; }
   .price-btn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--muted); font-size: 14px; }
   .price-btn:hover { color: var(--text); text-decoration: underline dotted; text-underline-offset: 3px; }
   .price-btn.edited { color: var(--accent); }
