@@ -11,12 +11,11 @@ describe("buildPackRows", () => {
 
   it("returns one row per pack with all display columns", () => {
     expect(rows.length).toBe(20);
-    // Sample a still-active pack (horizon-i is retired since 2026-07-15 and displays its
-    // frozen total, covered below); 365,220 / 182.6 is its golden value on this fixture
-    // after the 2026-08-14 Abidos (15) correction (see packValue.test.ts).
-    const r = rows.find((x) => x.slug === "adventurers-path-package")!;
-    expect(r.total).toBe(365220);
-    expect(r.goldPerRc!).toBeCloseTo(182.6, 1);
+    // Sample a still-active pack (the 2026-08-12 rotation retired most of the old actives);
+    // 172,875 / 45.5 is monthly-t4's TJW golden value on this fixture.
+    const r = rows.find((x) => x.slug === "monthly-t4-growth-support")!;
+    expect(r.total).toBe(172875);
+    expect(r.goldPerRc!).toBeCloseTo(45.5, 1);
     expect(r.vsExchange).not.toBeNull();
     expect(r.vsG2G).not.toBeNull();
   });
@@ -37,10 +36,10 @@ describe("buildPackRows", () => {
 
   it("orders retired packs most-recently-retired first, then gold/RC desc", () => {
     const retired = rows.filter((r) => r.retired);
-    // Newest retirement leads the section (the 2026-07-15 Horizon pair); within that shared
-    // date the higher frozen gold/RC wins (Horizon I 265.0 over Horizon II 194.3).
-    expect(retired[0].slug).toBe("horizon-growth-support-pack-i");
-    expect(retired[1].slug).toBe("horizon-growth-support-pack-ii");
+    // Newest retirement leads the section (the 2026-08-12 cohort); within that shared date
+    // the higher frozen gold/RC wins (Paradise-2 360.5 over Summer Growth I 349.8).
+    expect(retired[0].slug).toBe("monthly-paradise-special-pack-2");
+    expect(retired[1].slug).toBe("summer-growth-support-pack-i");
     // retiredOn is non-increasing across the whole retired group.
     const dates = retired.map((r) => r.retiredOn ?? "");
     expect(dates).toEqual([...dates].sort((a, b) => b.localeCompare(a)));
@@ -49,10 +48,10 @@ describe("buildPackRows", () => {
     expect(sameDay).toEqual([...sameDay].sort((a, b) => b - a));
   });
 
-  it("vsExchange sign tracks gold/RC vs the 84.03 baseline", () => {
+  it("vsExchange sign tracks gold/RC vs the 126.05 baseline", () => {
     const horizon = rows.find((r) => r.slug === "horizon-growth-support-pack-i")!;
     const t4 = rows.find((r) => r.slug === "monthly-t4-growth-support")!;
-    expect(horizon.vsExchange!).toBeGreaterThan(0); // 289.5 >> 84.03
-    expect(t4.vsExchange!).toBeLessThan(0);          // 45.5 < 84.03
+    expect(horizon.vsExchange!).toBeGreaterThan(0); // frozen 265.0 >> 126.05
+    expect(t4.vsExchange!).toBeLessThan(0);          // 45.5 < 126.05
   });
 });

@@ -9,20 +9,13 @@ describe("PACKS", () => {
   it("has all 20 packs", () => {
     expect(PACKS.length).toBe(20);
   });
-  it("lists exactly the 10 non-retired packs", () => {
+  it("lists exactly the 3 packs that survived the 2026-08-12 rotation", () => {
     const active = PACKS.filter((p) => !p.retired).map((p) => p.slug).sort();
     expect(active).toEqual(
       [
-        "adventurers-path-package",
         "monthly-1200-crystal-pack",
-        "monthly-paradise-special-pack-2",
         "monthly-t4-growth-support",
-        "summer-growth-support-pack-i",
-        "summer-growth-support-pack-ii",
         "weekly-summer-astrogem-package",
-        "weekly-t4-crystallized-stone-3",
-        "weekly-t4-fusion-leap-pack-3",
-        "weekly-t4-shards-support-3",
       ].sort(),
     );
   });

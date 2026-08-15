@@ -11,9 +11,11 @@ export const PACKS: Pack[] = [
   {
     name: "[Limited] Adventurer's Path Package",
     slug: "adventurers-path-package",
+    frozenTotal: 446550, // NA card value captured 2026-08-14 post-Abidos(15)-fix (EU card showed 451,220)
     royalCrystalCost: 2000,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-08-12",
     contents: [
       { chest: "Artisan's Support Materials Selection Chest: Weapon", qty: 4 },
       { chest: "Artisan's Support Materials Selection Chest: Armor", qty: 4 },
@@ -105,10 +107,12 @@ export const PACKS: Pack[] = [
     // 2026-06-10 entry above keeps its frozen history) with Season 4 tickets and a lower RC.
     name: "[Monthly] Paradise Special Pack",
     slug: "monthly-paradise-special-pack-2",
+    frozenTotal: 2271242, // NA card value captured 2026-08-14 on the VI-key EVs (EU card showed 2,115,292)
     royalCrystalCost: 6300,
     limited: true,
     recurrence: "monthly",
-    retired: false,
+    retired: true,
+    retiredOn: "2026-08-12",
     contents: [
       { chest: "Epic Hell Key of Destiny Exchange Ticket (Season 4)", qty: 3 },
       { chest: "Legendary Hell Key of Destiny Exchange Ticket (Season 4)", qty: 1 },
@@ -190,9 +194,11 @@ export const PACKS: Pack[] = [
   {
     name: "[Limited] Summer Growth Support Pack I",
     slug: "summer-growth-support-pack-i",
+    frozenTotal: 2763600, // NA card value captured 2026-08-14 (EU card showed 2,416,000)
     royalCrystalCost: 7900,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-08-12",
     contents: [
       { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 40 },
       { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 60 },
@@ -206,9 +212,11 @@ export const PACKS: Pack[] = [
   {
     name: "[Limited] Summer Growth Support Pack II",
     slug: "summer-growth-support-pack-ii",
+    frozenTotal: 1165500, // NA card value captured 2026-08-14 (EU card showed 1,143,750)
     royalCrystalCost: 4900,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-08-12",
     contents: [
       { chest: "Destiny Destruction Stone Bundle", qty: 50 },
       { chest: "Destiny Guardian Stone Bundle", qty: 100 },
@@ -252,10 +260,12 @@ export const PACKS: Pack[] = [
   {
     name: "[Weekly] T4 Crystallized Stone & Fusion Pack III",
     slug: "weekly-t4-crystallized-stone-3",
+    frozenTotal: 574700, // NA card value captured 2026-08-14 (EU card showed 505,200)
     royalCrystalCost: 1700,
     limited: true,
     recurrence: "weekly",
-    retired: false,
+    retired: true,
+    retiredOn: "2026-08-12",
     contents: [
       { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 30 },
       { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 15 },
@@ -279,10 +289,12 @@ export const PACKS: Pack[] = [
   {
     name: "[Weekly] T4 Fusion & Leap Pack III",
     slug: "weekly-t4-fusion-leap-pack-3",
+    frozenTotal: 194700, // NA card value captured 2026-08-14 (EU card showed 184,700)
     royalCrystalCost: 1300,
     limited: true,
     recurrence: "weekly",
-    retired: false,
+    retired: true,
+    retiredOn: "2026-08-12",
     contents: [
       { chest: "Superior Abidos Fusion Material Chest", qty: 45 },
       { chest: "Great Destiny Leapstone Chest", qty: 40 },
@@ -305,10 +317,12 @@ export const PACKS: Pack[] = [
   {
     name: "[Weekly] T4 Shards & Support Material Pack III",
     slug: "weekly-t4-shards-support-3",
+    frozenTotal: 286200, // NA card value captured 2026-08-14 (EU card showed 232,170)
     royalCrystalCost: 1400,
     limited: true,
     recurrence: "weekly",
-    retired: false,
+    retired: true,
+    retiredOn: "2026-08-12",
     contents: [
       { chest: "T4 Support Materials Selection Chest", qty: 5 },
       { chest: "Destiny Shard Pouch (L)", qty: 65 },
