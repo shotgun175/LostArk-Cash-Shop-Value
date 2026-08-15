@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { resolveChest, packValue, USD_PER_RC } from "../src/lib/packs/packValue";
+import { resolveChest, packValue, customChosen, USD_PER_RC } from "../src/lib/packs/packValue";
+import { packDetail } from "../src/lib/packs/packDetail";
 import { buildPriceMap } from "../src/lib/packs/priceMap";
 import { RESOLVER } from "../src/lib/packs/data/resolver";
 import { PACKS } from "../src/lib/packs/data/packs";
@@ -273,6 +274,110 @@ describe("packValue conversions & sanity", () => {
     const r = packValue(zero, map);
     expect(r.goldPerRc).toBeNull();
     expect(r.goldPerDollar).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The 2026-08-12 rotation packs — self-goldens on the pinned fixture (TJW cross-checked at
+// transcription; his cards run on live prices, so exact parity is not asserted).
+// ---------------------------------------------------------------------------
+describe("2026-08-12 rotation packs (self-goldens at the pinned fixture)", () => {
+  const map = buildPriceMap(NAE);
+
+  const golden: [string, number][] = [
+    // 6x3,750 + 33,000 + 43,000 + 25x1,543 (both processing tickets 0 without an exchange input)
+    ["limited-astrogem-package", 137075],
+    // 3xVI-epic(174,425) + 2xVI(253,842) + frost-VI(143,155) + 3x3,000 + 10x18,427 + 120x1,543 + 50x13,700
+    ["paradise-special-pack", 2237544],
+    // default top-5 picks: CD Destruction Pouch / Epic HK S4 / Glacier's / Superior Abidos / T4 Gems
+    ["summer-custom-pack-1", 2006335],
+    // default top-4 picks: Artisan Armor / Abidos (100) / DD Bundle / Relic Recipe Pouch
+    ["summer-custom-pack-2", 496849],
+    // 15x1000x29 + 15x1000x0.92 + 15x20x171
+    ["weekly-summer-t4-crystallized-stone", 500100],
+    // 60x20x171 + 50x20x47
+    ["weekly-summer-t4-fusion-leap", 252200],
+    // 7x31,900 (T4 support -> glaciers) + 50x3000x0.224
+    ["weekly-summer-t4-shards-support", 256900],
+    // 10x3,750 + 2x33,000 + 43,000 + 25x1,543 (2026-08-14 astrogem anchors)
+    ["weekly-summer-astrogem-package", 185075],
+  ];
+  for (const [slug, total] of golden) {
+    it(`${slug}: total ${total} on the fixture`, () => {
+      expect(packValue(pack(slug), map).total).toBe(total);
+    });
+  }
+
+  it("astrogem packs gain the BC-costed processing tickets when the exchange input is set", () => {
+    // gold/BC 200: reset 3x20,000 + refresh 3x3,600 = +70,800 on each astrogem pack.
+    const mapBc = buildPriceMap(NAE, { blueCrystalGold: 200 });
+    expect(packValue(pack("limited-astrogem-package"), mapBc).total).toBe(137075 + 70800);
+    expect(packValue(pack("weekly-summer-astrogem-package"), mapBc).total).toBe(185075 + 70800);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Choose-N-of-M custom packs: the shared customChosen rule + packValue/packDetail wiring.
+// ---------------------------------------------------------------------------
+describe("custom_selection packs (choose N of M)", () => {
+  const map = buildPriceMap(NAE);
+
+  it("defaults to the N highest-gold options (summer-custom-pack-1)", () => {
+    const set = customChosen(pack("summer-custom-pack-1"), map)!;
+    expect(set.size).toBe(5);
+    expect([...set].sort()).toEqual(
+      [
+        "Crystallized Destiny Destruction Stone Pouch",
+        "Epic Hell Key of Destiny Exchange Ticket (Season 4)",
+        "Glacier's Breath Chest",
+        "Superior Abidos Fusion Material Chest",
+        "T4 Gem Chest (Lv. 3)",
+      ].sort(),
+    );
+  });
+
+  it("returns null for an ordinary pack", () => {
+    expect(customChosen(pack("monthly-t4-growth-support"), map)).toBeNull();
+  });
+
+  it("user picks override the default and can be fewer than N", () => {
+    // Only the shard pouches: 200 x round(3000 x 0.224) = 134,400.
+    const r = packValue(pack("summer-custom-pack-1"), map, {}, undefined, false, {
+      "summer-custom-pack-1": ["Destiny Shard Pouch (L)"],
+    });
+    expect(r.total).toBe(134400);
+    expect(r.lines.length).toBe(1);
+    expect(r.lines[0].slug).toBe("destiny-shard");
+    expect(r.lines[0].qty).toBe(200 * 3000);
+  });
+
+  it("worthless picks value to 0 without going unresolved (card packs)", () => {
+    const r = packValue(pack("summer-custom-pack-2"), map, {}, undefined, false, {
+      "summer-custom-pack-2": ["Joyful Legendary - Epic Card Pack"],
+    });
+    expect(r.total).toBe(0);
+    const line = r.lines[0];
+    expect(line.slug).toBe("joyful-legendary-epic-card-pack");
+    expect(line.qty).toBe(10);
+    expect(line.unresolved).toBeUndefined();
+  });
+
+  it("stored picks that no longer name real options fall back to the default", () => {
+    const withBad = packValue(pack("summer-custom-pack-1"), map, {}, undefined, false, {
+      "summer-custom-pack-1": ["Not A Chest Anymore"],
+    });
+    expect(withBad.total).toBe(packValue(pack("summer-custom-pack-1"), map).total);
+  });
+
+  it("packDetail lists every option with counted flags that sum to the pack total", () => {
+    const chests = packDetail(pack("summer-custom-pack-1"), map);
+    expect(chests.length).toBe(10);
+    const counted = chests.filter((c) => c.counted);
+    expect(counted.length).toBe(5);
+    const sum = counted.reduce((acc, c) => acc + c.gold, 0);
+    expect(sum).toBe(packValue(pack("summer-custom-pack-1"), map).total);
+    // Ordinary packs: every chest counts.
+    expect(packDetail(pack("monthly-t4-growth-support"), map).every((c) => c.counted)).toBe(true);
   });
 });
 

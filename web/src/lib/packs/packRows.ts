@@ -14,6 +14,7 @@ interface PackRowOpts {
   f4Input: number;
   g2gInput: number;
   picks?: Record<string, string>;
+  customPicks?: Record<string, string[]>; // choose-N-of-M packs: pack slug -> checked chest names
   cashPerRc?: number; // region cost of one RC ($100/12k NA, €94.99/12k EU); defaults to NA in packValue
   // The Hell Key tab's per-region tap-price override, so a manual tap price moves every pack
   // that contains a hell/netherworld key, not just that tab. Caller passes it in (keeps this pure).
@@ -38,7 +39,7 @@ export function buildPackRows(
   const g2gGpd = g2gGoldPerDollar(opts.g2gInput);
 
   const rows: PackRow[] = PACKS.map((p) => {
-    const v = packValue(p, prices, opts.picks, opts.cashPerRc, true);
+    const v = packValue(p, prices, opts.picks, opts.cashPerRc, true, opts.customPicks);
     return {
       ...v,
       vsExchange: v.goldPerRc == null ? null : vsExchangePct(v.goldPerRc, baseline),

@@ -10,7 +10,7 @@ describe("buildPackRows", () => {
   const rows = buildPackRows(prices, opts);
 
   it("returns one row per pack with all display columns", () => {
-    expect(rows.length).toBe(20);
+    expect(rows.length).toBe(27);
     // Sample a still-active pack (the 2026-08-12 rotation retired most of the old actives);
     // 172,875 / 45.5 is monthly-t4's TJW golden value on this fixture.
     const r = rows.find((x) => x.slug === "monthly-t4-growth-support")!;

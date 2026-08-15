@@ -11,6 +11,10 @@ export interface Pack {
   retiredOn?: string; // ISO date (YYYY-MM-DD) the pack left the shop, shown on the retired card
   frozenTotal?: number; // gold value AT retirement — display-frozen so retired stats don't drift live
   contents: { chest: string; qty: number }[];
+  // Choose-N-of-M packs (2026-08-12 Summer Custom I/II): the buyer takes `pick` of the
+  // `options` chest lines. contents stays empty; the engine values the N highest-gold options
+  // by default, overridable per pack by the user's checkbox picks (customSel store).
+  customSelection?: { pick: number; options: { chest: string; qty: number }[] };
 }
 
 export interface Chest {

@@ -7,6 +7,7 @@
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
   import { selection } from "$lib/packs/selection.svelte";
+  import { customSel } from "$lib/packs/customSel.svelte";
   import { hellSettings } from "$lib/packs/hellSettings.svelte";
   import { cashPerRc, currencySymbol, RC_CASH_PER_12K } from "$lib/packs/exchange";
   import { app } from "$lib/app.svelte";
@@ -33,8 +34,11 @@
   // value-at-retirement (the breakdown below stays at current prices for reference).
   const readOnly = $derived(pack.retired);
   const picksForView = $derived(pack.retired ? {} : selection.map);
-  const value = $derived(packValue(pack, prices, picksForView, cashPerRc(app.region), pack.retired));
-  const chests = $derived(packDetail(pack, prices, picksForView));
+  const customPicksForView = $derived(pack.retired ? {} : customSel.map);
+  const value = $derived(packValue(pack, prices, picksForView, cashPerRc(app.region), pack.retired, customPicksForView));
+  const chests = $derived(packDetail(pack, prices, picksForView, customPicksForView));
+  // Choose-N-of-M packs: the currently counted option chests (drives the checkboxes).
+  const countedChests = $derived(pack.customSelection ? chests.filter((c) => c.counted).map((c) => c.chest) : []);
   const sym = $derived(currencySymbol(app.region)); // $ for NA, € for EU — RC priced per region
   // Summary-box real-money row: "per US dollar (12,000 RC = $100)" / "per Euro (12,000 RC = €94.99)".
   const cashName = $derived(app.region === "euc" ? "Euro" : "US dollar");
@@ -42,7 +46,8 @@
 
   const customCount = $derived(overrides.count(app.region));
   const tuCount = $derived(tradeUp.count());
-  const pickCount = $derived(selection.count());
+  // Selection-chest picks and choose-N-of-M pack picks share the "picks" chip.
+  const pickCount = $derived(selection.count() + customSel.count());
 
   // Pack image (reset the load flag when navigating between packs).
   let imgOk = $state(true);
@@ -94,10 +99,20 @@
           the pack with your pick; changes apply site-wide until reset. The highest-value option (✓)
           counts by default.
         </p>
+        {#if pack.customSelection}
+          <div class="cs-bar">
+            <span class="cs-title">Choose {pack.customSelection.pick} of {pack.customSelection.options.length}</span>
+            <span class="cs-count num">{countedChests.length}/{pack.customSelection.pick} picked</span>
+            <span class="cs-note">— tick the option chests below; the {pack.customSelection.pick} highest-gold ones count by default</span>
+            {#if customSel.has(pack.slug)}
+              <button class="chest-reset" title="Restore the highest-value picks" onclick={() => customSel.clearOne(pack.slug)}>reset picks</button>
+            {/if}
+          </div>
+        {/if}
         {#if customCount > 0 || tuCount > 0 || pickCount > 0}
           <div class="custom">
             <span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && (tuCount > 0 || pickCount > 0)} · {/if}{#if pickCount > 0}<b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"}{/if}{#if pickCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span>
-            <button class="reset-all" onclick={() => { overrides.clearAll(app.region); tradeUp.clear(); selection.clearAll(); }}>reset all</button>
+            <button class="reset-all" onclick={() => { overrides.clearAll(app.region); tradeUp.clear(); selection.clearAll(); customSel.clearAll(); }}>reset all</button>
           </div>
         {/if}
       {/if}
@@ -129,14 +144,23 @@
       </div>
 
   {#each chests as c (c.chest)}
-    <div class="chest">
+    <div class="chest" class:uncounted={!c.counted}>
       <div class="chest-head">
+        {#if pack.customSelection && !readOnly}
+          <label class="cs-check" title={c.counted ? "Counts toward the pack total" : "Not picked"}>
+            <input type="checkbox" checked={c.counted}
+              disabled={!c.counted && countedChests.length >= pack.customSelection.pick}
+              onchange={() => customSel.toggle(pack.slug, c.chest, pack.customSelection!.pick, countedChests)} />
+          </label>
+        {/if}
         <span class="chest-name">{c.qty}× {c.chest}</span>
         <span class="tag">{tagFor(c.type)}</span>
+        {#if pack.customSelection && !c.counted}<span class="tag">not picked</span>{/if}
         <!-- The per-chest total only adds information for "everything" chests, where several
-             differently-valued lines sum up. For fixed/selection it equals the single counted
-             line, so it would just repeat the Gold column. -->
-        {#if c.type === "multi"}
+             differently-valued lines sum up, and on choose-N-of-M packs, where it is the
+             number the checkbox decision weighs. For fixed/selection it equals the single
+             counted line, so it would just repeat the Gold column. -->
+        {#if c.type === "multi" || pack.customSelection}
           <span class="chest-gold num accent">{formatGold(c.gold)}<img class="ic" src="{base}/icons/gold.png" alt="g" /></span>
         {/if}
       </div>
@@ -255,6 +279,17 @@
     padding: 2px 9px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
   .reset-all:hover { background: var(--bad); border-color: var(--bad); color: var(--bg); }
   .chest { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; }
+  /* Choose-N-of-M: unpicked option chests stay visible for comparison but read as inactive. */
+  .chest.uncounted { opacity: .55; }
+  .cs-check { display: inline-flex; align-items: center; cursor: pointer; }
+  .cs-check input { accent-color: var(--accent); cursor: pointer; }
+  .cs-check input:disabled { cursor: not-allowed; }
+  .cs-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 12px; font-size: 12.5px; }
+  .cs-title { font-weight: 700; letter-spacing: .6px; text-transform: uppercase; font-size: 11px; color: var(--muted); }
+  .cs-count { color: var(--accent); font-weight: 600; }
+  .cs-note { color: var(--muted); }
   .chest-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 4px; }
   .chest-name { font-weight: 600; }
   .tag { padding: 1px 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border); font-size: 11px; color: var(--muted); }

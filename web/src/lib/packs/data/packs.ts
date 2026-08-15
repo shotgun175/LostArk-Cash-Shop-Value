@@ -2,11 +2,12 @@ import type { Pack } from "./types";
 
 // The cash-shop pack registry: the original 12 transcribed verbatim from TJW's compiled
 // registry (source A: result.packs.packs[]), plus the three [Weekly] T4 "III" packs added
-// from the live store on 2026-06-24 and the four 2026-07-15 summer-rotation packs (Paradise
-// re-release, Summer Growth I/II, Summer Astrogem). `contents[].chest` is the chest
-// display-name; resolve via RESOLVER in ./resolver. monthly-t4-growth-support RC (3800) is
-// flagged by the source itself as possibly a placeholder ("RC price was cut off in the
-// screenshot").
+// from the live store on 2026-06-24, the four 2026-07-15 summer-rotation packs (Paradise
+// re-release, Summer Growth I/II, Summer Astrogem), and the seven 2026-08-12 rotation packs
+// (Astrogem Package, Paradise Special, Summer Custom I/II, three Weekly Summer T4 packs; all
+// sales-end 09/16/2026). `contents[].chest` is the chest display-name; resolve via RESOLVER
+// in ./resolver. monthly-t4-growth-support RC (3800) is flagged by the source itself as
+// possibly a placeholder ("RC price was cut off in the screenshot").
 export const PACKS: Pack[] = [
   {
     name: "[Limited] Adventurer's Path Package",
@@ -343,6 +344,134 @@ export const PACKS: Pack[] = [
       { chest: "Rest Bonus Recovery Brew", qty: 4 },
       { chest: "Aura of Resonance Recovery Brew", qty: 4 },
       { chest: "(NEW) Ebony Cube Entrance Ticket Selection Chest II", qty: 5 },
+    ],
+  },
+  // --- 2026-08-12 rotation (all sales periods end 09/16/2026) ---
+  {
+    // 5 per roster. The two processing tickets are BC-store items valued off the exchange
+    // input (BC_COSTS); the live store names the pick-one chest "Selection" (as on the
+    // weekly astrogem pack), though TJW's dataset calls it "Selector".
+    name: "[Limited] Astrogem Package",
+    slug: "limited-astrogem-package",
+    royalCrystalCost: 1100,
+    limited: true,
+    retired: false,
+    contents: [
+      { chest: "Rare - Epic Astrogem Chest", qty: 6 },
+      { chest: "Epic Astrogem Chest", qty: 1 },
+      { chest: "Epic Astrogem Selection Chest", qty: 1 },
+      { chest: "Astrogem Processing Reset Ticket", qty: 3 },
+      { chest: "Astrogem Processing Option Refresh Ticket", qty: 3 },
+      { chest: "T4 Gem Chest (Lv. 3)", qty: 25 },
+    ],
+  },
+  {
+    // Successor to the retired [Monthly] Paradise Special Pack (5,400 RC vs 6,300): Legendary
+    // hell keys 1 -> 2, Elysian tickets return, Abidos chests (the Epic 100-pack) 30 -> 50,
+    // support-material selection chests dropped. 3 per roster.
+    name: "Paradise Special Pack",
+    slug: "paradise-special-pack",
+    royalCrystalCost: 5400,
+    limited: true,
+    retired: false,
+    contents: [
+      { chest: "Epic Hell Key of Destiny Exchange Ticket (Season 4)", qty: 3 },
+      { chest: "Legendary Hell Key of Destiny Exchange Ticket (Season 4)", qty: 2 },
+      { chest: "Legendary Netherworld Key Exchange Ticket (Season 4)", qty: 1 },
+      { chest: "Elysian Attempt +1 Exchange Ticket (Season 4)", qty: 3 },
+      { chest: "(NEW) Ebony Cube Entrance Ticket Selection Chest II", qty: 10 },
+      { chest: "T4 Gem Chest (Lv. 3)", qty: 120 },
+      { chest: "Abidos Fusion Material Chest", qty: 50 },
+    ],
+  },
+  {
+    // Choose-5-of-10 custom pack, 5 per roster. Contents stays empty; the buyer's five picks
+    // come from customSelection (the engine defaults to the five highest-gold options).
+    name: "Summer Custom Pack I",
+    slug: "summer-custom-pack-1",
+    royalCrystalCost: 5200,
+    limited: true,
+    retired: false,
+    contents: [],
+    customSelection: {
+      pick: 5,
+      options: [
+        { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 20 },
+        { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 80 },
+        { chest: "Great Destiny Leapstone Chest", qty: 100 },
+        { chest: "Superior Abidos Fusion Material Chest", qty: 70 },
+        { chest: "Destiny Shard Pouch (L)", qty: 200 },
+        { chest: "Glacier's Breath Chest", qty: 150 },
+        { chest: "Lava's Breath Chest", qty: 150 },
+        { chest: "T4 Gem Chest (Lv. 3)", qty: 120 },
+        { chest: "Legendary Netherworld Key Exchange Ticket (Season 4)", qty: 1 },
+        { chest: "Epic Hell Key of Destiny Exchange Ticket (Season 4)", qty: 3 },
+      ],
+    },
+  },
+  {
+    // Choose-4-of-8 custom pack, 5 per roster. The Abidos option is the Epic 100-pack (same
+    // in-game display name as the Rare 15-pack; TJW user-confirmed which variant this is).
+    name: "Summer Custom Pack II",
+    slug: "summer-custom-pack-2",
+    royalCrystalCost: 2500,
+    limited: true,
+    retired: false,
+    contents: [],
+    customSelection: {
+      pick: 4,
+      options: [
+        { chest: "Destiny Destruction Stone Bundle", qty: 20 },
+        { chest: "Destiny Guardian Stone Bundle", qty: 160 },
+        { chest: "Destiny Leapstone Chest", qty: 60 },
+        { chest: "Abidos Fusion Material Chest", qty: 9 },
+        { chest: "Artisan's Support Materials Selection Chest: Weapon", qty: 5 },
+        { chest: "Artisan's Support Materials Selection Chest: Armor", qty: 5 },
+        { chest: "Relic Combat Engraving Recipe Selection Pouch", qty: 1 },
+        { chest: "Joyful Legendary - Epic Card Pack", qty: 10 },
+      ],
+    },
+  },
+  {
+    // Successor to the retired Crystallized Stone & Fusion III (15/15/15 at 2,100 RC vs
+    // 15/30/10 at 1,700). 5 per roster per week.
+    name: "[Weekly] Summer T4 Crystallized Stone & Fusion Pack",
+    slug: "weekly-summer-t4-crystallized-stone",
+    royalCrystalCost: 2100,
+    limited: true,
+    recurrence: "weekly",
+    retired: false,
+    contents: [
+      { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 15 },
+      { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 15 },
+      { chest: "Superior Abidos Fusion Material Chest", qty: 15 },
+    ],
+  },
+  {
+    // Successor to the retired Fusion & Leap III (60/50 vs 45/40). 5 per roster per week.
+    name: "[Weekly] Summer T4 Fusion & Leap Pack",
+    slug: "weekly-summer-t4-fusion-leap",
+    royalCrystalCost: 1300,
+    limited: true,
+    recurrence: "weekly",
+    retired: false,
+    contents: [
+      { chest: "Superior Abidos Fusion Material Chest", qty: 60 },
+      { chest: "Great Destiny Leapstone Chest", qty: 50 },
+    ],
+  },
+  {
+    // Successor to the retired Shards & Support III (7 chests vs 5, 50 pouches vs 65).
+    // 5 per roster per week.
+    name: "[Weekly] Summer T4 Shards & Support Material Pack",
+    slug: "weekly-summer-t4-shards-support",
+    royalCrystalCost: 1400,
+    limited: true,
+    recurrence: "weekly",
+    retired: false,
+    contents: [
+      { chest: "T4 Support Materials Selection Chest", qty: 7 },
+      { chest: "Destiny Shard Pouch (L)", qty: 50 },
     ],
   },
 ];

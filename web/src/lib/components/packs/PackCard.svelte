@@ -7,20 +7,28 @@
   import { app } from "$lib/app.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
+  import { customSel } from "$lib/packs/customSel.svelte";
   import type { DetailOption } from "$lib/packs/packDetail";
   import ItemIcon from "../ItemIcon.svelte";
   import GoldRate from "./GoldRate.svelte";
   import { base } from "$app/paths";
 
-  let { row, tradeUpInfo = {}, alts = {}, compact = false }: {
+  interface CustomBlock {
+    pick: number;
+    options: { chest: string; qty: number; gold: number; counted: boolean }[];
+  }
+
+  let { row, tradeUpInfo = {}, alts = {}, custom = null, compact = false }: {
     row: PackRow;
     tradeUpInfo?: Record<string, { ratio: number; deltaPct: number }>;
     alts?: Record<string, DetailOption[]>;
+    custom?: CustomBlock | null; // choose-N-of-M packs: the checkbox option rows
     compact?: boolean; // retired cards: stats + drill-down link only, no material table
   } = $props();
 
   let expanded = $state<string | null>(null); // material slug whose selection alts are shown
   const sym = $derived(currencySymbol(app.region)); // $ for NA, € for EU — RC priced per region
+  const countedChests = $derived(custom ? custom.options.filter((o) => o.counted).map((o) => o.chest) : []);
 
   // "2026-06-24" -> "6/24/26" for the RETIRED pill. Parsed by parts (not new Date) to avoid the
   // UTC-midnight-shifts-a-day timezone trap. Falls back to a bare "retired" if the date is absent.
@@ -86,6 +94,27 @@
       <b class="num">{formatSignedPct(row.vsG2G)}</b> <span class="lbl">vs</span><img class="ic g2g" src="{base}/icons/g2g.png" alt="G2G" />
     </span>
   </div>
+
+  {#if custom}
+    <div class="cs">
+      <div class="cs-head">
+        <span class="cs-title">Choose {custom.pick} of {custom.options.length}</span>
+        <span class="cs-count num">{countedChests.length}/{custom.pick} picked</span>
+        {#if customSel.has(row.slug)}
+          <button class="cs-reset" title="Restore the highest-value picks" onclick={() => customSel.clearOne(row.slug)}>reset picks</button>
+        {/if}
+      </div>
+      {#each custom.options as o (o.chest)}
+        <label class="cs-opt" class:off={!o.counted}>
+          <input type="checkbox" checked={o.counted}
+            disabled={!o.counted && countedChests.length >= custom.pick}
+            onchange={() => customSel.toggle(row.slug, o.chest, custom.pick, countedChests)} />
+          <span class="cs-name">{o.qty}× {o.chest}</span>
+          <span class="cs-gold num">{o.gold > 0 ? formatGold(o.gold) : "—"}</span>
+        </label>
+      {/each}
+    </div>
+  {/if}
 
   <div class="tscroll">
   <table>
@@ -188,6 +217,22 @@
   .tradeup.on { background: rgba(255, 209, 102, 0.15); border-color: var(--accent); color: var(--accent); }
   /* Flex collapses the literal space, so the arrow and the % touch — add explicit room. */
   .tradeup span { margin-left: 4px; }
+  /* Choose-N-of-M option block (custom packs): checkbox rows above the material table. */
+  .cs { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; background: var(--panel-2); }
+  .cs-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .cs-title { font-size: 12px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--muted); }
+  .cs-count { font-size: 12px; color: var(--accent); }
+  .cs-reset { margin-left: auto; background: rgba(255, 209, 102, 0.12); color: var(--accent);
+    border: 1px solid rgba(255, 209, 102, 0.5); padding: 1px 9px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .cs-reset:hover { background: var(--bad); border-color: var(--bad); color: var(--bg); }
+  .cs-opt { display: flex; align-items: center; gap: 8px; padding: 3px 2px; font-size: 13px; cursor: pointer; }
+  .cs-opt.off { color: var(--muted); }
+  .cs-opt input { accent-color: var(--accent); cursor: pointer; }
+  .cs-opt input:disabled { cursor: not-allowed; }
+  .cs-name { min-width: 0; }
+  .cs-gold { margin-left: auto; white-space: nowrap; }
+  .cs-opt:not(.off) .cs-gold { color: var(--accent); }
   .alts-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 999px;
     padding: 1px 8px; font-size: 11px; cursor: pointer; margin-left: 5px; vertical-align: middle; white-space: nowrap; }
   .alts-btn:hover { color: var(--accent); border-color: var(--accent); }

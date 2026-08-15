@@ -7,6 +7,7 @@
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
   import { selection } from "$lib/packs/selection.svelte";
+  import { customSel } from "$lib/packs/customSel.svelte";
   import { hellSettings } from "$lib/packs/hellSettings.svelte";
   import { TRADE_UP } from "$lib/packs/data/constants";
   import { effectivePrices } from "$lib/packs/prices.svelte";
@@ -80,25 +81,38 @@
 
   // tapOverrides: the Hell Key tab's manual tap price for this region, so overriding it there
   // also moves every pack card that contains a hell/netherworld key.
-  const rows = $derived(buildPackRows(effectivePrices(), { f4Input: f4.value, g2gInput: g2gValue ?? 0, picks: selection.map, cashPerRc: cashPerRc(app.region), tapOverrides: hellSettings.tapOverride[app.region] }));
+  const rows = $derived(buildPackRows(effectivePrices(), { f4Input: f4.value, g2gInput: g2gValue ?? 0, picks: selection.map, customPicks: customSel.map, cashPerRc: cashPerRc(app.region), tapOverrides: hellSettings.tapOverride[app.region] }));
   // Retired packs get their own "no longer in the shop" section (compact reference cards) below the
   // active grid, rather than being greyed out inline. buildPackRows already sorts active before retired.
   const activeRows = $derived(rows.filter((r) => !r.retired));
   const retiredRows = $derived(rows.filter((r) => r.retired));
 
-  // Per pack: chosen-slug -> the selection chest's full option list, for the inline "Show alts".
+  // Per pack: chosen-slug -> the selection chest's full option list, for the inline "Show alts";
+  // plus the choose-N-of-M option rows (chest name / qty / gold / counted) for the checkbox block.
   const altsByPack = $derived.by(() => {
     const prices = effectivePrices();
     const out: Record<string, Record<string, DetailOption[]>> = {};
     for (const pack of PACKS) {
       const map: Record<string, DetailOption[]> = {};
-      for (const chest of packDetail(pack, prices, selection.map)) {
+      for (const chest of packDetail(pack, prices, selection.map, customSel.map)) {
         if (chest.isSelection && chest.options.length > 1) {
           const chosen = chest.options.find((o) => o.chosen);
           if (chosen) map[chosen.slug] = chest.options;
         }
       }
       out[pack.slug] = map;
+    }
+    return out;
+  });
+  const customByPack = $derived.by(() => {
+    const prices = effectivePrices();
+    const out: Record<string, { pick: number; options: { chest: string; qty: number; gold: number; counted: boolean }[] }> = {};
+    for (const pack of PACKS) {
+      if (!pack.customSelection) continue;
+      const options = packDetail(pack, prices, selection.map, customSel.map).map((c) => ({
+        chest: c.chest, qty: c.qty, gold: c.gold, counted: c.counted,
+      }));
+      out[pack.slug] = { pick: pack.customSelection.pick, options };
     }
     return out;
   });
@@ -115,11 +129,13 @@
 
   const customCount = $derived(overrides.count(app.region));
   const tuCount = $derived(tradeUp.count());
-  const pickCount = $derived(selection.count());
+  // Selection-chest picks and choose-N-of-M pack picks share the "picks" chip.
+  const pickCount = $derived(selection.count() + customSel.count());
   function resetAll(): void {
     overrides.clearAll(app.region);
     tradeUp.clear();
     selection.clearAll();
+    customSel.clearAll();
   }
 </script>
 
@@ -155,7 +171,7 @@
     <p class="state">No prices yet — the feed may be refreshing.</p>
   {:else}
     <div class="pack-grid">
-      {#each activeRows as row (row.slug)}<PackCard {row} {tradeUpInfo} alts={altsByPack[row.slug] ?? {}} />{/each}
+      {#each activeRows as row (row.slug)}<PackCard {row} {tradeUpInfo} alts={altsByPack[row.slug] ?? {}} custom={customByPack[row.slug] ?? null} />{/each}
     </div>
     {#if retiredRows.length}
       <div class="retired-head">

@@ -140,9 +140,36 @@ export function resolveChest(
 }
 
 /**
+ * The chest names counted for a choose-N-of-M pack (null for ordinary packs). The user's
+ * stored picks win when any of them still name a real option; otherwise the default is the
+ * `pick` highest-gold options (each option valued as its chest's gold x its qty, honoring
+ * selection-chest picks; ties keep dataset order). One shared rule for the card, the
+ * drill-down and packValue, so the three surfaces can never disagree.
+ */
+export function customChosen(
+  pack: Pack,
+  prices: Record<string, number>,
+  picks: Record<string, string> = {},
+  chosen?: string[],
+): Set<string> | null {
+  const cs = pack.customSelection;
+  if (!cs) return null;
+  const stored = chosen?.filter((name) => cs.options.some((o) => o.chest === name)) ?? [];
+  if (stored.length > 0) return new Set(stored);
+  const valued = cs.options.map((o, i) => {
+    const chest = RESOLVER[o.chest];
+    const gold = chest ? resolveChest(chest, prices, picks[o.chest]).gold * o.qty : 0;
+    return { name: o.chest, gold, i };
+  });
+  valued.sort((a, b) => b.gold - a.gold || a.i - b.i);
+  return new Set(valued.slice(0, cs.pick).map((v) => v.name));
+}
+
+/**
  * Value a whole Pack: resolve each content chest, scale by its quantity, and aggregate the
- * terminal lines per slug for display. Returns the gold total plus gold-per-RC and
- * gold-per-dollar (null when the pack has no RC cost).
+ * terminal lines per slug for display. Choose-N-of-M packs value only their chosen options
+ * (customPicks[pack.slug] when set, else the default highest-gold N). Returns the gold total
+ * plus gold-per-RC and gold-per-dollar (null when the pack has no RC cost).
  */
 export function packValue(
   pack: Pack,
@@ -150,6 +177,7 @@ export function packValue(
   picks: Record<string, string> = {},
   cashPerRc: number = USD_PER_RC,
   useFrozen = false, // display layer only: retired packs show their frozen value-at-retirement total
+  customPicks: Record<string, string[]> = {},
 ): PackResult {
   let liveTotal = 0;
   // slug -> aggregated line. Insertion order preserved for stable display.
@@ -170,7 +198,12 @@ export function packValue(
     }
   };
 
-  for (const content of pack.contents) {
+  const chosenSet = customChosen(pack, prices, picks, customPicks[pack.slug]);
+  const contents = chosenSet
+    ? pack.customSelection!.options.filter((o) => chosenSet.has(o.chest))
+    : pack.contents;
+
+  for (const content of contents) {
     const chest = RESOLVER[content.chest];
     if (!chest) {
       // Per Task 1 all chests resolve; this guard records an unresolved line at 0 gold

@@ -6,18 +6,37 @@ import { CUBE_REWARDS } from "../src/lib/packs/data/cube";
 import { BAKED, TRADE_UP, RELIC_ENGRAVING_SLUGS } from "../src/lib/packs/data/constants";
 
 describe("PACKS", () => {
-  it("has all 20 packs", () => {
-    expect(PACKS.length).toBe(20);
+  it("has all 27 packs", () => {
+    expect(PACKS.length).toBe(27);
   });
-  it("lists exactly the 3 packs that survived the 2026-08-12 rotation", () => {
+  it("lists exactly the 10 non-retired packs (post-2026-08-12 rotation)", () => {
     const active = PACKS.filter((p) => !p.retired).map((p) => p.slug).sort();
     expect(active).toEqual(
       [
+        "limited-astrogem-package",
         "monthly-1200-crystal-pack",
         "monthly-t4-growth-support",
+        "paradise-special-pack",
+        "summer-custom-pack-1",
+        "summer-custom-pack-2",
         "weekly-summer-astrogem-package",
+        "weekly-summer-t4-crystallized-stone",
+        "weekly-summer-t4-fusion-leap",
+        "weekly-summer-t4-shards-support",
       ].sort(),
     );
+  });
+  it("every custom-selection pack has empty contents and a sane pick count", () => {
+    const customs = PACKS.filter((p) => p.customSelection);
+    expect(customs.map((p) => p.slug).sort()).toEqual(["summer-custom-pack-1", "summer-custom-pack-2"]);
+    for (const p of customs) {
+      expect(p.contents).toEqual([]);
+      const cs = p.customSelection!;
+      expect(cs.pick).toBeGreaterThan(0);
+      expect(cs.pick).toBeLessThan(cs.options.length);
+      // Option chest names are unique (the chosen-set store keys on them).
+      expect(new Set(cs.options.map((o) => o.chest)).size).toBe(cs.options.length);
+    }
   });
   it("carries the right royal-crystal cost", () => {
     expect(PACKS.find((p) => p.slug === "horizon-growth-support-pack-i")?.royalCrystalCost).toBe(5800);

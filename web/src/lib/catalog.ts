@@ -20,6 +20,8 @@ const SHARED: Record<string, string> = {
   "gold": "gold-bars.png",
   // Raw shards aren't sold loose — reuse the Large pouch art for the per-shard line.
   "destiny-shard": "destiny-shard-pouch-l.png",
+  // Summer Custom Pack II card option — same generic card art as the Ark Pass row.
+  "joyful-legendary-epic-card-pack": "legendary-card-pack.png",
   // All non-1730 key tiers (II/III/IV/VI) share the corresponding V key art (user 2026-07-30).
   ...Object.fromEntries(
     ["ii", "iii", "iv", "vi"].flatMap((n) => [
@@ -77,6 +79,7 @@ const NAME_OVERRIDES: Record<string, string> = {
   "mp-efficiency-increase": "MP Efficiency Increase",
   "elysian-attempt-plus-1": "Elysian Attempt +1",
   "rare-epic-astrogem": "Rare/Epic Astrogem",
+  "joyful-legendary-epic-card-pack": "Joyful Legendary - Epic Card Pack",
   "metallurgy-hellfire-11-14": "Metallurgy Hellfire 11 - 14",
   "metallurgy-hellfire-15-18": "Metallurgy Hellfire 15 - 18",
   "metallurgy-hellfire-19-20": "Metallurgy Hellfire 19 - 20",
