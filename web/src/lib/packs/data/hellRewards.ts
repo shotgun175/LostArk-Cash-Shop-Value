@@ -1802,7 +1802,8 @@ export const COLUMN_VALUATION: Record<string, ColumnVal> = {
   // always wins.
   "Karma/Quality": { maxPair: [600, 0] },
   // 1640-1700 random Rare - Epic Astrogem Chest; the item is baked (no AH listing).
-  "Astrogem chests": { slug: "rare-epic-astrogem", fallback: 4300 },
+  // 3750 = the official-KR 90/10 box EV under the 2026-08-14 astrogem anchors (see constants.ts).
+  "Astrogem chests": { slug: "rare-epic-astrogem", fallback: 3750 },
   // Transferred (1730/1750) free taps: the live special-hone tap price (tapPrices.ts
   // computes it from T4.5 mat prices). 1000 is the old flat D6 convention, kept as the
   // missing-inputs fallback for when the mats it needs are unpriced.
@@ -1832,9 +1833,11 @@ export const SKIP_COLUMNS = new Set<string>([
 ]);
 
 // EV engine tuning constants. h = epic-rarity blend weight on avgTop4; topK = best-of count;
-// astrogem = "a|b|c" valuation (uncommon|rare|epic), epic hardcoded at 15000.
+// astrogem = "a|b|c" valuation (uncommon|rare|epic). The epic side is a PICKED epic (the floor
+// chest is a selection), so it uses the 43,000 NPC anchor (fixed 2026-08-14, user sign-off; was
+// TJW's old 15,000, inconsistent with our own epic-astrogem-selected constant).
 export const EV_CONSTANTS = {
   h: 0.05,
   topK: 3,
-  astrogem: { uncommon: 0, rare: 100, epic: 15000 },
+  astrogem: { uncommon: 0, rare: 100, epic: 43000 },
 };

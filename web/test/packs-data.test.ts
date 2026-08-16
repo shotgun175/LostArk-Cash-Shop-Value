@@ -6,25 +6,39 @@ import { CUBE_REWARDS } from "../src/lib/packs/data/cube";
 import { BAKED, TRADE_UP, RELIC_ENGRAVING_SLUGS } from "../src/lib/packs/data/constants";
 
 describe("PACKS", () => {
-  it("has all 20 packs", () => {
-    expect(PACKS.length).toBe(20);
+  // 26 = 27 tracked through the 2026-08-12 rotation minus the phantom weekly astrogem pack
+  // (user-confirmed 2026-08-15 that no such shop product exists; entry deleted outright).
+  it("has all 26 packs", () => {
+    expect(PACKS.length).toBe(26);
   });
-  it("lists exactly the 10 non-retired packs", () => {
+  it("lists exactly the 10 non-retired packs (post-2026-08-12 rotation)", () => {
     const active = PACKS.filter((p) => !p.retired).map((p) => p.slug).sort();
     expect(active).toEqual(
       [
-        "adventurers-path-package",
+        "adventurers-path-package", // still in the live shop despite TJW's retired flag (2026-08-15)
+        "limited-astrogem-package",
         "monthly-1200-crystal-pack",
-        "monthly-paradise-special-pack-2",
         "monthly-t4-growth-support",
-        "summer-growth-support-pack-i",
-        "summer-growth-support-pack-ii",
-        "weekly-summer-astrogem-package",
-        "weekly-t4-crystallized-stone-3",
-        "weekly-t4-fusion-leap-pack-3",
-        "weekly-t4-shards-support-3",
+        "paradise-special-pack",
+        "summer-custom-pack-1",
+        "summer-custom-pack-2",
+        "weekly-summer-t4-crystallized-stone",
+        "weekly-summer-t4-fusion-leap",
+        "weekly-summer-t4-shards-support",
       ].sort(),
     );
+  });
+  it("every custom-selection pack has empty contents and a sane pick count", () => {
+    const customs = PACKS.filter((p) => p.customSelection);
+    expect(customs.map((p) => p.slug).sort()).toEqual(["summer-custom-pack-1", "summer-custom-pack-2"]);
+    for (const p of customs) {
+      expect(p.contents).toEqual([]);
+      const cs = p.customSelection!;
+      expect(cs.pick).toBeGreaterThan(0);
+      expect(cs.pick).toBeLessThan(cs.options.length);
+      // Option chest names are unique (the chosen-set store keys on them).
+      expect(new Set(cs.options.map((o) => o.chest)).size).toBe(cs.options.length);
+    }
   });
   it("carries the right royal-crystal cost", () => {
     expect(PACKS.find((p) => p.slug === "horizon-growth-support-pack-i")?.royalCrystalCost).toBe(5800);
@@ -38,8 +52,9 @@ describe("RESOLVER", () => {
   // the summary were never serialized and can't be reconstructed without fabrication.
   // 2026-07-15 summer rotation adds 7 more (3 Season 4 tickets, 4 astrogem chests) -> 43.
   // 2026-07 1200 Crystal Pack adds 3 (Crystal + the two run-reward brews) -> 46.
-  it("has all 46 chests", () => {
-    expect(Object.keys(RESOLVER).length).toBe(46);
+  // 2026-08-12 rotation adds 3 (Abidos 15-pack, Elysian S4 ticket, Joyful card pack) -> 49.
+  it("has all 49 chests", () => {
+    expect(Object.keys(RESOLVER).length).toBe(49);
   });
   it("resolves a fixed chest's first output", () => {
     expect(RESOLVER["Glacier's Breath Chest"].outputs[0]).toEqual({

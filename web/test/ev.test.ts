@@ -57,9 +57,10 @@ describe("chestVal", () => {
     // "0|15|0" -> 15 * astrogem.rare(100) = 1500
     expect(chestVal("Random Astrogems", "0|15|0", {})).toBe(1500);
   });
-  it("values selectable astrogems (c=epic @15000)", () => {
-    // "0|0|3" -> 3 * astrogem.epic(15000) = 45000
-    expect(chestVal("Selectable Astrogems", "0|0|3", {})).toBe(45000);
+  it("values selectable astrogems (c=epic @43000, the NPC picked-epic anchor)", () => {
+    // "0|0|3" -> 3 * astrogem.epic(43000) = 129000 (fixed 2026-08-14: the floor chest is a
+    // selection, so the epic side uses the same 43,000 anchor as epic-astrogem-selected).
+    expect(chestVal("Selectable Astrogems", "0|0|3", {})).toBe(129000);
   });
   it("prices Juice as 1 lava + 3 glacier per unit on every tier (deliberate TJW divergence)", () => {
     // 96 x (400 + 3 x 319) = 96 x 1357 = 130,272 — the 1730 destiny floor 70-79 cell.
@@ -123,13 +124,16 @@ describe("baseGold", () => {
 // engine ALGORITHM is his, byte-parity). On 2026-07-30 the user moved all tiers to the
 // datamine (merged Karma/Quality, selection-chest astrogems, FlameFrost Juice column,
 // base 26/170) and priced Juice everywhere, so these values deliberately sit above his.
+// Re-baselined 2026-08-14 (user sign-off): the selectable-astrogem pipe EV's epic side moved
+// 15,000 -> 43,000 (the NPC picked-epic anchor); both the Destiny AND FlameFrost 1730 tables
+// carry astrogem pipe cells, so all four keys rose.
 describe("hellKeyEv 1730 goldens (datamine tables, our model)", () => {
   const map = buildPriceMap(NAE);
   const golden: Record<string, number> = {
-    "splendid-hell-key-of-destiny-v": 201674,
-    "splendid-hell-key-of-destiny-v-epic": 137061,
-    "splendid-netherworld-flame-key": 103363,
-    "splendid-netherworld-frost-key": 107176,
+    "splendid-hell-key-of-destiny-v": 208169,
+    "splendid-hell-key-of-destiny-v-epic": 141600,
+    "splendid-netherworld-flame-key": 109391,
+    "splendid-netherworld-frost-key": 113539,
   };
   for (const [slug, expected] of Object.entries(golden)) {
     it(`reproduces ${slug} = ${expected} (±1)`, () => {
@@ -169,15 +173,16 @@ describe("hellKeyEv per-floor reconstruction (engine internals)", () => {
     return { rows, sump };
   }
 
-  it("legendary destiny floor 70-79: best-pick 157,779 / base 6,433 / contribution 39,606", () => {
-    // Reference history: TJW's June-vintage row was 148,053 / 6,433 / 37,260; the shift is
-    // the priced Juice chest plus the datamine table swap (2026-07-30).
+  it("legendary destiny floor 70-79: best-pick 165,199 / base 6,433 / contribution 41,395", () => {
+    // Reference history: TJW's June-vintage row was 148,053 / 6,433 / 37,260; then
+    // 157,779 / 6,433 / 39,606 after the priced Juice chest + datamine table swap
+    // (2026-07-30); the 2026-08-14 shift is the astrogem pipe-EV fix (epic 15k -> 43k).
     const { rows, sump } = perFloor("splendid-hell-key-of-destiny-v");
     const r = rows.find((x) => x.range === "70 - 79")!;
-    expect(Math.round(r.bestPick)).toBe(157779);
+    expect(Math.round(r.bestPick)).toBe(165199);
     expect(Math.round(r.base)).toBe(6433);
     const contribution = (r.bestPick + r.base) * (r.p / sump);
-    expect(Math.round(contribution)).toBe(39606);
+    expect(Math.round(contribution)).toBe(41395);
   });
 
   it("flame floor 10-19: best-pick 72,920 / base 0 / contribution 25,707", () => {
@@ -306,8 +311,8 @@ describe("lower tiers (1640/1680/1700, datamine-generated)", () => {
     );
   });
   it("prices Astrogem chests via the baked rare-epic-astrogem", () => {
-    expect(chestVal("Astrogem chests", 5, { "rare-epic-astrogem": 4300 })).toBe(21500);
-    expect(chestVal("Astrogem chests", 5, {})).toBe(21500); // fallback 4300
+    expect(chestVal("Astrogem chests", 5, { "rare-epic-astrogem": 3750 })).toBe(18750);
+    expect(chestVal("Astrogem chests", 5, {})).toBe(18750); // fallback 3750 (official-KR 90/10 box)
   });
   it("values lower-tier Free taps at Arkemys' T4 unit of 100, not 1000", () => {
     expect(chestVal("Free taps", 90, {}, HELL_TIERS["1700 Destiny Rewards"])).toBe(9000);
@@ -395,13 +400,15 @@ describe("1750 hell key map", () => {
 // the current goldens under that model. When TJW ships 1750, diff as a cross-check only
 // (DECISIONS.md); adopt a specific fix only if the diff exposes a real error, never
 // blanket re-anchor.
+// Re-baselined 2026-08-14 (user sign-off): astrogem pipe-EV epic 15k -> 43k (both 1750 tables
+// carry astrogem pipe cells), lifting all four VI keys.
 describe("1750 hellKeyEv self-goldens (our baseline)", () => {
   const map = buildPriceMap(NAE);
   const golden: Record<string, number> = {
-    "hell-key-of-destiny-vi": 243841,
-    "hell-key-of-destiny-vi-epic": 165974,
-    "netherworld-flame-key-vi": 125807,
-    "netherworld-frost-key-vi": 130508,
+    "hell-key-of-destiny-vi": 253842,
+    "hell-key-of-destiny-vi-epic": 174425,
+    "netherworld-flame-key-vi": 137864,
+    "netherworld-frost-key-vi": 143155,
   };
   for (const [slug, expected] of Object.entries(golden)) {
     it(`${slug} = ${expected} exactly`, () => {
@@ -424,11 +431,13 @@ describe("1750 hellKeyEv self-goldens (our baseline)", () => {
 // OUR baseline: no TJW anchor exists for these tiers on Season-4 data.
 describe("lower-tier hellKeyEv self-goldens (our baseline)", () => {
   const map = buildPriceMap(NAE);
+  // 1700 re-baselined 2026-08-14: its tables price "Astrogem chests" (numeric cells), whose
+  // baked box value moved 4,300 -> 3,750 (official-KR 90/10 odds); 1640/1680 are unaffected.
   const golden: Record<string, number> = {
-    "hell-key-of-destiny-iv": 189962,
-    "hell-key-of-destiny-iv-epic": 131243,
-    "netherworld-flame-key-iv": 96595,
-    "netherworld-frost-key-iv": 100368,
+    "hell-key-of-destiny-iv": 189893,
+    "hell-key-of-destiny-iv-epic": 131127,
+    "netherworld-flame-key-iv": 94794,
+    "netherworld-frost-key-iv": 98464,
     "hell-key-of-destiny-iii": 186488,
     "hell-key-of-destiny-iii-epic": 127613,
     "netherworld-flame-key-iii": 93292,

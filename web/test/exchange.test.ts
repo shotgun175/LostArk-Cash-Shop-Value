@@ -5,8 +5,8 @@ import {
 } from "../src/lib/packs/exchange";
 
 describe("F4 exchange", () => {
-  it("baseline = input / 238 (default 20000 -> 84.03)", () => {
-    expect(f4Baseline(F4_DEFAULT_INPUT)).toBeCloseTo(20000 / 238, 6);
+  it("baseline = input / 238 (default 30000 -> 126.05)", () => {
+    expect(f4Baseline(F4_DEFAULT_INPUT)).toBeCloseTo(30000 / 238, 6);
   });
   it("% vs exchange is the relative gap of gold/RC vs baseline", () => {
     const base = f4Baseline(20000); // 84.03...
