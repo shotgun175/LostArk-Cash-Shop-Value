@@ -541,9 +541,9 @@ describe("buildPriceMap", () => {
     expect(map["relic-combat-engraving-recipe"]).toBe(relicRecipe({ ...BAKED, ...NAE }));
   });
   it("keeps baked gem values when the region does not override them", () => {
-    // NAE prices carry no lv-3-gem, so the baked 1543 survives.
+    // NAE prices carry no lv-3-gem, so the baked 1850 (2026-08-19 re-anchor) survives.
     expect(NAE["lv-3-gem"]).toBeUndefined();
-    expect(map["lv-3-gem"]).toBe(1543);
+    expect(map["lv-3-gem"]).toBe(1850);
   });
   it("lets region prices override baked values", () => {
     const overridden = buildPriceMap({ "lv-3-gem": 9999 });

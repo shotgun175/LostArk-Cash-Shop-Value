@@ -1,7 +1,7 @@
 import { PACKS } from "./data/packs";
 import { packValue, type PackResult } from "./packValue";
 import { buildPriceMap } from "./priceMap";
-import { f4Baseline, vsExchangePct, g2gGoldPerDollar, vsG2GPct } from "./exchange";
+import { f4Baseline, vsExchangePct, g2gGoldPerDollar, vsG2GPct, F4_DIVISOR } from "./exchange";
 import { BC_PER_BUNDLE } from "./data/marisShop";
 import type { TapOverrides } from "./tapPrices";
 
@@ -38,22 +38,35 @@ export function buildPackRows(
   const baseline = f4Baseline(opts.f4Input);
   const g2gGpd = g2gGoldPerDollar(opts.g2gInput);
 
+  // BC-priced packs compare their gold/BC to the same F4 input at the BC denominator.
+  const bcBaseline = opts.f4Input / BC_PER_BUNDLE;
+
   const rows: PackRow[] = PACKS.map((p) => {
     const v = packValue(p, prices, opts.picks, opts.cashPerRc, true, opts.customPicks);
     return {
       ...v,
-      vsExchange: v.goldPerRc == null ? null : vsExchangePct(v.goldPerRc, baseline),
+      vsExchange:
+        v.goldPerRc != null
+          ? vsExchangePct(v.goldPerRc, baseline)
+          : v.goldPerBc != null
+            ? vsExchangePct(v.goldPerBc, bcBaseline)
+            : null,
       vsG2G: v.goldPerDollar == null ? null : vsG2GPct(v.goldPerDollar, g2gGpd),
     };
   });
 
+  // One F4 listing trades the same gold for 238 RC or 95 BC, so a BC pack's gold/BC converts
+  // to a gold-per-RC-equivalent at x(95/238) — this keeps one sort scale across both currencies.
+  const sortKey = (r: PackRow) =>
+    r.goldPerRc ?? (r.goldPerBc != null ? (r.goldPerBc * BC_PER_BUNDLE) / F4_DIVISOR : 0);
+
   return rows.sort((a, b) => {
     if (a.retired !== b.retired) return a.retired ? 1 : -1;
     // Retired packs surface most-recently-retired first (ISO dates sort lexically); a shared
-    // retirement date — and the whole active group — falls back to gold-per-RC desc.
+    // retirement date — and the whole active group — falls back to gold-per-RC (equivalent) desc.
     if (a.retired && b.retired && a.retiredOn !== b.retiredOn) {
       return (b.retiredOn ?? "").localeCompare(a.retiredOn ?? "");
     }
-    return (b.goldPerRc ?? 0) - (a.goldPerRc ?? 0);
+    return sortKey(b) - sortKey(a);
   });
 }

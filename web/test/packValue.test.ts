@@ -125,8 +125,9 @@ describe("packValue golden parity with TJW live pack cards", () => {
     ["horizon-growth-support-pack-ii", 864850, 227.6],
     // TJW's card showed 1,812,089 / 335.6 on his old astrogem constants (15k/30k); the
     // 2026-07-15 NPC re-anchor made it 1,851,089 (21.5k/43k), and the 2026-08-14 adoption of
-    // the 33k random epic (user sign-off) adds 2 x 11,500 more.
-    ["limited-relic-engraving-growth", 1874089, 347.1],
+    // the 33k random epic (user sign-off) adds 2 x 11,500 more. The 2026-08-19 lv-3-gem
+    // re-anchor (1,543 -> 1,850, user sign-off) adds 30 x 307 = 9,210 on its 30 gem chests.
+    ["limited-relic-engraving-growth", 1883299, 348.8],
     ["monthly-t4-growth-support", 172875, 45.5],
     ["shadow-growth-support-pack-1", 1459800, 260.7],
     ["shadow-growth-support-pack-2", 626550, 174.0],
@@ -187,7 +188,7 @@ describe("paradise-special-pack-ii (EV pack: deterministic engine value)", () =>
     //   elysian:   3000 * 3
     //   frost key (selection, higher of flame 48636 / frost 50440): round(50440) * 1
     //   cube 4th:  round(EV_cube) * 5
-    //   lv-3 gem:  1543 * 50
+    //   lv-3 gem:  1850 * 50
     //   abidos:    100*137 * 10
     //   T4 support (selection, glaciers 100@319=31900 > lavas 25@330=8250): 31900 * 5
     const evEpic = Math.round(map["splendid-hell-key-of-destiny-v-epic"]);
@@ -198,17 +199,18 @@ describe("paradise-special-pack-ii (EV pack: deterministic engine value)", () =>
       3000 * 3 +
       evFrost * 1 +
       evCube * 5 +
-      1543 * 50 +
+      1850 * 50 +
       100 * 137 * 10 +
       31900 * 5;
     expect(r.total).toBe(expected);
     // 783,815 on the TJW-vintage tables; the datamine 1730 tables + priced juice lifted
     // the Epic keys (129,295 -> 138,919 each) and the Frost key (50,440 -> 107,176), which
     // was most of the +75,984 to 859,799 (2026-07-30). Re-baselined 2026-08-02 (owner
-    // sign-off) to the live special-hone tap engine (856,083). Re-baselined again 2026-08-14
+    // sign-off) to the live special-hone tap engine (856,083). Re-baselined 2026-08-14
     // (user sign-off): the astrogem pipe-EV fix (epic 15k -> 43k) lifts the Epic keys to
-    // 141,600 each and the Frost key to 113,539, for the current 871,524.
-    expect(r.total).toBe(871524);
+    // 141,600 each and the Frost key to 113,539 (871,524). Re-baselined again 2026-08-19
+    // (user sign-off): the lv-3-gem re-anchor (1,543 -> 1,850) adds 50 x 307 = 15,350.
+    expect(r.total).toBe(886874);
     expect(evFrost).toBe(113539);
   });
 
@@ -285,12 +287,13 @@ describe("2026-08-12 rotation packs (self-goldens at the pinned fixture)", () =>
   const map = buildPriceMap(NAE);
 
   const golden: [string, number][] = [
-    // 6x3,750 + 33,000 + 43,000 + 25x1,543 (both processing tickets 0 without an exchange input)
-    ["limited-astrogem-package", 137075],
-    // 3xVI-epic(174,425) + 2xVI(253,842) + frost-VI(143,155) + 3x3,000 + 10x18,427 + 120x1,543 + 50x13,700
-    ["paradise-special-pack", 2237544],
+    // 6x3,750 + 33,000 + 43,000 + 25x1,850 (both processing tickets 0 without an exchange input)
+    ["limited-astrogem-package", 144750],
+    // 3xVI-epic(174,425) + 2xVI(253,842) + frost-VI(143,155) + 3x3,000 + 10x18,427 + 120x1,850 + 50x13,700
+    ["paradise-special-pack", 2274384],
     // default top-5 picks: CD Destruction Pouch / Epic HK S4 / Glacier's / Superior Abidos / T4 Gems
-    ["summer-custom-pack-1", 2006335],
+    // (T4 Gems at 120x1,850 since the 2026-08-19 lv-3 re-anchor)
+    ["summer-custom-pack-1", 2043175],
     // default top-4 picks: Artisan Armor / Abidos (100) / DD Bundle / Relic Recipe Pouch
     ["summer-custom-pack-2", 496849],
     // 15x1000x29 + 15x1000x0.92 + 15x20x171
@@ -309,7 +312,7 @@ describe("2026-08-12 rotation packs (self-goldens at the pinned fixture)", () =>
   it("the astrogem pack gains the BC-costed processing tickets when the exchange input is set", () => {
     // gold/BC 200: reset 3x20,000 + refresh 3x3,600 = +70,800.
     const mapBc = buildPriceMap(NAE, { blueCrystalGold: 200 });
-    expect(packValue(pack("limited-astrogem-package"), mapBc).total).toBe(137075 + 70800);
+    expect(packValue(pack("limited-astrogem-package"), mapBc).total).toBe(144750 + 70800);
   });
 
   it("a user click-to-edit override on a BC-costed ticket wins over the BC derivation", () => {
@@ -422,14 +425,14 @@ describe("frozen retirement values (display path)", () => {
       expect(p.frozenTotal).toBeDefined();
       const r = packValue(p, map, {}, undefined, true);
       expect(r.total).toBe(p.frozenTotal);
-      expect(r.goldPerRc!).toBeCloseTo(p.frozenTotal! / p.royalCrystalCost, 1);
+      expect(r.goldPerRc!).toBeCloseTo(p.frozenTotal! / p.royalCrystalCost!, 1);
     }
   });
 
   it("the default (live) path ignores frozenTotal", () => {
-    // relic's live value (golden) is 1,874,089 — distinct from its retirement snapshot (1,769,665).
+    // relic's live value (golden) is 1,883,299 — distinct from its retirement snapshot (1,769,665).
     const relic = pack("limited-relic-engraving-growth");
-    expect(packValue(relic, map).total).toBe(1874089);
+    expect(packValue(relic, map).total).toBe(1883299);
     expect(relic.frozenTotal).toBe(1769665);
   });
 });
@@ -489,5 +492,59 @@ describe("1200 Crystal Pack (blue-crystal + run-reward brews)", () => {
     const byslug = Object.fromEntries(r.lines.map((l) => [l.slug, l]));
     expect(byslug["destiny-shard"].gold).toBeGreaterThan(0);
     expect(byslug["blue-crystal"].qty).toBe(1200);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The 2026-08-19 packs — self-goldens on the pinned fixture. Four are the first Blue-Crystal-
+// priced packs (blueCrystalCost instead of royalCrystalCost): they carry gold-per-BC and no
+// RC/cash metrics. The 2+1 Crystal Pack is RC-priced but pays out Blue Crystals, so its total
+// tracks the F4 input like the 1200 Crystal Pack.
+// ---------------------------------------------------------------------------
+describe("2026-08-19 packs (BC pricing + self-goldens at the pinned fixture)", () => {
+  const map = buildPriceMap(NAE);
+
+  // [slug, total, goldPerBc] — totals hand-computed from the fixture.
+  const bcGolden: [string, number, number][] = [
+    // 5 pouches x (1000 x 29) = 145,000; / 400 BC = 362.5
+    ["discount-crystallized-destiny-destruction-stone-pouch", 145000, 362.5],
+    // 20 chests x (20 x 171) = 68,400; / 150 BC = 456
+    ["discount-superior-abidos-fusion", 68400, 456],
+    // selection: glaciers 20x319 = 6,380 > lavas 10x330 = 3,300; 20 x 6,380 = 127,600; / 150 BC
+    ["discount-t4-breath-selection-chest", 127600, 850.7],
+    // 120 x 1,850 = 222,000; / 600 BC = 370
+    ["discount-t4-gem-chest-lv3-x120", 222000, 370],
+  ];
+  for (const [slug, total, gpb] of bcGolden) {
+    it(`${slug}: total ${total}, ${gpb} g/BC, no RC/cash metrics`, () => {
+      const r = packValue(pack(slug), map);
+      expect(r.total).toBe(total);
+      expect(r.goldPerBc!).toBeCloseTo(gpb, 1);
+      expect(r.goldPerRc).toBeNull();
+      expect(r.goldPerDollar).toBeNull();
+    });
+  }
+
+  it("the x180 gem tile is RC-priced: 180 x 1,850 at 1,600 RC", () => {
+    const r = packValue(pack("discount-t4-gem-chest-lv3"), map);
+    expect(r.total).toBe(180 * 1850);
+    expect(r.goldPerRc!).toBeCloseTo(333000 / 1600, 4);
+    expect(r.goldPerBc).toBeNull();
+    expect(r.goldPerDollar).not.toBeNull();
+  });
+
+  it("the 2+1 Crystal Pack values 3,000 crystals off the F4 input (unpriced without one)", () => {
+    // No exchange input -> blue-crystal missing from the map -> honest 0, like the 1200 pack.
+    expect(packValue(pack("2-plus-1-1000-crystal-pack"), map).total).toBe(0);
+    // gold/BC 200 -> 600,000 total; RC metrics live (it IS an RC pack): 600,000 / 4,200.
+    const r = packValue(pack("2-plus-1-1000-crystal-pack"), buildPriceMap(NAE, { blueCrystalGold: 200 }));
+    expect(r.total).toBe(3000 * 200);
+    expect(r.goldPerRc!).toBeCloseTo(600000 / 4200, 4);
+    expect(r.lines[0]).toMatchObject({ slug: "blue-crystal", qty: 3000 });
+  });
+
+  it("carries maxPurchases through to the result for the card tag", () => {
+    expect(packValue(pack("discount-t4-gem-chest-lv3"), map).maxPurchases).toBe(2);
+    expect(packValue(pack("discount-t4-gem-chest-lv3-x120"), map).maxPurchases).toBe(1);
   });
 });

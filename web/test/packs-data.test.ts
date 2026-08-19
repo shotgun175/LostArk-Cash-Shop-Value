@@ -6,16 +6,23 @@ import { CUBE_REWARDS } from "../src/lib/packs/data/cube";
 import { BAKED, TRADE_UP, RELIC_ENGRAVING_SLUGS } from "../src/lib/packs/data/constants";
 
 describe("PACKS", () => {
-  // 26 = 27 tracked through the 2026-08-12 rotation minus the phantom weekly astrogem pack
-  // (user-confirmed 2026-08-15 that no such shop product exists; entry deleted outright).
-  it("has all 26 packs", () => {
-    expect(PACKS.length).toBe(26);
+  // 26 through the 2026-08-12 rotation (27 minus the phantom weekly astrogem pack, deleted
+  // 2026-08-15) + the six 2026-08-19 packs (the 2+1 Crystal Pack, four BC-priced [Discount]
+  // tiles, the x180 gem tile) = 32.
+  it("has all 32 packs", () => {
+    expect(PACKS.length).toBe(32);
   });
-  it("lists exactly the 10 non-retired packs (post-2026-08-12 rotation)", () => {
+  it("lists exactly the 16 non-retired packs (post-2026-08-19 additions)", () => {
     const active = PACKS.filter((p) => !p.retired).map((p) => p.slug).sort();
     expect(active).toEqual(
       [
+        "2-plus-1-1000-crystal-pack",
         "adventurers-path-package", // still in the live shop despite TJW's retired flag (2026-08-15)
+        "discount-crystallized-destiny-destruction-stone-pouch",
+        "discount-superior-abidos-fusion",
+        "discount-t4-breath-selection-chest",
+        "discount-t4-gem-chest-lv3",
+        "discount-t4-gem-chest-lv3-x120",
         "limited-astrogem-package",
         "monthly-1200-crystal-pack",
         "monthly-t4-growth-support",
@@ -27,6 +34,21 @@ describe("PACKS", () => {
         "weekly-summer-t4-shards-support",
       ].sort(),
     );
+  });
+  it("every pack is priced in exactly one currency (RC xor BC)", () => {
+    for (const p of PACKS) {
+      const rc = p.royalCrystalCost != null;
+      const bc = p.blueCrystalCost != null;
+      expect(rc !== bc, `${p.slug} must set exactly one of royalCrystalCost/blueCrystalCost`).toBe(true);
+    }
+    // The four 2026-08-19 [Discount] tiles are the BC-priced ones.
+    const bcSlugs = PACKS.filter((p) => p.blueCrystalCost != null).map((p) => p.slug).sort();
+    expect(bcSlugs).toEqual([
+      "discount-crystallized-destiny-destruction-stone-pouch",
+      "discount-superior-abidos-fusion",
+      "discount-t4-breath-selection-chest",
+      "discount-t4-gem-chest-lv3-x120",
+    ]);
   });
   it("every custom-selection pack has empty contents and a sane pick count", () => {
     const customs = PACKS.filter((p) => p.customSelection);
@@ -122,8 +144,8 @@ describe("CUBE_REWARDS", () => {
 });
 
 describe("constants", () => {
-  it("bakes the lv-3 gem value", () => {
-    expect(BAKED["lv-3-gem"]).toBe(1543);
+  it("bakes the lv-3 gem value (1,850 since the 2026-08-19 re-anchor)", () => {
+    expect(BAKED["lv-3-gem"]).toBe(1850);
   });
   it("tracks 23 relic engraving slugs", () => {
     expect(RELIC_ENGRAVING_SLUGS.length).toBe(23);

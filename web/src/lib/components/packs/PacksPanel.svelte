@@ -167,7 +167,7 @@
   </div>
 
   <p class="note">
-    Sorted by g/RC. Selection chests use their highest-value option. Drill into a pack for all options + screenshot. Conversion:
+    Sorted by g/RC (Blue-Crystal-priced packs slot in at their exchange equivalent, 95 BC = 238 RC). Selection chests use their highest-value option. Drill into a pack for all options + screenshot. Conversion:
     <b class="num">12,000</b> <img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" /> = {sym}{rcCash.toLocaleString("en-US")} ({sym}{rcPerUnit.toFixed(4)}/RC).
     Click any market price to enter your own AH price.{#if customCount > 0 || tuCount > 0 || pickCount > 0} <span class="custom"><span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && (tuCount > 0 || pickCount > 0)} · {/if}{#if pickCount > 0}<b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"}{/if}{#if pickCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span> <button class="reset-all" onclick={resetAll}>reset all</button></span>{/if}
   </p>

@@ -36,13 +36,16 @@ export interface PackLine {
 export interface PackResult {
   slug: string;
   name: string;
-  royalCrystalCost: number;
+  royalCrystalCost?: number;
+  blueCrystalCost?: number;
+  maxPurchases?: number;
   retired: boolean;
   retiredOn?: string;
   limited: boolean;
   recurrence?: "monthly" | "weekly";
   total: number;
   goldPerRc: number | null;
+  goldPerBc: number | null; // BC-priced packs only; RC packs leave it null (and vice versa)
   goldPerDollar: number | null;
   lines: PackLine[];
 }
@@ -229,6 +232,8 @@ export function packValue(
   // breakdown, and stays untouched when useFrozen is false — e.g. the golden-parity tests).
   const total = useFrozen && pack.frozenTotal != null ? pack.frozenTotal : liveTotal;
   const goldPerRc = pack.royalCrystalCost ? total / pack.royalCrystalCost : null;
+  const goldPerBc = pack.blueCrystalCost ? total / pack.blueCrystalCost : null;
+  // BC-priced packs have no cash figure: Blue Crystals aren't bought with real money.
   const goldPerDollar = pack.royalCrystalCost
     ? total / (pack.royalCrystalCost * cashPerRc)
     : null;
@@ -237,12 +242,15 @@ export function packValue(
     slug: pack.slug,
     name: pack.name,
     royalCrystalCost: pack.royalCrystalCost,
+    blueCrystalCost: pack.blueCrystalCost,
+    maxPurchases: pack.maxPurchases,
     retired: pack.retired,
     retiredOn: pack.retiredOn,
     limited: pack.limited,
     recurrence: pack.recurrence,
     total,
     goldPerRc,
+    goldPerBc,
     goldPerDollar,
     lines: [...agg.values()],
   };
