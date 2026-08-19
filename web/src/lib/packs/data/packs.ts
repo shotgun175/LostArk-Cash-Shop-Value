@@ -3,11 +3,13 @@ import type { Pack } from "./types";
 // The cash-shop pack registry: the original 12 transcribed verbatim from TJW's compiled
 // registry (source A: result.packs.packs[]), plus the three [Weekly] T4 "III" packs added
 // from the live store on 2026-06-24, the four 2026-07-15 summer-rotation packs (Paradise
-// re-release, Summer Growth I/II, Summer Astrogem), and the seven 2026-08-12 rotation packs
+// re-release, Summer Growth I/II, Summer Astrogem), the seven 2026-08-12 rotation packs
 // (Astrogem Package, Paradise Special, Summer Custom I/II, three Weekly Summer T4 packs; all
-// sales-end 09/16/2026). `contents[].chest` is the chest display-name; resolve via RESOLVER
-// in ./resolver. monthly-t4-growth-support RC (3800) is flagged by the source itself as
-// possibly a placeholder ("RC price was cut off in the screenshot").
+// sales-end 09/16/2026), and the six 2026-08-19 packs (the 2+1 Crystal Pack, four BC-priced
+// [Discount] tiles, and the x180 gem tile; all sales-end 08/26/2026). `contents[].chest` is
+// the chest display-name; resolve via RESOLVER in ./resolver. monthly-t4-growth-support RC
+// (3800) is flagged by the source itself as possibly a placeholder ("RC price was cut off in
+// the screenshot").
 export const PACKS: Pack[] = [
   {
     // Still sold in the live shop (user-verified 2026-08-15) even though TJW's dataset marks
@@ -323,6 +325,7 @@ export const PACKS: Pack[] = [
     name: "[Monthly] 1200 Crystal Pack",
     slug: "monthly-1200-crystal-pack",
     royalCrystalCost: 2700,
+    maxPurchases: 3,
     limited: false,
     recurrence: "monthly",
     retired: false,
@@ -341,6 +344,7 @@ export const PACKS: Pack[] = [
     name: "[Limited] Astrogem Package",
     slug: "limited-astrogem-package",
     royalCrystalCost: 1100,
+    maxPurchases: 5,
     limited: true,
     retired: false,
     contents: [
@@ -359,6 +363,7 @@ export const PACKS: Pack[] = [
     name: "Paradise Special Pack",
     slug: "paradise-special-pack",
     royalCrystalCost: 5400,
+    maxPurchases: 3,
     limited: true,
     retired: false,
     contents: [
@@ -380,6 +385,7 @@ export const PACKS: Pack[] = [
     name: "Summer Custom Pack I",
     slug: "summer-custom-pack-1",
     royalCrystalCost: 5200,
+    maxPurchases: 5,
     limited: false,
     retired: false,
     contents: [],
@@ -406,6 +412,7 @@ export const PACKS: Pack[] = [
     name: "Summer Custom Pack II",
     slug: "summer-custom-pack-2",
     royalCrystalCost: 2500,
+    maxPurchases: 5,
     limited: false,
     retired: false,
     contents: [],
@@ -429,6 +436,7 @@ export const PACKS: Pack[] = [
     name: "[Weekly] Summer T4 Crystallized Stone & Fusion Pack",
     slug: "weekly-summer-t4-crystallized-stone",
     royalCrystalCost: 2100,
+    maxPurchases: 5,
     limited: true,
     recurrence: "weekly",
     retired: false,
@@ -443,6 +451,7 @@ export const PACKS: Pack[] = [
     name: "[Weekly] Summer T4 Fusion & Leap Pack",
     slug: "weekly-summer-t4-fusion-leap",
     royalCrystalCost: 1300,
+    maxPurchases: 5,
     limited: true,
     recurrence: "weekly",
     retired: false,
@@ -457,6 +466,7 @@ export const PACKS: Pack[] = [
     name: "[Weekly] Summer T4 Shards & Support Material Pack",
     slug: "weekly-summer-t4-shards-support",
     royalCrystalCost: 1400,
+    maxPurchases: 5,
     limited: true,
     recurrence: "weekly",
     retired: false,
@@ -464,5 +474,74 @@ export const PACKS: Pack[] = [
       { chest: "T4 Support Materials Selection Chest", qty: 7 },
       { chest: "Destiny Shard Pouch (L)", qty: 50 },
     ],
+  },
+  // --- 2026-08-19 packs (all sales periods end 08/26/2026 03:00) ---
+  {
+    // Modeled as the full 2+1 deal (TJW 2026-08-19): the tile sells 1,000 Blue Crystals for
+    // 2,100 RC with a 2-per-roster limit, and buying both grants a third 1,000-Crystal pack
+    // free — so the effective deal is 4,200 RC for 3,000 Crystal, once per roster. "Crystal"
+    // is Blue Crystal currency, priced at the F4 gold input / 95.
+    name: "[2+1] 1000 Crystal Pack",
+    slug: "2-plus-1-1000-crystal-pack",
+    royalCrystalCost: 4200,
+    maxPurchases: 1,
+    limited: true,
+    retired: false,
+    contents: [{ chest: "Crystal", qty: 3000 }],
+  },
+  {
+    // Priced in Blue Crystals (not RC) — valued against the gold cost of buying 400 BC at the
+    // F4 exchange. 5 pouches (1,000 stones each) per purchase, bound to roster on pickup.
+    name: "[Discount] Crystallized Destiny Destruction Stone Pouch",
+    slug: "discount-crystallized-destiny-destruction-stone-pouch",
+    blueCrystalCost: 400,
+    maxPurchases: 3,
+    limited: true,
+    retired: false,
+    contents: [{ chest: "Crystallized Destiny Destruction Stone Pouch", qty: 5 }],
+  },
+  {
+    // Priced in Blue Crystals. Chests are bound to roster on pickup.
+    name: "[Discount] Superior Abidos Fusion Material Chest",
+    slug: "discount-superior-abidos-fusion",
+    blueCrystalCost: 150,
+    maxPurchases: 3,
+    limited: true,
+    retired: false,
+    contents: [{ chest: "Superior Abidos Fusion Material Chest", qty: 20 }],
+  },
+  {
+    // Priced in Blue Crystals. Selection chest (10 Lava's Breath or 20 Glacier's Breath)
+    // defaults to the highest-gold option, as everywhere.
+    name: "[Discount] T4 Breath Selection Chest",
+    slug: "discount-t4-breath-selection-chest",
+    blueCrystalCost: 150,
+    maxPurchases: 3,
+    limited: true,
+    retired: false,
+    contents: [{ chest: "T4 Breath Selection Chest", qty: 20 }],
+  },
+  {
+    // Priced in Blue Crystals. Each chest is a 50/50 Doomfire/Blazing Lv. 3 gem, collapsed to
+    // the single lv-3-gem line. TJW has no screenshot on file for this tile (x120), so neither
+    // do we — the drill-down shows the image placeholder.
+    name: "[Discount] T4 Gem Chest (Lv 3) x120",
+    slug: "discount-t4-gem-chest-lv3-x120",
+    blueCrystalCost: 600,
+    maxPurchases: 1,
+    limited: true,
+    retired: false,
+    contents: [{ chest: "T4 Gem Chest (Lv. 3)", qty: 120 }],
+  },
+  {
+    // The RC-priced sibling of the x120 tile above (same 50/50 gem chest). TJW's tile showed a
+    // 7d timer on 2026-08-19, in line with the sibling [Discount] tiles' 08/26 sales end.
+    name: "[Discount] T4 Gem Chest (Lv 3) x180",
+    slug: "discount-t4-gem-chest-lv3",
+    royalCrystalCost: 1600,
+    maxPurchases: 2,
+    limited: true,
+    retired: false,
+    contents: [{ chest: "T4 Gem Chest (Lv. 3)", qty: 180 }],
   },
 ];

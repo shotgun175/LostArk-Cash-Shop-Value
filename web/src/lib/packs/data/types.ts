@@ -4,7 +4,13 @@
 export interface Pack {
   name: string;
   slug: string;
-  royalCrystalCost: number;
+  // Exactly one of the two cost fields is set. Most packs are Royal-Crystal-priced; the
+  // 2026-08-19 [Discount] tiles are priced in Blue Crystals instead, and their value is
+  // compared against the gold cost of buying that BC at the F4 exchange (input / 95 per BC)
+  // rather than g/RC and g/$ (BC can't be bought with cash directly).
+  royalCrystalCost?: number;
+  blueCrystalCost?: number;
+  maxPurchases?: number; // in-game purchase limit per roster (per week/month for recurring packs)
   limited: boolean;
   recurrence?: "monthly" | "weekly";
   retired: boolean;

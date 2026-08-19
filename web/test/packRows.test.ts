@@ -10,7 +10,7 @@ describe("buildPackRows", () => {
   const rows = buildPackRows(prices, opts);
 
   it("returns one row per pack with all display columns", () => {
-    expect(rows.length).toBe(26);
+    expect(rows.length).toBe(32);
     // Sample a still-active pack (the 2026-08-12 rotation retired most of the old actives);
     // 172,875 / 45.5 is monthly-t4's TJW golden value on this fixture.
     const r = rows.find((x) => x.slug === "monthly-t4-growth-support")!;
@@ -26,12 +26,24 @@ describe("buildPackRows", () => {
     expect(r.goldPerRc!).toBeCloseTo(265.0, 1);
   });
 
-  it("orders active packs before retired, each by gold/RC desc", () => {
+  it("orders active packs before retired, each by gold/RC (equivalent) desc", () => {
     const firstRetiredIdx = rows.findIndex((r) => r.retired);
     const lastActiveIdx = rows.map((r) => r.retired).lastIndexOf(false);
     expect(lastActiveIdx).toBeLessThan(firstRetiredIdx);
-    const active = rows.filter((r) => !r.retired).map((r) => r.goldPerRc ?? 0);
+    // BC-priced packs slot in at their RC equivalent (95 BC = 238 RC on the F4 exchange).
+    const key = (r: (typeof rows)[number]) =>
+      r.goldPerRc ?? (r.goldPerBc != null ? (r.goldPerBc * 95) / 238 : 0);
+    const active = rows.filter((r) => !r.retired).map(key);
     expect(active).toEqual([...active].sort((a, b) => b - a));
+  });
+
+  it("prices BC packs against the BC exchange baseline, with no cash comparison", () => {
+    // 68,400 gold for 150 BC = 456 g/BC vs the 30,000/95 = 315.8 baseline -> +44%.
+    const r = rows.find((x) => x.slug === "discount-superior-abidos-fusion")!;
+    expect(r.goldPerBc!).toBeCloseTo(456, 1);
+    expect(r.goldPerRc).toBeNull();
+    expect(r.vsExchange!).toBeCloseTo(((456 - 30000 / 95) / (30000 / 95)) * 100, 1);
+    expect(r.vsG2G).toBeNull();
   });
 
   it("orders retired packs most-recently-retired first, then gold/RC desc", () => {

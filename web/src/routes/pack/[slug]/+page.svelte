@@ -88,6 +88,18 @@
 
   <div class="info">
       <h2>{pack.name}</h2>
+      <!-- Store-listing meta line (user 2026-08-19, mirrors TJW's drill-down): what it costs,
+           how it recurs, and how many the game lets one roster buy. -->
+      <div class="meta">
+        {#if pack.blueCrystalCost != null}
+          <span class="cost"><img class="ic" src="{base}/icons/blue-crystal.png" alt="BC" /><b class="num">{pack.blueCrystalCost.toLocaleString("en-US")}</b> Blue Crystals</span>
+        {:else if pack.royalCrystalCost != null}
+          <span class="cost"><img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" /><b class="num">{pack.royalCrystalCost.toLocaleString("en-US")}</b> Royal Crystals</span>
+        {/if}
+        {#if pack.limited}<span class="tag">limited</span>{/if}
+        {#if pack.recurrence}<span class="tag">{pack.recurrence}</span>{/if}
+        {#if pack.maxPurchases}<span class="tag limit">max {pack.maxPurchases} per roster{pack.recurrence ? ` / ${pack.recurrence === "weekly" ? "week" : "month"}` : ""}</span>{/if}
+      </div>
       {#if readOnly}
         <div class="retired-banner">
           <span class="rb-pill">retired</span>
@@ -133,14 +145,27 @@
           <span class="slabel">Total gold</span>
           <span class="sval"><b class="num accent">{formatGold(value.total)}</b><img class="ic" src="{base}/icons/gold.png" alt="g" /></span>
         </div>
-        <div class="srow">
-          <span class="slabel">per Royal Crystal <img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" /></span>
-          <span class="sval"><GoldRate value={value.goldPerRc} unit="rc" /></span>
-        </div>
-        <div class="srow">
-          <span class="slabel">per {cashName} <span class="rate">({cashRate})</span></span>
-          <span class="sval"><GoldRate value={value.goldPerDollar} unit="cash" {sym} /></span>
-        </div>
+        {#if pack.blueCrystalCost != null}
+          <!-- BC-priced pack: no cash rows (BC isn't bought with real money). The comparison
+               is against the gold it costs to buy that BC at the F4 exchange (input / 95). -->
+          <div class="srow">
+            <span class="slabel">per Blue Crystal <img class="ic" src="{base}/icons/blue-crystal.png" alt="BC" /></span>
+            <span class="sval"><GoldRate value={value.goldPerBc} unit="bc" /></span>
+          </div>
+          <div class="srow">
+            <span class="slabel">gold to buy {pack.blueCrystalCost.toLocaleString("en-US")} <img class="ic" src="{base}/icons/blue-crystal.png" alt="BC" /> <span class="rate">(F4 exchange)</span></span>
+            <span class="sval">{#if f4.perBc > 0}<b class="num">{formatGold(pack.blueCrystalCost * f4.perBc)}</b><img class="ic" src="{base}/icons/gold.png" alt="g" />{:else}<span class="num muted" title="Set the exchange input on the Packs tab">—</span>{/if}</span>
+          </div>
+        {:else}
+          <div class="srow">
+            <span class="slabel">per Royal Crystal <img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" /></span>
+            <span class="sval"><GoldRate value={value.goldPerRc} unit="rc" /></span>
+          </div>
+          <div class="srow">
+            <span class="slabel">per {cashName} <span class="rate">({cashRate})</span></span>
+            <span class="sval"><GoldRate value={value.goldPerDollar} unit="cash" {sym} /></span>
+          </div>
+        {/if}
       </div>
 
   {#each chests as c (c.chest)}
@@ -255,6 +280,11 @@
     .chests { width: 100%; }
   }
   h2 { margin: 8px 0 8px; font-size: 22px; }
+  /* Store-listing meta chips under the title: cost readout + limited/recurrence/limit pills. */
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 13px; }
+  .cost { display: inline-flex; align-items: center; gap: 5px; color: var(--text); font-weight: 600; }
+  .cost .ic { width: 15px; height: 15px; margin: 0; }
+  .tag.limit { color: var(--accent); border-color: rgba(255, 209, 102, .5); background: rgba(255, 209, 102, .08); font-weight: 600; }
   .sep { color: var(--muted); opacity: .5; }
   /* Value summary box at the top of the breakdown (replaces the old under-title stats line). */
   .summary { background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
