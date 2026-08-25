@@ -9,9 +9,10 @@
   import { selection } from "$lib/packs/selection.svelte";
   import { customSel } from "$lib/packs/customSel.svelte";
   import { hellSettings } from "$lib/packs/hellSettings.svelte";
-  import { cashPerRc, currencySymbol, RC_CASH_PER_12K } from "$lib/packs/exchange";
+  import { cashPerRc, currencySymbol, RC_CASH_PER_12K, F4_DIVISOR } from "$lib/packs/exchange";
+  import { BC_PER_BUNDLE } from "$lib/packs/data/marisShop";
   import { app } from "$lib/app.svelte";
-  import { formatGold } from "$lib/format";
+  import { formatGold, formatMoney } from "$lib/format";
   import { displayName } from "$lib/catalog";
   import ItemIcon from "$lib/components/ItemIcon.svelte";
   import GoldRate from "$lib/components/packs/GoldRate.svelte";
@@ -43,6 +44,14 @@
   // Summary-box real-money row: "per US dollar (12,000 RC = $100)" / "per Euro (12,000 RC = €94.99)".
   const cashName = $derived(app.region === "euc" ? "Euro" : "US dollar");
   const cashRate = $derived(`12,000 RC = ${sym}${RC_CASH_PER_12K[app.region]}`);
+  // BC packs' money row prices the BC cost in shop money via the 95 BC = 238 RC equivalence
+  // (matches packValue's goldPerDollar); the rate note spells the chain out.
+  const bcRcEquiv = $derived(pack.blueCrystalCost != null ? (pack.blueCrystalCost * F4_DIVISOR) / BC_PER_BUNDLE : null);
+  const bcCashRate = $derived(
+    bcRcEquiv == null
+      ? ""
+      : `${pack.blueCrystalCost!.toLocaleString("en-US")} BC = ${Math.round(bcRcEquiv).toLocaleString("en-US")} RC = ${formatMoney(bcRcEquiv * cashPerRc(app.region), sym)}`,
+  );
 
   const customCount = $derived(overrides.count(app.region));
   const tuCount = $derived(tradeUp.count());
@@ -146,8 +155,9 @@
           <span class="sval"><b class="num accent">{formatGold(value.total)}</b><img class="ic" src="{base}/icons/gold.png" alt="g" /></span>
         </div>
         {#if pack.blueCrystalCost != null}
-          <!-- BC-priced pack: no cash rows (BC isn't bought with real money). The comparison
-               is against the gold it costs to buy that BC at the F4 exchange (input / 95). -->
+          <!-- BC-priced pack: the gold comparison is against buying that BC at the F4 exchange
+               (input / 95); the money row prices the BC in shop money via 95 BC = 238 RC, so
+               the g/$ figure shares the RC packs' scale. -->
           <div class="srow">
             <span class="slabel">per Blue Crystal <img class="ic" src="{base}/icons/blue-crystal.png" alt="BC" /></span>
             <span class="sval"><GoldRate value={value.goldPerBc} unit="bc" /></span>
@@ -155,6 +165,10 @@
           <div class="srow">
             <span class="slabel">gold to buy {pack.blueCrystalCost.toLocaleString("en-US")} <img class="ic" src="{base}/icons/blue-crystal.png" alt="BC" /> <span class="rate">(F4 exchange)</span></span>
             <span class="sval">{#if f4.perBc > 0}<b class="num">{formatGold(pack.blueCrystalCost * f4.perBc)}</b><img class="ic" src="{base}/icons/gold.png" alt="g" />{:else}<span class="num muted" title="Set the exchange input on the Packs tab">—</span>{/if}</span>
+          </div>
+          <div class="srow">
+            <span class="slabel">per {cashName} <span class="rate">({bcCashRate})</span></span>
+            <span class="sval"><GoldRate value={value.goldPerDollar} unit="cash" {sym} /></span>
           </div>
         {:else}
           <div class="srow">

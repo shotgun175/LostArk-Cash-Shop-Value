@@ -497,9 +497,10 @@ describe("1200 Crystal Pack (blue-crystal + run-reward brews)", () => {
 
 // ---------------------------------------------------------------------------
 // The 2026-08-19 packs — self-goldens on the pinned fixture. Four are the first Blue-Crystal-
-// priced packs (blueCrystalCost instead of royalCrystalCost): they carry gold-per-BC and no
-// RC/cash metrics. The 2+1 Crystal Pack is RC-priced but pays out Blue Crystals, so its total
-// tracks the F4 input like the 1200 Crystal Pack.
+// priced packs (blueCrystalCost instead of royalCrystalCost): they carry gold-per-BC plus a
+// shop-money gold-per-dollar via the 95 BC = 238 RC exchange equivalence, and no RC metric.
+// The 2+1 Crystal Pack is RC-priced but pays out Blue Crystals, so its total tracks the F4
+// input like the 1200 Crystal Pack.
 // ---------------------------------------------------------------------------
 describe("2026-08-19 packs (BC pricing + self-goldens at the pinned fixture)", () => {
   const map = buildPriceMap(NAE);
@@ -516,14 +517,27 @@ describe("2026-08-19 packs (BC pricing + self-goldens at the pinned fixture)", (
     ["discount-t4-gem-chest-lv3-x120", 222000, 370],
   ];
   for (const [slug, total, gpb] of bcGolden) {
-    it(`${slug}: total ${total}, ${gpb} g/BC, no RC/cash metrics`, () => {
+    it(`${slug}: total ${total}, ${gpb} g/BC, no RC metric`, () => {
       const r = packValue(pack(slug), map);
       expect(r.total).toBe(total);
       expect(r.goldPerBc!).toBeCloseTo(gpb, 1);
       expect(r.goldPerRc).toBeNull();
-      expect(r.goldPerDollar).toBeNull();
+      expect(r.goldPerDollar).not.toBeNull();
     });
   }
+
+  it("BC packs get a shop-money goldPerDollar via 95 BC = 238 RC", () => {
+    // 400 BC ≡ 400 x 238/95 = 1,002.1 RC; NA cash cost = rcEquiv x $100/12,000 = $8.35.
+    const rcEquiv = (400 * 238) / 95;
+    const r = packValue(pack("discount-crystallized-destiny-destruction-stone-pouch"), map);
+    expect(r.goldPerDollar!).toBeCloseTo(145000 / (rcEquiv * USD_PER_RC), 6);
+    expect(Math.round(r.goldPerDollar!)).toBe(17363);
+    // Region-aware: EU RC is cheaper than $100/12k, so more gold per EUR than per USD.
+    const eurPerRc = 94.99 / 12000;
+    const eu = packValue(pack("discount-crystallized-destiny-destruction-stone-pouch"), map, {}, eurPerRc);
+    expect(eu.goldPerDollar!).toBeCloseTo(145000 / (rcEquiv * eurPerRc), 6);
+    expect(eu.goldPerDollar!).toBeGreaterThan(r.goldPerDollar!);
+  });
 
   it("the x180 gem tile is RC-priced: 180 x 1,850 at 1,600 RC", () => {
     const r = packValue(pack("discount-t4-gem-chest-lv3"), map);

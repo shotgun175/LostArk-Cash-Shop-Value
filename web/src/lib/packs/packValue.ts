@@ -5,7 +5,8 @@
 
 import type { Chest, Pack } from "./data/types";
 import { RESOLVER } from "./data/resolver";
-import { cashPerRc } from "./exchange";
+import { cashPerRc, F4_DIVISOR } from "./exchange";
+import { BC_PER_BUNDLE } from "./data/marisShop";
 
 // NA cost of one Royal Crystal and the DEFAULT cash-per-RC. Sourced from the single RC-cash table
 // in exchange.ts (cashPerRc) so the NA rate isn't duplicated here; callers pass a region-aware value
@@ -233,10 +234,16 @@ export function packValue(
   const total = useFrozen && pack.frozenTotal != null ? pack.frozenTotal : liveTotal;
   const goldPerRc = pack.royalCrystalCost ? total / pack.royalCrystalCost : null;
   const goldPerBc = pack.blueCrystalCost ? total / pack.blueCrystalCost : null;
-  // BC-priced packs have no cash figure: Blue Crystals aren't bought with real money.
-  const goldPerDollar = pack.royalCrystalCost
-    ? total / (pack.royalCrystalCost * cashPerRc)
-    : null;
+  // Shop-money cost: RC packs at their listed RC price; BC packs at their RC equivalent
+  // (one F4 listing trades the same gold for 238 RC or 95 BC, the sort-order equivalence),
+  // so BC cards carry the same g/$ scale and "% vs G2G" comparison as RC cards. The RC
+  // equivalent is independent of the F4 gold input by construction (the input cancels).
+  const rcEquivCost = pack.royalCrystalCost
+    ? pack.royalCrystalCost
+    : pack.blueCrystalCost
+      ? (pack.blueCrystalCost * F4_DIVISOR) / BC_PER_BUNDLE
+      : null;
+  const goldPerDollar = rcEquivCost ? total / (rcEquivCost * cashPerRc) : null;
 
   return {
     slug: pack.slug,
