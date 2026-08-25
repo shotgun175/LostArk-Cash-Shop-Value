@@ -37,13 +37,17 @@ describe("buildPackRows", () => {
     expect(active).toEqual([...active].sort((a, b) => b - a));
   });
 
-  it("prices BC packs against the BC exchange baseline, with no cash comparison", () => {
+  it("prices BC packs against the BC exchange baseline and G2G via the shop-money equivalent", () => {
     // 68,400 gold for 150 BC = 456 g/BC vs the 30,000/95 = 315.8 baseline -> +44%.
     const r = rows.find((x) => x.slug === "discount-superior-abidos-fusion")!;
     expect(r.goldPerBc!).toBeCloseTo(456, 1);
     expect(r.goldPerRc).toBeNull();
     expect(r.vsExchange!).toBeCloseTo(((456 - 30000 / 95) / (30000 / 95)) * 100, 1);
-    expect(r.vsG2G).toBeNull();
+    // vs G2G off the shop-money equivalent: 150 BC = 375.8 RC = $3.13 -> 21,842 g/$,
+    // vs G2G's 1000/0.03268824 = 30,592 g/$ -> -28.6%.
+    const goldPerDollar = 68400 / (((150 * 238) / 95) * (100 / 12000));
+    expect(r.vsG2G!).toBeCloseTo((goldPerDollar / (1000 / 0.03268824) - 1) * 100, 6);
+    expect(r.vsG2G!).toBeCloseTo(-28.6, 1);
   });
 
   it("orders retired packs most-recently-retired first, then gold/RC desc", () => {

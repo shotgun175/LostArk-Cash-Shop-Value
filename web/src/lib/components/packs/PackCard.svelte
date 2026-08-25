@@ -77,13 +77,16 @@
 
   <div class="stats">
     {#if row.blueCrystalCost != null}
-      <!-- BC-priced pack: cost in Blue Crystals, rate as gold/BC; no cash figure (BC isn't
-           bought with real money — it's valued against the F4 exchange input / 95). -->
+      <!-- BC-priced pack: cost in Blue Crystals, rate as gold/BC. The cash rate prices the BC
+           in shop money via the 95 BC = 238 RC exchange equivalence, so the g/$ and "% vs G2G"
+           figures share the RC cards' scale. -->
       <span><b class="num accent">{row.blueCrystalCost.toLocaleString("en-US")}</b><img class="ic" src="{base}/icons/blue-crystal.png" alt="BC" /></span>
       <span class="sep">·</span>
       <span><b class="num">{formatGold(row.total)}</b><img class="ic" src="{base}/icons/gold.png" alt="g" /></span>
       <span class="sep">·</span>
       <span><GoldRate value={row.goldPerBc} unit="bc" /></span>
+      <span class="sep">·</span>
+      <span title="Shop-money equivalent: 95 BC = 238 RC"><GoldRate value={row.goldPerDollar} unit="cash" {sym} /></span>
     {:else}
       <span><b class="num accent">{(row.royalCrystalCost ?? 0).toLocaleString("en-US")}</b><img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" /></span>
       <span class="sep">·</span>
@@ -102,11 +105,9 @@
     <span class="pct" class:good={row.vsExchange != null && row.vsExchange >= 0} class:bad={row.vsExchange != null && row.vsExchange < 0}>
       <b class="num">{formatSignedPct(row.vsExchange)}</b> <span class="lbl">vs exchange</span>
     </span>
-    {#if row.blueCrystalCost == null}
-      <span class="pct" class:good={row.vsG2G != null && row.vsG2G >= 0} class:bad={row.vsG2G != null && row.vsG2G < 0}>
-        <b class="num">{formatSignedPct(row.vsG2G)}</b> <span class="lbl">vs</span><img class="ic g2g" src="{base}/icons/g2g.png" alt="G2G" />
-      </span>
-    {/if}
+    <span class="pct" class:good={row.vsG2G != null && row.vsG2G >= 0} class:bad={row.vsG2G != null && row.vsG2G < 0}>
+      <b class="num">{formatSignedPct(row.vsG2G)}</b> <span class="lbl">vs</span><img class="ic g2g" src="{base}/icons/g2g.png" alt="G2G" />
+    </span>
   </div>
 
   {#if custom}
