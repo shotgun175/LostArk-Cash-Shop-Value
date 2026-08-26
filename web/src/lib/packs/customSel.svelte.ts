@@ -1,3 +1,5 @@
+import { flushSync } from "svelte";
+
 // Which options the user has checked on each choose-N-of-M pack (keyed by pack slug -> chest
 // display names). Region-independent — the choice is *which lines*, not their price — and
 // persisted in localStorage. An absent entry means "use the default highest-gold N" (see
@@ -61,6 +63,29 @@ class CustomSel {
     if (next === null) return;
     if (next.length === 0) this.clearOne(slug);
     else this.set(slug, next);
+  }
+
+  // Checkbox click handler for both surfaces (card + drill-down). The click must NOT be
+  // preventDefault-ed: the browser flips a checkbox before dispatch, and a canceled click
+  // reverts it after dispatch, which is AFTER Svelte's microtask flush, so the revert lands
+  // on top of Svelte's write and the box sticks visually while the store moves (Svelte's
+  // memoized checked-write never re-writes a value it believes it already wrote). Instead the
+  // native flip stands, and once the toggle settles (flushSync) the DOM property is written
+  // directly from the effective counted set. That direct write covers the one case Svelte
+  // skips: unchecking the last stored pick clears the entry and the default set may re-include
+  // this chest, so counted stays true and no reactive write fires while the DOM sits
+  // unchecked. `counted` is a thunk so the post-flush read sees the fresh derived value.
+  clickToggle(
+    e: Event & { currentTarget: EventTarget & HTMLInputElement },
+    slug: string,
+    chest: string,
+    pick: number,
+    counted: () => string[],
+  ): void {
+    const el = e.currentTarget;
+    this.toggle(slug, chest, pick, counted());
+    flushSync();
+    el.checked = counted().includes(chest);
   }
 
   clearOne(slug: string): void {
