@@ -64,6 +64,19 @@ describe("buildPackRows", () => {
     expect(sameDay).toEqual([...sameDay].sort((a, b) => b - a));
   });
 
+  it("keeps a choose-N pack's rank pinned to its default picks while custom picks change its value", () => {
+    const custom = buildPackRows(prices, {
+      ...opts,
+      customPicks: { "summer-custom-pack-1": ["Destiny Shard Pouch (L)"] },
+    });
+    // The displayed value drops to the single picked line...
+    const base = rows.find((r) => r.slug === "summer-custom-pack-1")!;
+    const picked = custom.find((r) => r.slug === "summer-custom-pack-1")!;
+    expect(picked.total).toBeLessThan(base.total);
+    // ...but the grid order is identical to the no-picks order: toggling never reshuffles.
+    expect(custom.map((r) => r.slug)).toEqual(rows.map((r) => r.slug));
+  });
+
   it("vsExchange sign tracks gold/RC vs the 126.05 baseline", () => {
     const horizon = rows.find((r) => r.slug === "horizon-growth-support-pack-i")!;
     const t4 = rows.find((r) => r.slug === "monthly-t4-growth-support")!;

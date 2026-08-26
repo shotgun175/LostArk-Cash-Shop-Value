@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { flip } from "svelte/animate";
   import { app } from "$lib/app.svelte";
   import type { Region } from "$lib/api";
   import { buildPackRows } from "$lib/packs/packRows";
@@ -167,7 +168,7 @@
   </div>
 
   <p class="note">
-    Sorted by g/RC (Blue-Crystal-priced packs slot in at their exchange equivalent, 95 BC = 238 RC). Selection chests use their highest-value option. Drill into a pack for all options + screenshot. Conversion:
+    Sorted by g/RC (Blue-Crystal-priced packs slot in at their exchange equivalent, 95 BC = 238 RC). Selection chests use their highest-value option. Choose-N packs rank by their default picks, so toggling options won't move the card. Drill into a pack for all options + screenshot. Conversion:
     <b class="num">12,000</b> <img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" /> = {sym}{rcCash.toLocaleString("en-US")} ({sym}{rcPerUnit.toFixed(4)}/RC).
     Click any market price to enter your own AH price.{#if customCount > 0 || tuCount > 0 || pickCount > 0} <span class="custom"><span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && (tuCount > 0 || pickCount > 0)} · {/if}{#if pickCount > 0}<b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"}{/if}{#if pickCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span> <button class="reset-all" onclick={resetAll}>reset all</button></span>{/if}
   </p>
@@ -180,7 +181,15 @@
     <p class="state">No prices yet — the feed may be refreshing.</p>
   {:else}
     <div class="pack-grid">
-      {#each activeRows as row (row.slug)}<PackCard {row} {tradeUpInfo} alts={altsByPack[row.slug] ?? {}} custom={customByPack[row.slug] ?? null} />{/each}
+      <!-- The wrapper div exists because animate: needs an element (not a component) as the
+           each's child; display:grid on it keeps the card stretching to the row height the way
+           a bare grid item would. flip glides cards to their new spot when a price refresh or
+           override re-sorts the grid, instead of teleporting them. -->
+      {#each activeRows as row (row.slug)}
+        <div class="cell" animate:flip={{ duration: 300 }}>
+          <PackCard {row} {tradeUpInfo} alts={altsByPack[row.slug] ?? {}} custom={customByPack[row.slug] ?? null} />
+        </div>
+      {/each}
     </div>
     {#if retiredRows.length}
       <div class="retired-head">
@@ -232,6 +241,8 @@
      min(460px, 100%) lets a single column shrink below 460px on narrow phones instead of forcing
      an overflow / horizontal scroll. */
   .pack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 1fr)); gap: 12px; }
+  /* Single-child grid: the card fills the cell exactly like it filled the track before. */
+  .cell { display: grid; }
   .retired-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
     margin: 28px 0 12px; padding-top: 18px; border-top: 1px solid var(--border); }
   .retired-head h3 { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 1.2px;
