@@ -24,7 +24,8 @@ interface PackRowOpts {
 /**
  * Value every pack against the region price map and layer on the two comparison columns.
  * buildPriceMap is called once (not per pack) — it computes the hell-key/cube EVs. Active
- * packs sort before retired; within each group, highest gold-per-RC first.
+ * packs sort before retired; within each group, highest gold-per-RC first (choose-N packs
+ * rank at their default-pick value so checkbox toggling never reshuffles the grid).
  */
 export function buildPackRows(
   regionPrices: Record<string, number>,
@@ -57,8 +58,19 @@ export function buildPackRows(
 
   // One F4 listing trades the same gold for 238 RC or 95 BC, so a BC pack's gold/BC converts
   // to a gold-per-RC-equivalent at x(95/238) — this keeps one sort scale across both currencies.
-  const sortKey = (r: PackRow) =>
+  const asRank = (r: Pick<PackResult, "goldPerRc" | "goldPerBc">) =>
     r.goldPerRc ?? (r.goldPerBc != null ? (r.goldPerBc * BC_PER_BUNDLE) / F4_DIVISOR : 0);
+
+  // Choose-N packs rank at their DEFAULT picks (the highest-gold N), not the user's current
+  // checkbox picks: the card still displays the picked value, but its grid position must not
+  // reshuffle under the cursor while the user is toggling options.
+  const pinnedRank = new Map<string, number>();
+  for (const p of PACKS) {
+    if (p.customSelection) {
+      pinnedRank.set(p.slug, asRank(packValue(p, prices, opts.picks, opts.cashPerRc, true)));
+    }
+  }
+  const sortKey = (r: PackRow) => pinnedRank.get(r.slug) ?? asRank(r);
 
   return rows.sort((a, b) => {
     if (a.retired !== b.retired) return a.retired ? 1 : -1;
