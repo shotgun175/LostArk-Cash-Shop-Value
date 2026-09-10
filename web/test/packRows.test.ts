@@ -38,24 +38,27 @@ describe("buildPackRows", () => {
   });
 
   it("prices BC packs against the BC exchange baseline and G2G via the shop-money equivalent", () => {
-    // 68,400 gold for 150 BC = 456 g/BC vs the 30,000/95 = 315.8 baseline -> +44%.
+    // The whole BC cohort retired on 2026-08-26, so this now exercises the BC columns off a
+    // frozen total (buildPackRows always passes useFrozen). 62,400 frozen gold for 150 BC
+    // = 416 g/BC vs the 30,000/95 = 315.8 baseline -> +31.7%.
     const r = rows.find((x) => x.slug === "discount-superior-abidos-fusion")!;
-    expect(r.goldPerBc!).toBeCloseTo(456, 1);
+    expect(r.goldPerBc!).toBeCloseTo(416, 1);
     expect(r.goldPerRc).toBeNull();
-    expect(r.vsExchange!).toBeCloseTo(((456 - 30000 / 95) / (30000 / 95)) * 100, 1);
-    // vs G2G off the shop-money equivalent: 150 BC = 375.8 RC = $3.13 -> 21,842 g/$,
-    // vs G2G's 1000/0.03268824 = 30,592 g/$ -> -28.6%.
-    const goldPerDollar = 68400 / (((150 * 238) / 95) * (100 / 12000));
+    expect(r.vsExchange!).toBeCloseTo(((416 - 30000 / 95) / (30000 / 95)) * 100, 1);
+    // vs G2G off the shop-money equivalent: 150 BC = 375.8 RC = $3.13 -> 19,926 g/$,
+    // vs G2G's 1000/0.03268824 = 30,592 g/$ -> -34.9%.
+    const goldPerDollar = 62400 / (((150 * 238) / 95) * (100 / 12000));
     expect(r.vsG2G!).toBeCloseTo((goldPerDollar / (1000 / 0.03268824) - 1) * 100, 6);
-    expect(r.vsG2G!).toBeCloseTo(-28.6, 1);
+    expect(r.vsG2G!).toBeCloseTo(-34.9, 1);
   });
 
   it("orders retired packs most-recently-retired first, then gold/RC desc", () => {
     const retired = rows.filter((r) => r.retired);
-    // Newest retirement leads the section (the 2026-08-12 cohort); within that shared date
-    // the higher frozen gold/RC wins (Paradise-2 360.5 over Summer Growth I 349.8).
-    expect(retired[0].slug).toBe("monthly-paradise-special-pack-2");
-    expect(retired[1].slug).toBe("summer-growth-support-pack-i");
+    // Newest retirement leads the section (the 2026-08-26 cohort); within that shared date the
+    // higher frozen gold/RC-equivalent wins, and BC packs convert at x(95/238) to share the
+    // scale (Breath 1058.7 g/BC = 422.6 RC-equivalent over the 2+1 pack's 225.7 g/RC).
+    expect(retired[0].slug).toBe("discount-t4-breath-selection-chest");
+    expect(retired[1].slug).toBe("2-plus-1-1000-crystal-pack");
     // retiredOn is non-increasing across the whole retired group.
     const dates = retired.map((r) => r.retiredOn ?? "");
     expect(dates).toEqual([...dates].sort((a, b) => b.localeCompare(a)));

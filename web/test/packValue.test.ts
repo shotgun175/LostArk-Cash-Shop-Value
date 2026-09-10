@@ -418,14 +418,22 @@ describe("custom_selection packs (choose N of M)", () => {
 describe("frozen retirement values (display path)", () => {
   const map = buildPriceMap(NAE);
 
-  it("every retired pack is value-frozen, and useFrozen surfaces it with a consistent g/RC", () => {
+  it("every retired pack is value-frozen, and useFrozen surfaces it with a consistent per-crystal rate", () => {
     const retired = PACKS.filter((p) => p.retired);
     expect(retired.length).toBeGreaterThan(0);
     for (const p of retired) {
       expect(p.frozenTotal).toBeDefined();
       const r = packValue(p, map, {}, undefined, true);
       expect(r.total).toBe(p.frozenTotal);
-      expect(r.goldPerRc!).toBeCloseTo(p.frozenTotal! / p.royalCrystalCost!, 1);
+      // The frozen rate follows the pack's own currency: the 2026-08-26 cohort was the first
+      // retirement to include BC-priced packs, which surface goldPerBc and leave goldPerRc null.
+      if (p.royalCrystalCost != null) {
+        expect(r.goldPerRc!).toBeCloseTo(p.frozenTotal! / p.royalCrystalCost, 1);
+        expect(r.goldPerBc).toBeNull();
+      } else {
+        expect(r.goldPerBc!).toBeCloseTo(p.frozenTotal! / p.blueCrystalCost!, 1);
+        expect(r.goldPerRc).toBeNull();
+      }
     }
   });
 
