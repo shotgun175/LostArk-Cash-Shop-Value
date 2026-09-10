@@ -6,17 +6,16 @@ import type { Pack } from "./types";
 // re-release, Summer Growth I/II, Summer Astrogem), the seven 2026-08-12 rotation packs
 // (Astrogem Package, Paradise Special, Summer Custom I/II, three Weekly Summer T4 packs; all
 // sales-end 09/16/2026), and the six 2026-08-19 packs (the 2+1 Crystal Pack, four BC-priced
-// [Discount] tiles, and the x180 gem tile; all sales-end 08/26/2026). `contents[].chest` is
-// the chest display-name; resolve via RESOLVER in ./resolver. monthly-t4-growth-support RC
-// (3800) is flagged by the source itself as possibly a placeholder ("RC price was cut off in
-// the screenshot").
+// [Discount] tiles, and the x180 gem tile; all sales-end 08/26/2026, retired 2026-09-10).
+// `contents[].chest` is the chest display-name; resolve via RESOLVER in ./resolver.
 export const PACKS: Pack[] = [
   {
-    // Still sold in the live shop (user-verified 2026-08-15) even though TJW's dataset marks
+    // Still sold in the live shop (user-verified 2026-09-09) even though TJW's dataset marks
     // it retired 2026-08-12 — his flag was not adopted.
     name: "[Limited] Adventurer's Path Package",
     slug: "adventurers-path-package",
     royalCrystalCost: 2000,
+    maxPurchases: 1,
     limited: true,
     retired: false,
     contents: [
@@ -130,6 +129,7 @@ export const PACKS: Pack[] = [
     name: "[Monthly] T4 Growth Support Pack",
     slug: "monthly-t4-growth-support",
     royalCrystalCost: 3800,
+    maxPurchases: 10,
     limited: true,
     recurrence: "monthly",
     retired: false,
@@ -483,10 +483,16 @@ export const PACKS: Pack[] = [
     // is Blue Crystal currency, priced at the F4 gold input / 95.
     name: "[2+1] 1000 Crystal Pack",
     slug: "2-plus-1-1000-crystal-pack",
+    // Unlike every other frozen total, this one is not AH-derived: the pack is pure Blue
+    // Crystal, so its value is a function of the F4 exchange input alone. Captured at the
+    // app's default 30,000 seed (3,000 BC x round(30000/95)); NA and EU are identical for
+    // the same reason.
+    frozenTotal: 948000,
     royalCrystalCost: 4200,
     maxPurchases: 1,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-08-26",
     contents: [{ chest: "Crystal", qty: 3000 }],
   },
   {
@@ -494,20 +500,24 @@ export const PACKS: Pack[] = [
     // F4 exchange. 5 pouches (1,000 stones each) per purchase, bound to roster on pickup.
     name: "[Discount] Crystallized Destiny Destruction Stone Pouch",
     slug: "discount-crystallized-destiny-destruction-stone-pouch",
+    frozenTotal: 149400, // NA card value captured 2026-09-10 (EU card showed 117,000)
     blueCrystalCost: 400,
     maxPurchases: 3,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-08-26",
     contents: [{ chest: "Crystallized Destiny Destruction Stone Pouch", qty: 5 }],
   },
   {
     // Priced in Blue Crystals. Chests are bound to roster on pickup.
     name: "[Discount] Superior Abidos Fusion Material Chest",
     slug: "discount-superior-abidos-fusion",
+    frozenTotal: 62400, // NA card value captured 2026-09-10 (EU card showed 71,200)
     blueCrystalCost: 150,
     maxPurchases: 3,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-08-26",
     contents: [{ chest: "Superior Abidos Fusion Material Chest", qty: 20 }],
   },
   {
@@ -515,10 +525,12 @@ export const PACKS: Pack[] = [
     // defaults to the highest-gold option, as everywhere.
     name: "[Discount] T4 Breath Selection Chest",
     slug: "discount-t4-breath-selection-chest",
+    frozenTotal: 158800, // NA card value captured 2026-09-10 (EU card showed 141,200)
     blueCrystalCost: 150,
     maxPurchases: 3,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-08-26",
     contents: [{ chest: "T4 Breath Selection Chest", qty: 20 }],
   },
   {
@@ -527,10 +539,13 @@ export const PACKS: Pack[] = [
     // do we — the drill-down shows the image placeholder.
     name: "[Discount] T4 Gem Chest (Lv 3) x120",
     slug: "discount-t4-gem-chest-lv3-x120",
+    // Lv-3 gems are a BAKED constant, not an AH price, so NA and EU capture identically.
+    frozenTotal: 222000, // card value captured 2026-09-10 (NA and EU both)
     blueCrystalCost: 600,
     maxPurchases: 1,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-08-26",
     contents: [{ chest: "T4 Gem Chest (Lv. 3)", qty: 120 }],
   },
   {
@@ -538,10 +553,12 @@ export const PACKS: Pack[] = [
     // 7d timer on 2026-08-19, in line with the sibling [Discount] tiles' 08/26 sales end.
     name: "[Discount] T4 Gem Chest (Lv 3) x180",
     slug: "discount-t4-gem-chest-lv3",
+    frozenTotal: 333000, // card value captured 2026-09-10 (NA and EU both; baked lv-3 gem price)
     royalCrystalCost: 1600,
     maxPurchases: 2,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-08-26",
     contents: [{ chest: "T4 Gem Chest (Lv. 3)", qty: 180 }],
   },
 ];

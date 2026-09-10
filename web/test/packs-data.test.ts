@@ -12,17 +12,11 @@ describe("PACKS", () => {
   it("has all 32 packs", () => {
     expect(PACKS.length).toBe(32);
   });
-  it("lists exactly the 16 non-retired packs (post-2026-08-19 additions)", () => {
+  it("lists exactly the 10 non-retired packs (post-2026-08-26 retirements)", () => {
     const active = PACKS.filter((p) => !p.retired).map((p) => p.slug).sort();
     expect(active).toEqual(
       [
-        "2-plus-1-1000-crystal-pack",
-        "adventurers-path-package", // still in the live shop despite TJW's retired flag (2026-08-15)
-        "discount-crystallized-destiny-destruction-stone-pouch",
-        "discount-superior-abidos-fusion",
-        "discount-t4-breath-selection-chest",
-        "discount-t4-gem-chest-lv3",
-        "discount-t4-gem-chest-lv3-x120",
+        "adventurers-path-package", // still in the live shop despite TJW's retired flag (2026-09-09)
         "limited-astrogem-package",
         "monthly-1200-crystal-pack",
         "monthly-t4-growth-support",
