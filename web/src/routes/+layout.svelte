@@ -18,6 +18,7 @@
     { label: "Packs", href: `${base}/` },
     { label: "Mari's Shop", href: `${base}/maris` },
     { label: "Ark Pass", href: `${base}/ark-pass` },
+    { label: "Jump-Up Boost", href: `${base}/jump-up` },
     { label: "Hell Key math", href: `${base}/hell-key` },
     { label: "Prices", href: `${base}/prices` },
   ];

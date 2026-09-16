@@ -17,6 +17,10 @@ const SHARED: Record<string, string> = {
   "epic-astrogem": "epic-astrogem-random.png",
   // The in-game "Rare - Epic Astrogem Chest" uses the same blue "?" chest art.
   "rare-epic-astrogem": "epic-astrogem-random.png",
+  // Jump-Up Boost (2026-09-16): the pre-set-options epic chest shows the picked-astrogem art
+  // (as on TJW's page), and both Ancient chests share the bracelet chest crop.
+  "fixed-epic-astrogem-selection": "epic-astrogem-selected.png",
+  "ancient-accessory-set-chest": "ancient-bracelet-chest.png",
   // Gold only ever appears as a material line via the "10k Gold Bars" chest, so show the
   // bars art rather than the coin (gold.png is still used directly by the rate/total badges).
   "gold": "gold-bars.png",
@@ -69,6 +73,9 @@ const ONE_TO_ONE: readonly string[] = [
   // [3+1] Dimensionalist Welcome Package (2026-09-16): Pheon currency + the Processed Astrogem
   // Box, TJW's crops of the in-game detail popup (see ATTRIBUTION.txt).
   "pheon", "processed-astrogem-box",
+  // Jump-Up Boost rewards (2026-09-16): TJW's crops of the Lv. 8 gem and the Ancient bracelet
+  // chest, plus the user's in-game tooltip crops of the two timed buffs.
+  "lv-8-gem", "ancient-bracelet-chest", "crystalline-aura-plus-14d", "azenas-blessing-28d",
 ];
 
 const ICON_FILES: Readonly<Record<string, string>> = {
@@ -94,6 +101,12 @@ const NAME_OVERRIDES: Record<string, string> = {
   "enhanced-metallurgy-hellfire-19-20": "Enhanced Metallurgy Hellfire 19 - 20",
   "enhanced-tailoring-hellfire-19-20": "Enhanced Tailoring Hellfire 19 - 20",
   "processed-astrogem-box": "Processed Astrogem (5/4/1/1, 8-cost, fully cut)",
+  "crystalline-aura-plus-14d": "Crystalline Aura Plus (14 days)",
+  "azenas-blessing-28d": "Azena's Blessing (28 days)",
+  "ancient-bracelet-chest": "Ancient Bracelet",
+  "ancient-accessory-set-chest": "Ancient Accessory Set",
+  "lv-8-gem": "Lv. 8 Brilliant Gem",
+  "fixed-epic-astrogem-selection": "Fixed Epic Astrogem (player-picked)",
   // Hell key display names use the datamine labels (no "Splendid", tier numeral appended);
   // rarity comes from the card pills, with an "(Epic)" disambiguator only where two cards
   // would otherwise share a name (user 2026-07-30).

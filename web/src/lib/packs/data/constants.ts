@@ -25,17 +25,26 @@ export const BAKED: Record<string, number> = {
   // (probed 2026-09-16), so they carry TJW's same-day AH-screenshot prices until it does.
   "enhanced-metallurgy-hellfire-19-20": 14000,
   "enhanced-tailoring-hellfire-19-20": 12000,
+  // Jump-Up Boost Powerpass Premium rewards (2026-09-16, TJW's seeds, user sign-off). lv-8-gem
+  // is 3x the 125,000 Lv. 7 seed (the same 3:1 fuse chain the Lv. 1/2 gems use). The Fixed Epic
+  // Astrogem Selection Chest grants one epic astrogem with PRE-SET options, a different item
+  // from the regular picked epic (epic-astrogem-selected stays 43,000): flat 75,000.
+  "lv-8-gem": 375000,
+  "fixed-epic-astrogem-selection": 75000,
 };
 
 // Blue-Crystal store cost of untradable BC-store items: the Arkgrid processing tickets (reset
-// 100 BC; refresh 18 BC each, the store sells a 10-pack for 180 BC) and Pheons (8.5 BC each, the
-// store sells 100 for 850 BC; added 2026-09-16 for the [3+1] Dimensionalist Welcome Package).
-// buildPriceMap converts these to gold at the F4 gold-per-BC rate when an exchange input is
-// set; with no input they stay unpriced (0-gold lines), matching the pre-2026-08-14 behavior.
+// 100 BC; refresh 18 BC each, the store sells a 10-pack for 180 BC), Pheons (8.5 BC each, the
+// store sells 100 for 850 BC; added 2026-09-16 for the [3+1] Dimensionalist Welcome Package) and
+// the Jump-Up Boost's 14-day Crystalline Aura Plus (the store sells 30 days for 510 BC, pro-rated
+// to 238 BC). buildPriceMap converts these to gold at the F4 gold-per-BC rate when an exchange
+// input is set; with no input they stay unpriced (0-gold lines), matching the pre-2026-08-14
+// behavior.
 export const BC_COSTS: Record<string, number> = {
   "astrogem-processing-reset-ticket": 100,
   "astrogem-processing-option-refresh-ticket": 18,
   pheon: 8.5,
+  "crystalline-aura-plus-14d": 238,
 };
 
 // 5:1 NPC trade-up pairs (source B tradeUpTable). Optional UI toggle, not baked into pack math.

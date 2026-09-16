@@ -1,10 +1,10 @@
 import type { Chest } from "./types";
 
-// Chest -> terminal-slug resolver, keyed by chest display-name. 53 chests total
-// (36 fixed, 14 selection, 3 multi): the original registry transcribed verbatim from source B
+// Chest -> terminal-slug resolver, keyed by chest display-name. 60 chests total
+// (43 fixed, 14 selection, 3 multi): the original registry transcribed verbatim from source B
 // (resolverFull), plus manual additions noted inline (gold bars; the 2026-07-15 summer-rotation
 // Season 4 tickets and astrogem chests; the 2026-08-12 rotation chests; the 2026-09-16
-// rotation chests).
+// rotation chests and Jump-Up Boost rewards).
 // Selection chests: use defaultPickSlug if set, else auto-pick the highest line-gold option.
 export const RESOLVER: Record<string, Chest> = {
   "Crystallized Destiny Destruction Stone Pouch": {
@@ -379,5 +379,44 @@ export const RESOLVER: Record<string, Chest> = {
       { slug: "artisans-tailoring-level-3", qtyPerChest: 12 },
       { slug: "artisans-tailoring-level-4", qtyPerChest: 6 },
     ],
+  },
+  // Jump-Up Boost Powerpass Premium rewards (2026-09-16, see data/jumpUp.ts). Gold bars are
+  // literal character-bound gold at 1; the aura is a BC-store item (238 BC for 14 days, BC_COSTS);
+  // the Lv. 8 gem and the fixed-epic astrogem chest are BAKED seeds; Azena's Blessing and the two
+  // Ancient chests have no market and render as "no price" rows. All bound on pickup.
+  "50,000 Gold Bars": {
+    name: "50,000 Gold Bars",
+    type: "fixed",
+    outputs: [{ slug: "gold", qtyPerChest: 50000, isCurrency: true, isBound: true }],
+  },
+  "Crystalline Aura Plus (14 days)": {
+    name: "Crystalline Aura Plus (14 days)",
+    type: "fixed",
+    outputs: [{ slug: "crystalline-aura-plus-14d", qtyPerChest: 1, isBound: true }],
+  },
+  "Azena's Blessing (28 days)": {
+    name: "Azena's Blessing (28 days)",
+    type: "fixed",
+    outputs: [{ slug: "azenas-blessing-28d", qtyPerChest: 1, isBound: true }],
+  },
+  "Ancient Bracelet Chest": {
+    name: "Ancient Bracelet Chest",
+    type: "fixed",
+    outputs: [{ slug: "ancient-bracelet-chest", qtyPerChest: 1, isBound: true }],
+  },
+  "Ancient Accessory Set Chest": {
+    name: "Ancient Accessory Set Chest",
+    type: "fixed",
+    outputs: [{ slug: "ancient-accessory-set-chest", qtyPerChest: 1, isBound: true }],
+  },
+  "Lv. 8 Brilliant Gem (Bound)": {
+    name: "Lv. 8 Brilliant Gem (Bound)",
+    type: "fixed",
+    outputs: [{ slug: "lv-8-gem", qtyPerChest: 1, isBound: true }],
+  },
+  "Fixed Epic Astrogem Selection Chest": {
+    name: "Fixed Epic Astrogem Selection Chest",
+    type: "fixed",
+    outputs: [{ slug: "fixed-epic-astrogem-selection", qtyPerChest: 1, isBound: true }],
   },
 };
