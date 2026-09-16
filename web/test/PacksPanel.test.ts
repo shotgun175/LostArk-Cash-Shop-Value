@@ -1,8 +1,21 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render } from "svelte/server";
 import PacksPanel from "../src/lib/components/packs/PacksPanel.svelte";
 import { app } from "../src/lib/app.svelte";
 import fixture from "./fixtures/tjw-nae-prices.json";
+
+// The checkbox-block guard below needs LIVE choose-N packs (retired cards render compact, with
+// no option rows). Both Summer Custom packs retired 2026-09-16 and nothing choose-N has replaced
+// them yet, so un-retire them for this file's module graph only (vi.mock is per test file).
+vi.mock("../src/lib/packs/data/packs", async (importOriginal) => {
+  const mod = await importOriginal<typeof import("../src/lib/packs/data/packs")>();
+  return {
+    ...mod,
+    PACKS: mod.PACKS.map((p) =>
+      p.customSelection ? { ...p, retired: false, retiredOn: undefined, frozenTotal: undefined } : p,
+    ),
+  };
+});
 
 // The cold-start guard: a fresh visitor whose payload has no regions yet (worker KV still cold, or
 // a T8-style degraded fetch) must see the honest empty state, not a grid of 0-gold packs read off

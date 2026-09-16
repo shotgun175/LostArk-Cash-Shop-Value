@@ -10,7 +10,7 @@ describe("buildPackRows", () => {
   const rows = buildPackRows(prices, opts);
 
   it("returns one row per pack with all display columns", () => {
-    expect(rows.length).toBe(32);
+    expect(rows.length).toBe(35);
     // Sample a still-active pack (the 2026-08-12 rotation retired most of the old actives);
     // 172,875 / 45.5 is monthly-t4's TJW golden value on this fixture.
     const r = rows.find((x) => x.slug === "monthly-t4-growth-support")!;
@@ -54,11 +54,19 @@ describe("buildPackRows", () => {
 
   it("orders retired packs most-recently-retired first, then gold/RC desc", () => {
     const retired = rows.filter((r) => r.retired);
-    // Newest retirement leads the section (the 2026-08-26 cohort); within that shared date the
-    // higher frozen gold/RC-equivalent wins, and BC packs convert at x(95/238) to share the
-    // scale (Breath 1058.7 g/BC = 422.6 RC-equivalent over the 2+1 pack's 225.7 g/RC).
-    expect(retired[0].slug).toBe("discount-t4-breath-selection-chest");
-    expect(retired[1].slug).toBe("2-plus-1-1000-crystal-pack");
+    // Newest retirement leads the section (the 2026-09-16 cohort); within that shared date the
+    // higher frozen gold/RC wins (Paradise Special 434.7 over Summer Custom I 432.6, then the
+    // Astrogem Package 233.2 over Summer Custom II 231.1).
+    expect(retired.slice(0, 4).map((r) => r.slug)).toEqual([
+      "paradise-special-pack",
+      "summer-custom-pack-1",
+      "limited-astrogem-package",
+      "summer-custom-pack-2",
+    ]);
+    // BC packs convert at x(95/238) to share the scale: in the 2026-08-26 cohort Breath's
+    // 1058.7 g/BC = 422.6 RC-equivalent leads the 2+1 pack's 225.7 g/RC.
+    const aug = retired.filter((r) => r.retiredOn === "2026-08-26").map((r) => r.slug);
+    expect(aug.slice(0, 2)).toEqual(["discount-t4-breath-selection-chest", "2-plus-1-1000-crystal-pack"]);
     // retiredOn is non-increasing across the whole retired group.
     const dates = retired.map((r) => r.retiredOn ?? "");
     expect(dates).toEqual([...dates].sort((a, b) => b.localeCompare(a)));
@@ -67,18 +75,8 @@ describe("buildPackRows", () => {
     expect(sameDay).toEqual([...sameDay].sort((a, b) => b - a));
   });
 
-  it("keeps a choose-N pack's rank pinned to its default picks while custom picks change its value", () => {
-    const custom = buildPackRows(prices, {
-      ...opts,
-      customPicks: { "summer-custom-pack-1": ["Destiny Shard Pouch (L)"] },
-    });
-    // The displayed value drops to the single picked line...
-    const base = rows.find((r) => r.slug === "summer-custom-pack-1")!;
-    const picked = custom.find((r) => r.slug === "summer-custom-pack-1")!;
-    expect(picked.total).toBeLessThan(base.total);
-    // ...but the grid order is identical to the no-picks order: toggling never reshuffles.
-    expect(custom.map((r) => r.slug)).toEqual(rows.map((r) => r.slug));
-  });
+  // The choose-N rank-pinning guard lives in packRowsCustomPicks.test.ts: it needs a live
+  // custom pack, and both Summer Custom packs retired 2026-09-16 (retired rows are frozen).
 
   it("vsExchange sign tracks gold/RC vs the 126.05 baseline", () => {
     const horizon = rows.find((r) => r.slug === "horizon-growth-support-pack-i")!;

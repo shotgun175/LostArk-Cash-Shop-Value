@@ -20,15 +20,22 @@ export const BAKED: Record<string, number> = {
   "epic-astrogem-selected": 43000,
   "rare-epic-astrogem": 3750,
   "relic-combat-engraving-recipe": 30000,
+  // "Enhanced" Hellfire [19-20] scrolls (Collective Support Materials Selection Chests,
+  // 2026-09-16): AH-tradable, but the upstream scraper behind our feed does not track them
+  // (probed 2026-09-16), so they carry TJW's same-day AH-screenshot prices until it does.
+  "enhanced-metallurgy-hellfire-19-20": 14000,
+  "enhanced-tailoring-hellfire-19-20": 12000,
 };
 
-// Blue-Crystal store cost of the untradable Arkgrid processing tickets (reset 100 BC; refresh
-// 18 BC each, the store sells a 10-pack for 180 BC). buildPriceMap converts these to gold at the
-// F4 gold-per-BC rate when an exchange input is set; with no input they stay unpriced (0-gold
-// lines), matching the pre-2026-08-14 behavior.
+// Blue-Crystal store cost of untradable BC-store items: the Arkgrid processing tickets (reset
+// 100 BC; refresh 18 BC each, the store sells a 10-pack for 180 BC) and Pheons (8.5 BC each, the
+// store sells 100 for 850 BC; added 2026-09-16 for the [3+1] Dimensionalist Welcome Package).
+// buildPriceMap converts these to gold at the F4 gold-per-BC rate when an exchange input is
+// set; with no input they stay unpriced (0-gold lines), matching the pre-2026-08-14 behavior.
 export const BC_COSTS: Record<string, number> = {
   "astrogem-processing-reset-ticket": 100,
   "astrogem-processing-option-refresh-ticket": 18,
+  pheon: 8.5,
 };
 
 // 5:1 NPC trade-up pairs (source B tradeUpTable). Optional UI toggle, not baked into pack math.

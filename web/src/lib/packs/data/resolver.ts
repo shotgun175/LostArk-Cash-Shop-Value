@@ -1,9 +1,10 @@
 import type { Chest } from "./types";
 
-// Chest -> terminal-slug resolver, keyed by chest display-name. 49 chests total
-// (34 fixed, 12 selection, 3 multi): the original registry transcribed verbatim from source B
+// Chest -> terminal-slug resolver, keyed by chest display-name. 53 chests total
+// (36 fixed, 14 selection, 3 multi): the original registry transcribed verbatim from source B
 // (resolverFull), plus manual additions noted inline (gold bars; the 2026-07-15 summer-rotation
-// Season 4 tickets and astrogem chests; the 2026-08-12 rotation chests).
+// Season 4 tickets and astrogem chests; the 2026-08-12 rotation chests; the 2026-09-16
+// rotation chests).
 // Selection chests: use defaultPickSlug if set, else auto-pick the highest line-gold option.
 export const RESOLVER: Record<string, Chest> = {
   "Crystallized Destiny Destruction Stone Pouch": {
@@ -338,6 +339,45 @@ export const RESOLVER: Record<string, Chest> = {
       { slug: "destiny-crystallized-guardian-stone", qtyPerChest: 1229, isBound: true },
       { slug: "great-destiny-leapstone", qtyPerChest: 20, isBound: true },
       { slug: "destiny-shard", qtyPerChest: 52600, isCurrency: true, isBound: true },
+    ],
+  },
+  // 2026-09-16 rotation chests. Pheon is bound currency with no market: valued at its BC-store
+  // cost (8.5 BC each, BC_COSTS) x gold/BC when the exchange input is set, like the processing
+  // tickets. The Processed Astrogem Box grants one 5/4/1/1 8-cost fully cut astrogem, which has
+  // no market or synthetic value, so its line renders as a "no price" row (TJW leaves it
+  // unpriced too). The two Collective chests are Ancient-grade pick-1-of-5 selection chests
+  // (options transcribed by TJW from the in-game tooltips 2026-09-16); the "Enhanced" Hellfire
+  // scrolls are not on our price feed, so they carry BAKED values.
+  "Pheon": {
+    name: "Pheon",
+    type: "fixed",
+    outputs: [{ slug: "pheon", qtyPerChest: 1, isCurrency: true, isBound: true }],
+  },
+  "Processed Astrogem Box": {
+    name: "Processed Astrogem Box",
+    type: "fixed",
+    outputs: [{ slug: "processed-astrogem-box", qtyPerChest: 1, isBound: true }],
+  },
+  "Collective Support Materials Selection Chest: Weapons": {
+    name: "Collective Support Materials Selection Chest: Weapons",
+    type: "selection",
+    outputs: [
+      { slug: "lavas-breath", qtyPerChest: 30 },
+      { slug: "metallurgy-hellfire-19-20", qtyPerChest: 3 },
+      { slug: "enhanced-metallurgy-hellfire-19-20", qtyPerChest: 1 },
+      { slug: "artisans-metallurgy-level-3", qtyPerChest: 12 },
+      { slug: "artisans-metallurgy-level-4", qtyPerChest: 6 },
+    ],
+  },
+  "Collective Support Materials Selection Chest: Armor": {
+    name: "Collective Support Materials Selection Chest: Armor",
+    type: "selection",
+    outputs: [
+      { slug: "glaciers-breath", qtyPerChest: 30 },
+      { slug: "tailoring-hellfire-19-20", qtyPerChest: 3 },
+      { slug: "enhanced-tailoring-hellfire-19-20", qtyPerChest: 1 },
+      { slug: "artisans-tailoring-level-3", qtyPerChest: 12 },
+      { slug: "artisans-tailoring-level-4", qtyPerChest: 6 },
     ],
   },
 };

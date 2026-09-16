@@ -570,3 +570,59 @@ describe("2026-08-19 packs (BC pricing + self-goldens at the pinned fixture)", (
     expect(packValue(pack("discount-t4-gem-chest-lv3-x120"), map).maxPurchases).toBe(1);
   });
 });
+
+// ---------------------------------------------------------------------------
+// 2026-09-16 rotation: the Dimensionalist Welcome pair + the second Paradise Special Pack II.
+// Self-goldens hand-computed on the pinned fixture (BAKED astrogems/gems, EV keys and cubes).
+// ---------------------------------------------------------------------------
+describe("2026-09-16 rotation packs (self-goldens at the pinned fixture)", () => {
+  const map = buildPriceMap(NAE);
+
+  const golden: [string, number][] = [
+    // 4x the per-package contents, no exchange input: 100x3,750 + 4x0 (Processed Astrogem Box,
+    // no price) + 12x43,000 + 40x0 (reset tickets, BC-costed) + 120x1,850 + 20x18,427 (cube EV)
+    ["dimensionalist-welcome-package", 1481540],
+    // 20x1000x29 + 60x1000x0.92 + 20x20x47 + 40x20x171 + 50x3000x0.224
+    // + 3x25,080 (Armor chest -> 12 Artisan's Tailoring Lv 3 at 2,090)
+    // + 3x21,588 (Weapons chest -> 12 Artisan's Metallurgy Lv 3 at 1,799)
+    ["dimensionalist-welcome-growth-package", 964404],
+    // 2xVI-epic(174,425) + 1xVI(253,842) + 2x3,000 + 5x18,427 + 50x1,850 + 30x13,700
+    ["paradise-special-pack-ii-2", 1204327],
+  ];
+  for (const [slug, total] of golden) {
+    it(`${slug}: total ${total} on the fixture`, () => {
+      expect(packValue(pack(slug), map).total).toBe(total);
+    });
+  }
+
+  it("the 3+1 pack prices Pheons (8.5 BC) and reset tickets (100 BC) off the exchange input", () => {
+    // gold/BC 200: 200 Pheon x 8.5 x 200 = 340,000; 40 resets x 100 x 200 = 800,000.
+    const mapBc = buildPriceMap(NAE, { blueCrystalGold: 200 });
+    expect(mapBc["pheon"]).toBe(1700);
+    expect(buildPriceMap(NAE)["pheon"]).toBeUndefined(); // no input -> unpriced, like the tickets
+    const r = packValue(pack("dimensionalist-welcome-package"), mapBc);
+    expect(r.total).toBe(1481540 + 340000 + 800000);
+    expect(r.maxPurchases).toBe(1);
+  });
+
+  it("the Processed Astrogem Box is an unpriced line, not an unresolved one", () => {
+    const r = packValue(pack("dimensionalist-welcome-package"), map);
+    const line = r.lines.find((l) => l.slug === "processed-astrogem-box")!;
+    expect(line).toMatchObject({ qty: 4, gold: 0, isBound: true });
+    expect(line.unresolved).toBeUndefined();
+    expect(r.lines.some((l) => l.unresolved)).toBe(false);
+  });
+
+  it("a Collective chest defaults to the highest-gold option and honors a user pick", () => {
+    // 12x1,799 Artisan's Lv 3 (21,588) beats the baked Enhanced Hellfire scroll (14,000).
+    const weapons = resolveChest(RESOLVER["Collective Support Materials Selection Chest: Weapons"], map);
+    expect(weapons.lines).toEqual([
+      { slug: "artisans-metallurgy-level-3", qty: 12, gold: 21588, isBound: undefined },
+    ]);
+    const base = packValue(pack("dimensionalist-welcome-growth-package"), map).total;
+    const picked = packValue(pack("dimensionalist-welcome-growth-package"), map, {
+      "Collective Support Materials Selection Chest: Weapons": "enhanced-metallurgy-hellfire-19-20",
+    }).total;
+    expect(base - picked).toBe(3 * (21588 - 14000));
+  });
+});

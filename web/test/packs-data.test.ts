@@ -8,26 +8,32 @@ import { BAKED, TRADE_UP, RELIC_ENGRAVING_SLUGS } from "../src/lib/packs/data/co
 describe("PACKS", () => {
   // 26 through the 2026-08-12 rotation (27 minus the phantom weekly astrogem pack, deleted
   // 2026-08-15) + the six 2026-08-19 packs (the 2+1 Crystal Pack, four BC-priced [Discount]
-  // tiles, the x180 gem tile) = 32.
-  it("has all 32 packs", () => {
-    expect(PACKS.length).toBe(32);
+  // tiles, the x180 gem tile) = 32 + the three 2026-09-16 rotation packs = 35.
+  it("has all 35 packs", () => {
+    expect(PACKS.length).toBe(35);
   });
-  it("lists exactly the 10 non-retired packs (post-2026-08-26 retirements)", () => {
+  it("lists exactly the 9 non-retired packs (post-2026-09-16 retirements)", () => {
     const active = PACKS.filter((p) => !p.retired).map((p) => p.slug).sort();
     expect(active).toEqual(
       [
         "adventurers-path-package", // still in the live shop despite TJW's retired flag (2026-09-09)
-        "limited-astrogem-package",
+        "dimensionalist-welcome-growth-package",
+        "dimensionalist-welcome-package",
         "monthly-1200-crystal-pack",
         "monthly-t4-growth-support",
-        "paradise-special-pack",
-        "summer-custom-pack-1",
-        "summer-custom-pack-2",
-        "weekly-summer-t4-crystallized-stone",
+        "paradise-special-pack-ii-2",
+        "weekly-summer-t4-crystallized-stone", // the three weeklies were still listed 2026-09-16
         "weekly-summer-t4-fusion-leap",
         "weekly-summer-t4-shards-support",
       ].sort(),
     );
+  });
+  it("every pack chest name resolves (a typo would render as an unresolved 0-gold line)", () => {
+    for (const p of PACKS) {
+      for (const row of [...p.contents, ...(p.customSelection?.options ?? [])]) {
+        expect(RESOLVER[row.chest], `${p.slug}: "${row.chest}"`).toBeDefined();
+      }
+    }
   });
   it("every pack is priced in exactly one currency (RC xor BC)", () => {
     for (const p of PACKS) {
@@ -69,8 +75,9 @@ describe("RESOLVER", () => {
   // 2026-07-15 summer rotation adds 7 more (3 Season 4 tickets, 4 astrogem chests) -> 43.
   // 2026-07 1200 Crystal Pack adds 3 (Crystal + the two run-reward brews) -> 46.
   // 2026-08-12 rotation adds 3 (Abidos 15-pack, Elysian S4 ticket, Joyful card pack) -> 49.
-  it("has all 49 chests", () => {
-    expect(Object.keys(RESOLVER).length).toBe(49);
+  // 2026-09-16 rotation adds 4 (Pheon, Processed Astrogem Box, two Collective chests) -> 53.
+  it("has all 53 chests", () => {
+    expect(Object.keys(RESOLVER).length).toBe(53);
   });
   it("resolves a fixed chest's first output", () => {
     expect(RESOLVER["Glacier's Breath Chest"].outputs[0]).toEqual({

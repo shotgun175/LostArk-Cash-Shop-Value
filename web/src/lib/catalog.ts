@@ -12,6 +12,8 @@ const SHARED: Record<string, string> = {
   "tailoring-hellfire-11-14": "tailoring-hellfire.png",
   "tailoring-hellfire-15-18": "tailoring-hellfire.png",
   "tailoring-hellfire-19-20": "tailoring-hellfire.png",
+  "enhanced-metallurgy-hellfire-19-20": "metallurgy-hellfire.png",
+  "enhanced-tailoring-hellfire-19-20": "tailoring-hellfire.png",
   "epic-astrogem": "epic-astrogem-random.png",
   // The in-game "Rare - Epic Astrogem Chest" uses the same blue "?" chest art.
   "rare-epic-astrogem": "epic-astrogem-random.png",
@@ -64,6 +66,9 @@ const ONE_TO_ONE: readonly string[] = [
   // [Monthly] 1200 Crystal Pack: Blue Crystal currency + the Lv.1 T4 gem (Rest Bonus brew reward).
   // Art pending; until the 128x128 files land in static/icons, ItemIcon's onerror shows a chip.
   "blue-crystal", "lv-1-gem",
+  // [3+1] Dimensionalist Welcome Package (2026-09-16): Pheon currency + the Processed Astrogem
+  // Box, TJW's crops of the in-game detail popup (see ATTRIBUTION.txt).
+  "pheon", "processed-astrogem-box",
 ];
 
 const ICON_FILES: Readonly<Record<string, string>> = {
@@ -86,6 +91,9 @@ const NAME_OVERRIDES: Record<string, string> = {
   "tailoring-hellfire-11-14": "Tailoring Hellfire 11 - 14",
   "tailoring-hellfire-15-18": "Tailoring Hellfire 15 - 18",
   "tailoring-hellfire-19-20": "Tailoring Hellfire 19 - 20",
+  "enhanced-metallurgy-hellfire-19-20": "Enhanced Metallurgy Hellfire 19 - 20",
+  "enhanced-tailoring-hellfire-19-20": "Enhanced Tailoring Hellfire 19 - 20",
+  "processed-astrogem-box": "Processed Astrogem (5/4/1/1, 8-cost, fully cut)",
   // Hell key display names use the datamine labels (no "Splendid", tier numeral appended);
   // rarity comes from the card pills, with an "(Epic)" disambiguator only where two cards
   // would otherwise share a name (user 2026-07-30).
