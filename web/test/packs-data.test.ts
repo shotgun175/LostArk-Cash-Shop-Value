@@ -12,7 +12,7 @@ describe("PACKS", () => {
   it("has all 35 packs", () => {
     expect(PACKS.length).toBe(35);
   });
-  it("lists exactly the 9 non-retired packs (post-2026-09-16 retirements)", () => {
+  it("lists exactly the 8 non-retired packs (post-2026-09-16 retirements)", () => {
     const active = PACKS.filter((p) => !p.retired).map((p) => p.slug).sort();
     expect(active).toEqual(
       [
@@ -22,9 +22,8 @@ describe("PACKS", () => {
         "monthly-1200-crystal-pack",
         "monthly-t4-growth-support",
         "paradise-special-pack-ii-2",
-        "weekly-summer-t4-crystallized-stone", // the three weeklies were still listed 2026-09-16
-        "weekly-summer-t4-fusion-leap",
-        "weekly-summer-t4-shards-support",
+        "weekly-summer-t4-crystallized-stone", // re-listed through 10/21 (user's 2026-09-16 capture)
+        "weekly-summer-t4-shards-support", // ditto; Fusion & Leap was gone and is retired
       ].sort(),
     );
   });

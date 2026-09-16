@@ -5,7 +5,8 @@ import type { Pack } from "./types";
 // from the live store on 2026-06-24, the four 2026-07-15 summer-rotation packs (Paradise
 // re-release, Summer Growth I/II, Summer Astrogem), the seven 2026-08-12 rotation packs
 // (Astrogem Package, Paradise Special, Summer Custom I/II, three Weekly Summer T4 packs; all
-// sales-end 09/16/2026; the four non-weekly tiles retired 2026-09-16), the six 2026-08-19 packs
+// sales-end 09/16/2026; the four non-weekly tiles and Fusion & Leap retired 2026-09-16, the two
+// other weeklies re-listed through 10/21/2026), the six 2026-08-19 packs
 // (the 2+1 Crystal Pack, four BC-priced [Discount] tiles, and the x180 gem tile; all sales-end
 // 08/26/2026, retired 2026-09-10), and the three 2026-09-16 rotation packs (the [3+1]
 // Dimensionalist Welcome Package, the Dimensionalist Welcome Growth Package, and the second
@@ -340,8 +341,10 @@ export const PACKS: Pack[] = [
     ],
   },
   // --- 2026-08-12 rotation (all sales periods ended 09/16/2026 03:00). The four non-weekly
-  // tiles left the shop at that sales end (TJW's 2026-09-16 capture) and are retired below; the
-  // three [Weekly] Summer tiles were still listed in that capture and stay live. ---
+  // tiles left the shop at that sales end (TJW's 2026-09-16 capture) and are retired below. Of
+  // the three [Weekly] Summer tiles, Crystallized Stone and Shards & Support were re-listed with
+  // 35d timers (through 10/21/2026) and stay live; Fusion & Leap was gone from the user's
+  // 2026-09-16 shop capture and is retired. ---
   {
     // 5 per roster. The two processing tickets are BC-store items valued off the exchange
     // input (BC_COSTS); the live store names the pick-one chest "Selection" (verified in the
@@ -450,7 +453,8 @@ export const PACKS: Pack[] = [
   },
   {
     // Successor to the retired Crystallized Stone & Fusion III (15/15/15 at 2,100 RC vs
-    // 15/30/10 at 1,700). 5 per roster per week.
+    // 15/30/10 at 1,700). 5 per roster per week. Re-listed on 2026-09-16 with a 35d timer
+    // (sales period now ends 10/21/2026).
     name: "[Weekly] Summer T4 Crystallized Stone & Fusion Pack",
     slug: "weekly-summer-t4-crystallized-stone",
     royalCrystalCost: 2100,
@@ -465,14 +469,18 @@ export const PACKS: Pack[] = [
     ],
   },
   {
-    // Successor to the retired Fusion & Leap III (60/50 vs 45/40). 5 per roster per week.
+    // Successor to the retired Fusion & Leap III (60/50 vs 45/40). 5 per roster per week. The
+    // only weekly NOT re-listed after the 09/16/2026 sales end: absent from the user's
+    // 2026-09-16 shop capture while its two siblings showed 35d timers.
     name: "[Weekly] Summer T4 Fusion & Leap Pack",
     slug: "weekly-summer-t4-fusion-leap",
+    frozenTotal: 234400, // NA card value captured 2026-09-16 (EU card showed 215,600)
     royalCrystalCost: 1300,
     maxPurchases: 5,
     limited: true,
     recurrence: "weekly",
-    retired: false,
+    retired: true,
+    retiredOn: "2026-09-16",
     contents: [
       { chest: "Superior Abidos Fusion Material Chest", qty: 60 },
       { chest: "Great Destiny Leapstone Chest", qty: 50 },
@@ -480,7 +488,8 @@ export const PACKS: Pack[] = [
   },
   {
     // Successor to the retired Shards & Support III (7 chests vs 5, 50 pouches vs 65).
-    // 5 per roster per week.
+    // 5 per roster per week. Re-listed on 2026-09-16 with a 35d timer (sales period now ends
+    // 10/21/2026).
     name: "[Weekly] Summer T4 Shards & Support Material Pack",
     slug: "weekly-summer-t4-shards-support",
     royalCrystalCost: 1400,
