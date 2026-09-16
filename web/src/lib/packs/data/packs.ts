@@ -628,8 +628,9 @@ export const PACKS: Pack[] = [
     ],
   },
   {
-    // Second pack with this exact in-game name: the June 2026 [Limited] one at 4,000 RC is
-    // retired under slug paradise-special-pack-ii, so this one takes a -2 suffix. Replaces the
+    // Second pack named Paradise Special Pack II: the June 2026 "[Limited] Paradise Special
+    // Pack II" at 4,000 RC is retired under slug paradise-special-pack-ii, so this one takes a
+    // -2 suffix (the in-game title of this one carries no [Limited] banner). Replaces the
     // retired Paradise Special Pack (5,400 RC) at a smaller size: no Netherworld key ticket,
     // Legendary hell key 2 -> 1, Elysian 3 -> 2, cube chests 10 -> 5, gem chests 120 -> 50,
     // Abidos chests (the Epic 100-pack) 50 -> 30. 5 per roster, purchase count resets

@@ -4,7 +4,7 @@
 //   3. computed special-hone tap pseudo-slugs (the "Free taps" reward column)
 //   4. computed EV overrides for the 4 hell/netherworld keys and 4 ebony cubes
 //   5. relic-recipe override (max engraving), applied last
-//   6. blue-crystal currency + BC-store-costed tickets (optional), priced off the F4 gold input
+//   6. blue-crystal currency + BC-store-costed items (optional), priced off the F4 gold input
 // Order matters: EV is computed from the baked+region+taps map, so EV inputs see live
 // prices and hell keys value their free taps at the live tap price.
 
@@ -13,8 +13,8 @@ import { BAKED, BC_COSTS } from "./data/constants";
 // Slugs whose price IS the F4 exchange derivation (user 2026-08-15): the exchange input is
 // the single source of truth, so the pack UIs render these unit prices read-only instead of
 // offering the click-to-edit override (which the injection below would out-layer anyway).
-// The BC_COSTS tickets are NOT here on purpose: their BC store costs are assumptions, so a
-// user override on those is honored.
+// The BC_COSTS items (the Arkgrid processing tickets, Pheons) are NOT here on purpose: their BC
+// store costs are assumptions, so a user override on those is honored.
 export const F4_DERIVED_SLUGS: ReadonlySet<string> = new Set(["blue-crystal"]);
 import { HELL_KEY_MAP } from "./data/hellRewards";
 import { CUBE_MAP } from "./data/cube";
@@ -41,7 +41,7 @@ export function buildPriceMap(
   const bc = opts.blueCrystalGold;
   if (typeof bc === "number" && Number.isFinite(bc) && bc > 0) {
     m["blue-crystal"] = bc;
-    // BC-store-costed utility items (the Arkgrid processing tickets): gold = BC cost x gold/BC.
+    // BC-store-costed items (the Arkgrid processing tickets, Pheons): gold = BC cost x gold/BC.
     // Priced only when the exchange input is set, like blue-crystal itself. A slug already in
     // regionPrices means the user click-to-edited that line (these items are never in the live
     // feed), and the override must win — the UI marks it "edited", so it has to take effect.
