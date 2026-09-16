@@ -9,3 +9,11 @@ mapped here; the UI renders a category-tinted fallback chip for those.
 2026-07-15: astrogem-processing-reset-ticket.png and
 astrogem-processing-option-refresh-ticket.png were cropped from in-game item
 tooltips (Summer Astrogem Package rotation), not sourced from TJW.
+
+2026-09-16: pheon.png and processed-astrogem-box.png come from TJW's 2026-09-16
+build (his crops of the [3+1] Dimensionalist Welcome Package detail popup),
+upscaled 96 -> 128 px to match the rest of the set.
+lv-8-gem.png and ancient-bracelet-chest.png (Jump-Up Boost rewards) come from
+the same TJW build, upscaled the same way.
+crystalline-aura-plus-14d.png and azenas-blessing-28d.png were cropped from
+in-game item tooltips (Jump-Up Boost rewards), not sourced from TJW.

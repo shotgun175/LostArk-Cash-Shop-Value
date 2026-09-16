@@ -62,3 +62,23 @@ describe("isPreframed", () => {
     expect(isPreframed("splendid-hell-key-of-destiny-v")).toBe(false);
   });
 });
+
+describe("Jump-Up Boost items (2026-09-16)", () => {
+  it("maps the TJW and user crops and shares the Ancient chest and picked-astrogem art", () => {
+    expect(hasIcon("lv-8-gem")).toBe(true);
+    expect(hasIcon("ancient-bracelet-chest")).toBe(true);
+    expect(iconUrl("ancient-accessory-set-chest")).toContain("ancient-bracelet-chest.png");
+    expect(iconUrl("fixed-epic-astrogem-selection")).toContain("epic-astrogem-selected.png");
+    // The two timed buffs use the user's in-game tooltip crops (2026-09-16).
+    expect(hasIcon("crystalline-aura-plus-14d")).toBe(true);
+    expect(hasIcon("azenas-blessing-28d")).toBe(true);
+  });
+  it("names the new slugs the way the game does", () => {
+    expect(displayName("crystalline-aura-plus-14d")).toBe("Crystalline Aura Plus (14 days)");
+    expect(displayName("azenas-blessing-28d")).toBe("Azena's Blessing (28 days)");
+    expect(displayName("lv-8-gem")).toBe("Lv. 8 Brilliant Gem");
+    expect(displayName("fixed-epic-astrogem-selection")).toBe("Fixed Epic Astrogem (player-picked)");
+    expect(displayName("ancient-accessory-set-chest")).toBe("Ancient Accessory Set");
+    expect(displayName("ancient-bracelet-chest")).toBe("Ancient Bracelet");
+  });
+});

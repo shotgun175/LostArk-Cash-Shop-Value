@@ -5,8 +5,11 @@ import type { Pack } from "./types";
 // from the live store on 2026-06-24, the four 2026-07-15 summer-rotation packs (Paradise
 // re-release, Summer Growth I/II, Summer Astrogem), the seven 2026-08-12 rotation packs
 // (Astrogem Package, Paradise Special, Summer Custom I/II, three Weekly Summer T4 packs; all
-// sales-end 09/16/2026), and the six 2026-08-19 packs (the 2+1 Crystal Pack, four BC-priced
-// [Discount] tiles, and the x180 gem tile; all sales-end 08/26/2026, retired 2026-09-10).
+// sales-end 09/16/2026; the four non-weekly tiles retired 2026-09-16), the six 2026-08-19 packs
+// (the 2+1 Crystal Pack, four BC-priced [Discount] tiles, and the x180 gem tile; all sales-end
+// 08/26/2026, retired 2026-09-10), and the three 2026-09-16 rotation packs (the [3+1]
+// Dimensionalist Welcome Package, the Dimensionalist Welcome Growth Package, and the second
+// Paradise Special Pack II; all sales-end 10/21/2026).
 // `contents[].chest` is the chest display-name; resolve via RESOLVER in ./resolver.
 export const PACKS: Pack[] = [
   {
@@ -336,17 +339,24 @@ export const PACKS: Pack[] = [
       { chest: "(NEW) Ebony Cube Entrance Ticket Selection Chest II", qty: 5 },
     ],
   },
-  // --- 2026-08-12 rotation (all sales periods end 09/16/2026) ---
+  // --- 2026-08-12 rotation (all sales periods ended 09/16/2026 03:00). The four non-weekly
+  // tiles left the shop at that sales end (TJW's 2026-09-16 capture) and are retired below; the
+  // three [Weekly] Summer tiles were still listed in that capture and stay live. ---
   {
     // 5 per roster. The two processing tickets are BC-store items valued off the exchange
     // input (BC_COSTS); the live store names the pick-one chest "Selection" (verified in the
     // purchase window), though TJW's dataset calls it "Selector" — both resolve identically.
+    // Retired 2026-09-16 at its sales end; replaced by the [3+1] Dimensionalist Welcome Package.
     name: "[Limited] Astrogem Package",
     slug: "limited-astrogem-package",
+    // Region-independent: every line is baked (astrogems, lv-3 gems) or F4-derived (the two
+    // tickets at the 30,000 default seed), so NA and EU captured identically.
+    frozenTotal: 256539, // card value captured 2026-09-16 (NA and EU both)
     royalCrystalCost: 1100,
     maxPurchases: 5,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-09-16",
     contents: [
       { chest: "Rare - Epic Astrogem Chest", qty: 6 },
       { chest: "Epic Astrogem Chest", qty: 1 },
@@ -359,13 +369,16 @@ export const PACKS: Pack[] = [
   {
     // Successor to the retired [Monthly] Paradise Special Pack (5,400 RC vs 6,300): Legendary
     // hell keys 1 -> 2, Elysian tickets return, Abidos chests (the Epic 100-pack) 30 -> 50,
-    // support-material selection chests dropped. 3 per roster.
+    // support-material selection chests dropped. 3 per roster. Retired 2026-09-16 at its sales
+    // end; succeeded by the smaller Paradise Special Pack II (3,000 RC, slug -ii-2) below.
     name: "Paradise Special Pack",
     slug: "paradise-special-pack",
+    frozenTotal: 2347610, // NA card value captured 2026-09-16 (EU card showed 2,252,503)
     royalCrystalCost: 5400,
     maxPurchases: 3,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-09-16",
     contents: [
       { chest: "Epic Hell Key of Destiny Exchange Ticket (Season 4)", qty: 3 },
       { chest: "Legendary Hell Key of Destiny Exchange Ticket (Season 4)", qty: 2 },
@@ -379,15 +392,17 @@ export const PACKS: Pack[] = [
   {
     // Choose-5-of-10 custom pack, 5 per roster. Contents stays empty; the buyer's five picks
     // come from customSelection (the engine defaults to the five highest-gold options).
-    // limited: false — the in-game title carries no [Limited] banner, and the 32d timer on
-    // the purchase window (seen 2026-08-14) could be a sales end OR a reset; user will
-    // re-check around 09/16/2026 and we retire or tag a recurrence then.
+    // limited: false because the in-game title carries no [Limited] banner. The 32d timer seen
+    // on the purchase window 2026-08-14 turned out to be the sales end (the tile left the shop
+    // at 09/16/2026 03:00), so it was a one-off sale after all: retired, no recurrence tag.
     name: "Summer Custom Pack I",
     slug: "summer-custom-pack-1",
+    frozenTotal: 2249733, // NA card value captured 2026-09-16 (EU card showed 2,041,710)
     royalCrystalCost: 5200,
     maxPurchases: 5,
     limited: false,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-09-16",
     contents: [],
     customSelection: {
       pick: 5,
@@ -408,13 +423,16 @@ export const PACKS: Pack[] = [
   {
     // Choose-4-of-8 custom pack, 5 per roster. The Abidos option is the Epic 100-pack (same
     // in-game display name as the Rare 15-pack; TJW user-confirmed which variant this is).
-    // limited: false for the same reason as Summer Custom Pack I above.
+    // limited: false for the same reason as Summer Custom Pack I above; retired with it at the
+    // 09/16/2026 sales end.
     name: "Summer Custom Pack II",
     slug: "summer-custom-pack-2",
+    frozenTotal: 577749, // NA card value captured 2026-09-16 (EU card showed 572,100)
     royalCrystalCost: 2500,
     maxPurchases: 5,
     limited: false,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-09-16",
     contents: [],
     customSelection: {
       pick: 4,
@@ -560,5 +578,77 @@ export const PACKS: Pack[] = [
     retired: true,
     retiredOn: "2026-08-26",
     contents: [{ chest: "T4 Gem Chest (Lv. 3)", qty: 180 }],
+  },
+  // --- 2026-09-16 rotation (all sales periods end 10/21/2026 03:00) ---
+  {
+    // Modeled as the full 3+1 deal (TJW 2026-09-16, the same treatment as the 2+1 Crystal
+    // Pack): the tile sells one package for 3,500 RC with a 3-per-roster limit, and buying all
+    // three grants a fourth free, so the effective deal is 10,500 RC for 4x the contents, once
+    // per roster. Per single package: 50 Pheon, 25 Rare - Epic Astrogem Chest, 1 Processed
+    // Astrogem Box, 3 Epic Astrogem Selection Chest, 10 Astrogem Processing Reset Ticket, 30 T4
+    // Gem Chest (Lv. 3), 5 Ebony Cube chests (read off the purchase-window icon strip).
+    // Pheons are a BC-store item (8.5 BC each, BC_COSTS); the Processed Astrogem Box (one
+    // 5/4/1/1 8-cost fully cut astrogem) has no market, so its line renders as "no price".
+    // Replaces the retired [Limited] Astrogem Package.
+    name: "[3+1] Dimensionalist Welcome Package",
+    slug: "dimensionalist-welcome-package",
+    royalCrystalCost: 10500,
+    maxPurchases: 1,
+    limited: true,
+    retired: false,
+    contents: [
+      { chest: "Pheon", qty: 200 },
+      { chest: "Rare - Epic Astrogem Chest", qty: 100 },
+      { chest: "Processed Astrogem Box", qty: 4 },
+      { chest: "Epic Astrogem Selection Chest", qty: 12 },
+      { chest: "Astrogem Processing Reset Ticket", qty: 40 },
+      { chest: "T4 Gem Chest (Lv. 3)", qty: 120 },
+      { chest: "(NEW) Ebony Cube Entrance Ticket Selection Chest II", qty: 20 },
+    ],
+  },
+  {
+    // 5 per roster; sibling of the [3+1] pack (same 10/21 sales window). The first five lines
+    // were matched by TJW against the Growth Support family art (the Horizon/Summer packs use
+    // the same pouches and chests); the two x3 Collective Support Materials Selection Chests
+    // are new Ancient-grade pick-1-of-5 chests read from their in-game tooltips (see resolver).
+    name: "[Limited] Dimensionalist Welcome Growth Package",
+    slug: "dimensionalist-welcome-growth-package",
+    royalCrystalCost: 4100,
+    maxPurchases: 5,
+    limited: true,
+    retired: false,
+    contents: [
+      { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 20 },
+      { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 60 },
+      { chest: "Great Destiny Leapstone Chest", qty: 20 },
+      { chest: "Superior Abidos Fusion Material Chest", qty: 40 },
+      { chest: "Destiny Shard Pouch (L)", qty: 50 },
+      { chest: "Collective Support Materials Selection Chest: Armor", qty: 3 },
+      { chest: "Collective Support Materials Selection Chest: Weapons", qty: 3 },
+    ],
+  },
+  {
+    // Second pack named Paradise Special Pack II: the June 2026 "[Limited] Paradise Special
+    // Pack II" at 4,000 RC is retired under slug paradise-special-pack-ii, so this one takes a
+    // -2 suffix (the in-game title of this one carries no [Limited] banner). Replaces the
+    // retired Paradise Special Pack (5,400 RC) at a smaller size: no Netherworld key ticket,
+    // Legendary hell key 2 -> 1, Elysian 3 -> 2, cube chests 10 -> 5, gem chests 120 -> 50,
+    // Abidos chests (the Epic 100-pack) 50 -> 30. 5 per roster, purchase count resets
+    // 09/30/2026. The Legendary ticket's season suffix is truncated on the in-game contents
+    // list and assumed Season 4 like its siblings (TJW).
+    name: "Paradise Special Pack II",
+    slug: "paradise-special-pack-ii-2",
+    royalCrystalCost: 3000,
+    maxPurchases: 5,
+    limited: true,
+    retired: false,
+    contents: [
+      { chest: "Epic Hell Key of Destiny Exchange Ticket (Season 4)", qty: 2 },
+      { chest: "Legendary Hell Key of Destiny Exchange Ticket (Season 4)", qty: 1 },
+      { chest: "Elysian Attempt +1 Exchange Ticket (Season 4)", qty: 2 },
+      { chest: "(NEW) Ebony Cube Entrance Ticket Selection Chest II", qty: 5 },
+      { chest: "T4 Gem Chest (Lv. 3)", qty: 50 },
+      { chest: "Abidos Fusion Material Chest", qty: 30 },
+    ],
   },
 ];
