@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { render } from "svelte/server";
 import JumpUpBoost from "../src/lib/components/packs/JumpUpBoost.svelte";
 import { app } from "../src/lib/app.svelte";
+import { f4 } from "../src/lib/packs/f4.svelte";
 import fixture from "./fixtures/tjw-nae-prices.json";
 
 function loadFixture(): void {
@@ -29,6 +30,24 @@ describe("JumpUpBoost", () => {
     expect(body).toContain("741.7");
     // Azena's Blessing and the two Ancient chests carry no market value.
     expect((body.match(/no price/g) ?? []).length).toBe(3);
+    // The chest subline only appears when it adds information: "4x 50,000 Gold Bars" under the
+    // gold line, but not "2x Lv. 8 Brilliant Gem (Bound)" under a line already named that.
+    expect(body).toContain("4× 50,000 Gold Bars");
+    expect(body).not.toContain("2× Lv. 8 Brilliant Gem (Bound)");
+  });
+
+  it("shows a neutral placeholder for vs F4 while the exchange input is cleared", () => {
+    loadFixture();
+    const saved = f4.value;
+    try {
+      f4.value = NaN; // the store allows the transient NaN a cleared number input produces
+      const { body } = render(JumpUpBoost);
+      const vs = body.match(/<dd[^>]*>—<\/dd>/)?.[0] ?? "";
+      expect(vs).not.toBe("");
+      expect(vs).not.toMatch(/class="[^"]*\b(good|bad)\b/);
+    } finally {
+      f4.value = saved;
+    }
   });
 
   it("values the whole track off baked seeds and the exchange input, so a cold payload still renders numbers", () => {

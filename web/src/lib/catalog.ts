@@ -17,8 +17,8 @@ const SHARED: Record<string, string> = {
   "epic-astrogem": "epic-astrogem-random.png",
   // The in-game "Rare - Epic Astrogem Chest" uses the same blue "?" chest art.
   "rare-epic-astrogem": "epic-astrogem-random.png",
-  // Jump-Up Boost (2026-09-16): the pre-set-options epic chest shows the picked-astrogem art
-  // (as on TJW's page), and both Ancient chests share the bracelet chest crop.
+  // Jump-Up Boost (2026-09-16): the pre-set-options epic chest reuses the picked-astrogem art
+  // (it yields one chosen epic astrogem), and both Ancient chests share the bracelet chest crop.
   "fixed-epic-astrogem-selection": "epic-astrogem-selected.png",
   "ancient-accessory-set-chest": "ancient-bracelet-chest.png",
   // Gold only ever appears as a material line via the "10k Gold Bars" chest, so show the

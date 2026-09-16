@@ -41,7 +41,7 @@
       <dl>
         <div><dt>Total value, all {levels} milestones</dt><dd class="gold">{formatGold(result.total)}</dd></div>
         <div><dt>Gold / RC</dt><dd class="gold">{result.goldPerRc.toFixed(1)}</dd></div>
-        <div><dt>vs F4 exchange</dt><dd class:good={(vsF4 ?? 0) >= 0} class:bad={(vsF4 ?? 0) < 0}>{formatSignedPct(vsF4)}</dd></div>
+        <div><dt>vs F4 exchange</dt><dd class:good={vsF4 != null && vsF4 >= 0} class:bad={vsF4 != null && vsF4 < 0}>{formatSignedPct(vsF4)}</dd></div>
         <div><dt>Gold / {sym}</dt><dd class="gold">{goldPerDollar.toLocaleString("en-US")}</dd></div>
       </dl>
     </div>
@@ -87,7 +87,7 @@
                 <span class="bad">Unresolved: {l.chestQty}× {l.chest}</span>
               {:else}
                 <span class="rname">{displayName(l.slug)}</span>{#if l.isBound}<span class="bound"> (Bound)</span>{/if}
-                {#if l.chest !== displayName(l.slug)}<span class="chestnote">{l.chestQty}× {l.chest}</span>{/if}
+                {#if l.chest.replace(/ \(Bound\)$/, "") !== displayName(l.slug)}<span class="chestnote">{l.chestQty}× {l.chest}</span>{/if}
               {/if}
             </td>
             <td class="right num">{l.qty ? l.qty.toLocaleString("en-US") : "—"}</td>
@@ -104,8 +104,9 @@
   </div>
 
   <p class="note">
-    Click a price on the Packs tab to override it and the change flows through here too. The cumulative
-    figure on each level row is what you'd have banked if that is the last milestone you reach.
+    The F4 exchange input above is the only lever on this tab: it prices the Crystalline Aura Plus and
+    sets the vs-F4 baseline, while the gem and astrogem values are fixed seeds. The cumulative figure on
+    each level row is what you'd have banked if that is the last milestone you reach.
   </p>
 </div>
 
