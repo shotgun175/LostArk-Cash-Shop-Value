@@ -76,9 +76,10 @@ describe("RESOLVER", () => {
   // 2026-08-12 rotation adds 3 (Abidos 15-pack, Elysian S4 ticket, Joyful card pack) -> 49.
   // 2026-09-16 rotation adds 4 (Pheon, Processed Astrogem Box, two Collective chests) -> 53.
   // 2026-09-16 Jump-Up Boost track adds 7 (gold bars, aura, blessing, two Ancient chests, Lv. 8
-  // gem, fixed-epic astrogem chest) -> 60.
-  it("has all 60 chests", () => {
-    expect(Object.keys(RESOLVER).length).toBe(60);
+  // gem, fixed-epic astrogem chest) -> 60. The Tenebrous Judge Ark Pass adds 5 (shard chest plus
+  // four Special selection chests) -> 65.
+  it("has all 65 chests", () => {
+    expect(Object.keys(RESOLVER).length).toBe(65);
   });
   it("resolves a fixed chest's first output", () => {
     expect(RESOLVER["Glacier's Breath Chest"].outputs[0]).toEqual({

@@ -1,10 +1,10 @@
 import type { Chest } from "./types";
 
-// Chest -> terminal-slug resolver, keyed by chest display-name. 60 chests total
-// (43 fixed, 14 selection, 3 multi): the original registry transcribed verbatim from source B
+// Chest -> terminal-slug resolver, keyed by chest display-name. 65 chests total
+// (44 fixed, 18 selection, 3 multi): the original registry transcribed verbatim from source B
 // (resolverFull), plus manual additions noted inline (gold bars; the 2026-07-15 summer-rotation
 // Season 4 tickets and astrogem chests; the 2026-08-12 rotation chests; the 2026-09-16
-// rotation chests and Jump-Up Boost rewards).
+// rotation chests and Jump-Up Boost rewards; the Tenebrous Judge Ark Pass chests).
 // Selection chests: use defaultPickSlug if set, else auto-pick the highest line-gold option.
 export const RESOLVER: Record<string, Chest> = {
   "Crystallized Destiny Destruction Stone Pouch": {
@@ -301,6 +301,48 @@ export const RESOLVER: Record<string, Chest> = {
       { slug: "prime-oreha-fusion-material", qtyPerChest: 360 },
       { slug: "abidos-fusion-material", qtyPerChest: 180 },
       { slug: "superior-abidos-fusion-material", qtyPerChest: 150 },
+    ],
+  },
+  // Tenebrous Judge Ark Pass (2026-09-16) premium chests, which replaced the Wanderer's chests
+  // above on the track. Contents from Lost Ark Codex's datamined box tables (items 61206011-18),
+  // matching the Fandom wiki. Every option is bound; the Shard Chest is fixed, not a pick.
+  "Tenebrous Shard Chest": {
+    name: "Tenebrous Shard Chest",
+    type: "fixed",
+    outputs: [{ slug: "destiny-shard-pouch-l", qtyPerChest: 20, isBound: true }],
+  },
+  "Tenebrous Special Honing Material Selection Chest": {
+    name: "Tenebrous Special Honing Material Selection Chest",
+    type: "selection",
+    outputs: [
+      { slug: "destiny-destruction-stone", qtyPerChest: 6000, isBound: true },
+      { slug: "destiny-crystallized-destruction-stone", qtyPerChest: 2000, isBound: true },
+      { slug: "destiny-guardian-stone", qtyPerChest: 18000, isBound: true },
+      { slug: "destiny-crystallized-guardian-stone", qtyPerChest: 6000, isBound: true },
+    ],
+  },
+  "Tenebrous Special Support Materials Selection Chest": {
+    name: "Tenebrous Special Support Materials Selection Chest",
+    type: "selection",
+    outputs: [
+      { slug: "glaciers-breath", qtyPerChest: 100, isBound: true },
+      { slug: "lavas-breath", qtyPerChest: 100, isBound: true },
+    ],
+  },
+  "Tenebrous Special Leapstone Selection Chest": {
+    name: "Tenebrous Special Leapstone Selection Chest",
+    type: "selection",
+    outputs: [
+      { slug: "destiny-leapstone", qtyPerChest: 200, isBound: true },
+      { slug: "great-destiny-leapstone", qtyPerChest: 100, isBound: true },
+    ],
+  },
+  "Tenebrous Special Fusion Material Selection Chest": {
+    name: "Tenebrous Special Fusion Material Selection Chest",
+    type: "selection",
+    outputs: [
+      { slug: "abidos-fusion-material", qtyPerChest: 270, isBound: true },
+      { slug: "superior-abidos-fusion-material", qtyPerChest: 225, isBound: true },
     ],
   },
   "Adventurer's Path Chest I — Bound Bundle": {

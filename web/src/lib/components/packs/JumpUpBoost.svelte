@@ -13,8 +13,8 @@
   import { base } from "$app/paths";
 
   // The same fully layered map the Packs tab values against (baked seeds + live + BC items off
-  // the F4 input). Nothing on this track is a raw feed slug, so the raw effectivePrices() map the
-  // Ark Pass reads would value every reward at 0.
+  // the F4 input). Nothing on this track is a raw feed slug, so the raw effectivePrices() map
+  // would value every reward at 0.
   const prices = $derived(buildPriceMap(effectivePrices(), { blueCrystalGold: f4.value / BC_PER_BUNDLE }));
   const result = $derived(jumpUpRows(prices));
   const f4base = $derived(f4.perRc);
