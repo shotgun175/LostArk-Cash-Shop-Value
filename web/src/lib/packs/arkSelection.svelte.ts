@@ -1,16 +1,23 @@
+import { ARK_PASS_SEASON_ID } from "./data/arkPass";
+
 // Per-LEVEL pick for the Ark Pass (keyed by level number -> chosen output slug). Deliberately
 // separate from the global `selection` store (keyed by chest name and shared with the Packs tab)
 // so an Ark Pass pick is scoped to one level and never crosses into pack cards. Persisted in
-// localStorage under its own key. Empty map = each level uses its default (defaultPickSlug or the
-// highest-value option).
+// localStorage under its own key, stamped with the season: picks saved in any other season
+// (including the unstamped pre-2026-09-19 format) are discarded on load, since a level number
+// means a different chest each season. Empty map = each level uses its default
+// (defaultPickSlug or the highest-value option).
+const KEY = "csv.arkpick";
+
 class ArkSelection {
   map = $state<Record<number, string>>({});
 
   constructor() {
     if (typeof localStorage !== "undefined") {
       try {
-        const v = JSON.parse(localStorage.getItem("csv.arkpick") ?? "{}");
-        if (v && typeof v === "object") this.map = v;
+        const v = JSON.parse(localStorage.getItem(KEY) ?? "null");
+        if (v?.season === ARK_PASS_SEASON_ID && v.picks && typeof v.picks === "object") this.map = v.picks;
+        else if (v !== null) localStorage.removeItem(KEY);
       } catch {
         /* ignore malformed */
       }
@@ -19,7 +26,7 @@ class ArkSelection {
 
   private persist(): void {
     if (typeof localStorage !== "undefined") {
-      localStorage.setItem("csv.arkpick", JSON.stringify(this.map));
+      localStorage.setItem(KEY, JSON.stringify({ season: ARK_PASS_SEASON_ID, picks: this.map }));
     }
   }
 

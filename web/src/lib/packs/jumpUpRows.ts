@@ -3,7 +3,7 @@
 // reach"). Rounding comes from the shared valueChestOptions helper, so totals agree with the rest
 // of the app by construction. Takes the fully layered price map (buildPriceMap with the F4
 // input): every reward here is baked or exchange-priced, never a raw feed slug, so the raw
-// effectivePrices() map the Ark Pass reads would value the whole track at 0.
+// effectivePrices() map would value the whole track at 0.
 
 import { JUMP_UP_LEVELS, JUMP_UP_RC } from "./data/jumpUp";
 import { RESOLVER } from "./data/resolver";

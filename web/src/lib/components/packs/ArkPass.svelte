@@ -1,7 +1,11 @@
 <script lang="ts">
   import { arkPassRows } from "$lib/packs/arkPassRows";
-  import { ARK_PASS_PREMIUM_RC, ARK_PASS_TOTAL_RC } from "$lib/packs/data/arkPass";
+  import { ARK_PASS_PREMIUM_RC, ARK_PASS_SEASON, ARK_PASS_TOTAL_RC } from "$lib/packs/data/arkPass";
   import { effectivePrices } from "$lib/packs/prices.svelte";
+  import { buildPriceMap } from "$lib/packs/priceMap";
+  import { f4 } from "$lib/packs/f4.svelte";
+  import { hellSettings } from "$lib/packs/hellSettings.svelte";
+  import { BC_PER_BUNDLE } from "$lib/packs/data/marisShop";
   import { arkSelection } from "$lib/packs/arkSelection.svelte";
   import { cashPerRc, currencySymbol } from "$lib/packs/exchange";
   import { app } from "$lib/app.svelte";
@@ -10,7 +14,14 @@
   import ItemIcon from "../ItemIcon.svelte";
   import { base } from "$app/paths";
 
-  const prices = $derived(effectivePrices());
+  // The same fully layered map the Packs tab values against, so the astrogem chests (baked) and
+  // the Ebony Cube ticket chests (cube EV) get the gold they get on a pack card.
+  const prices = $derived(
+    buildPriceMap(effectivePrices(), {
+      blueCrystalGold: f4.value / BC_PER_BUNDLE,
+      tapOverrides: hellSettings.tapOverride[app.region],
+    }),
+  );
   const rows = $derived(arkPassRows(prices, arkSelection.map));
   const pickCount = $derived(arkSelection.count());
 
@@ -29,6 +40,7 @@
 
 <div class="ark">
   <h2>Ark Pass</h2>
+  <p class="season">{ARK_PASS_SEASON}</p>
   <p class="note">
     Premium gives a reward at every level; Super Premium adds the same plus milestone rewards at
     levels 5/10/15/20/25/30 (skins/extras — not yet valued). Each selection reward defaults to its
@@ -108,6 +120,7 @@
     color: var(--text); font-family: "Sora", system-ui, sans-serif;
   }
   h2 { font-size: 20px; margin: 8px 0 6px; }
+  .season { color: var(--accent); font-size: 13px; font-weight: 600; margin: 0 0 6px; }
   .note { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0 0 16px; }
   /* Global "reset all picks" affordance, mirroring the Packs tab, sitting just above the table. */
   .picks-bar { display: flex; justify-content: center; margin: -4px 0 12px; }
