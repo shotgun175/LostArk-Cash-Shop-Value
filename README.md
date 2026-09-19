@@ -24,7 +24,7 @@ The project is two loosely-coupled halves that deploy separately:
 | Target | What it is | How it ships |
 |---|---|---|
 | GitHub Pages | The public production UI | Automatically on push to `main` (`.github/workflows/pages.yml`); both test suites gate the deploy |
-| Cloudflare Worker | The data API, plus a live dev copy of the UI at the Worker root | Manually, `npm run deploy` from the repo root |
+| Cloudflare Worker | The data API, plus a live dev copy of the UI at the Worker root | Manually, `npm run deploy` from the repo root, and only when the Worker code (`src/`, `wrangler.jsonc`, root dependencies) changes; the dev copy of the UI can lag behind Pages in between |
 
 The Pages build is served under the repo subpath and fetches prices cross-origin from the Worker
 (`VITE_API_BASE`); the Worker-hosted copy serves the same UI same-origin. When a change alters the
