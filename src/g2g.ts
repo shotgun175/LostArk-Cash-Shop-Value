@@ -69,8 +69,8 @@ async function fetchOne(
 
 export async function fetchG2gRates(fetchImpl: FetchLike = fetch): Promise<Partial<G2gRate> | null> {
   const [usd, eur] = await Promise.all([
-    fetchOne(fetchImpl, "USD", "US", (t) => t === "Balthorr - US East"),
-    fetchOne(fetchImpl, "EUR", "DE", (t) => t === "Ratik - EU Central"),
+    fetchOne(fetchImpl, "USD", "US", (t) => t === "Inanna - US East"),
+    fetchOne(fetchImpl, "EUR", "DE", (t) => t === "Elpon - EU Central"),
   ]);
   if (usd == null && eur == null) return null;
   const out: Partial<G2gRate> = {};

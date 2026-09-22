@@ -19,8 +19,8 @@ function g2gResponse(): Response {
       code: 2000,
       payload: {
         results: [
-          { title: "Balthorr - US East", converted_unit_price: G2G_USD },
-          { title: "Ratik - EU Central", converted_unit_price: G2G_EUR },
+          { title: "Inanna - US East", converted_unit_price: G2G_USD },
+          { title: "Elpon - EU Central", converted_unit_price: G2G_EUR },
         ],
       },
     }),
@@ -204,7 +204,7 @@ describe("refresh", () => {
     const usdOnly: FetchLike = async (url, init) => {
       if (String(url).includes("sls.g2g.com")) {
         return new Response(
-          JSON.stringify({ code: 2000, payload: { results: [{ title: "Balthorr - US East", converted_unit_price: 0.032 }] } }),
+          JSON.stringify({ code: 2000, payload: { results: [{ title: "Inanna - US East", converted_unit_price: 0.032 }] } }),
           { status: 200, headers: { "content-type": "application/json" } },
         );
       }
