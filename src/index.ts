@@ -102,7 +102,12 @@ export default {
     return new Response("Not found", { status: 404 });
   },
 
-  async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-    ctx.waitUntil(refresh(env.PRICES).catch((e) => console.error("scheduled refresh failed", e)));
+  async scheduled(_controller: ScheduledController, env: Env, _ctx: ExecutionContext): Promise<void> {
+    try {
+      await refresh(env.PRICES);
+    } catch (e) {
+      console.error("scheduled refresh failed", e);
+      throw e;
+    }
   },
 } satisfies ExportedHandler<Env>;

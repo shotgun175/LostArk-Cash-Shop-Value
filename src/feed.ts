@@ -21,6 +21,7 @@ export async function fetchRegion(
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ region_slug: region, item_slugs: slugs }),
+    signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`feed ${region} HTTP ${res.status}`);
   // Cap enforced on the actual bytes (readJsonCapped), so a chunked response with no Content-Length
