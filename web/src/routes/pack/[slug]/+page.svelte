@@ -282,9 +282,13 @@
   @media (max-width: 640px) {
     .body { flex-direction: column; }
     .img { width: 100%; max-width: 320px; }
-    /* Column + flex-start would size the items column to the table's min-width and overflow the
-       page; pin it to the viewport so the wide table scrolls inside its own container instead. */
+    /* Column + flex-start would size the items column to its content and overflow the page; pin
+       it to the viewport. The tables drop their min-width and tighten cell padding so every column,
+       Gold included, fits a phone; item names wrap and .tscroll stays as the fallback. The .tscroll
+       prefix outranks the base table/th/td rules below, which would otherwise win on source order. */
     .chests { width: 100%; }
+    .tscroll table { min-width: 0; }
+    .tscroll th, .tscroll td { padding-left: 5px; padding-right: 5px; }
   }
   h2 { margin: 8px 0 8px; font-size: 22px; }
   /* Store-listing meta chips under the title: cost readout + limited/recurrence/limit pills. */
