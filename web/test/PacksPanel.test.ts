@@ -86,3 +86,51 @@ describe("PacksPanel custom-pack checkbox block", () => {
     expect(gemRow!).toContain("price-btn");
   });
 });
+
+// A frozen G2G rate (pinned offer stopped matching, so usdFetchedAt stops advancing) must not
+// read as live: past 6 h the readout turns amber and says when the rate is from. A typed
+// override is the user's own number, so it never shows the cue.
+describe("PacksPanel stale G2G rate", () => {
+  function seedG2g(ageMinutes: number): void {
+    app.region = "nae";
+    app.status = "ok";
+    app.payload = {
+      schema_version: 1,
+      generated_at: new Date().toISOString(),
+      regions: { nae: { prices: fixture.prices, source_valid_at: new Date().toISOString() } },
+      bundles: {},
+      g2g: { usdPer1kGold: 0.05, usdFetchedAt: new Date(Date.now() - ageMinutes * 60_000).toISOString() },
+    } as unknown as typeof app.payload;
+  }
+  const staleReadout = /<b class="num accent[^"]*\bstale\b/;
+
+  it("marks a 7 h old rate stale and says when it is from", () => {
+    seedG2g(7 * 60);
+    const { body } = render(PacksPanel);
+    expect(body).toMatch(staleReadout);
+    expect(body).toContain("rate from");
+  });
+
+  it("shows neither for a 10 minute old rate", () => {
+    seedG2g(10);
+    const { body } = render(PacksPanel);
+    expect(body).not.toMatch(staleReadout);
+    expect(body).not.toContain("rate from");
+  });
+
+  it("shows neither when the region has a stored override", () => {
+    vi.stubGlobal("localStorage", {
+      getItem: (k: string) => (k === "csv.g2g.override.nae" ? "0.06" : null),
+      setItem: () => {},
+      removeItem: () => {},
+    });
+    try {
+      seedG2g(7 * 60);
+      const { body } = render(PacksPanel);
+      expect(body).not.toMatch(staleReadout);
+      expect(body).not.toContain("rate from");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
