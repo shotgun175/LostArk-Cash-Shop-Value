@@ -12,7 +12,7 @@ const opts = { f4Input: F4_DEFAULT_INPUT, g2gInput: 0.03268824 }; // arbitrary g
 describe("buildPackRows", () => {
   const rows = buildPackRows(prices, opts);
 
-  it("returns one row per pack with all display columns", () => {
+  it("values a sampled active pack and fills both comparison columns", () => {
     // Sample a still-active pack (the 2026-08-12 rotation retired most of the old actives);
     // 172,875 / 45.5 is monthly-t4's TJW golden value on this fixture.
     const r = rows.find((x) => x.slug === "monthly-t4-growth-support")!;
