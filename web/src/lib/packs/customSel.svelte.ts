@@ -1,4 +1,5 @@
 import { flushSync } from "svelte";
+import { load, save } from "../storage";
 
 // Which options the user has checked on each choose-N-of-M pack (keyed by pack slug -> chest
 // display names). Region-independent — the choice is *which lines*, not their price — and
@@ -9,28 +10,24 @@ class CustomSel {
   map = $state<Record<string, string[]>>({});
 
   constructor() {
-    if (typeof localStorage !== "undefined") {
-      try {
-        const v = JSON.parse(localStorage.getItem("csv.customSel") ?? "{}");
-        if (v && typeof v === "object") {
-          // Keep only well-formed entries (string arrays): the values are load-bearing in
-          // customChosen, so a corrupted shape must degrade to defaults, never throw.
-          const clean: Record<string, string[]> = {};
-          for (const [slug, val] of Object.entries(v)) {
-            if (Array.isArray(val) && val.every((x) => typeof x === "string")) clean[slug] = val;
-          }
-          this.map = clean;
+    try {
+      const v = JSON.parse(load("csv.customSel") ?? "{}");
+      if (v && typeof v === "object") {
+        // Keep only well-formed entries (string arrays): the values are load-bearing in
+        // customChosen, so a corrupted shape must degrade to defaults, never throw.
+        const clean: Record<string, string[]> = {};
+        for (const [slug, val] of Object.entries(v)) {
+          if (Array.isArray(val) && val.every((x) => typeof x === "string")) clean[slug] = val;
         }
-      } catch {
-        /* ignore malformed */
+        this.map = clean;
       }
+    } catch {
+      /* ignore malformed */
     }
   }
 
   private persist(): void {
-    if (typeof localStorage !== "undefined") {
-      localStorage.setItem("csv.customSel", JSON.stringify(this.map));
-    }
+    save("csv.customSel", JSON.stringify(this.map));
   }
 
   get(slug: string): string[] | undefined {

@@ -1,5 +1,6 @@
 import type { Region } from "../api";
 import type { TapOverrides } from "./tapPrices";
+import { load, save } from "../storage";
 
 /** Provenance of the hell/netherworld reward tables, shown on the Hell Key tab. */
 export const REWARD_DATA_VINTAGE = "sekwahar Season-4 datamine, 2026-07-30";
@@ -38,17 +39,15 @@ class HellSettings {
   tapOverride = $state<Record<Region, TapOverrides>>({ nae: {}, euc: {} });
 
   constructor() {
-    if (typeof localStorage !== "undefined") {
-      // Drop the key an earlier build persisted so old what-if picks cannot linger.
-      localStorage.removeItem("csv.hellRarity");
-      this.wealth = localStorage.getItem("csv.hellWealth") === "1";
-      this.tapOverride = { nae: this.loadTap("nae"), euc: this.loadTap("euc") };
-    }
+    // Drop the key an earlier build persisted so old what-if picks cannot linger.
+    save("csv.hellRarity", null);
+    this.wealth = load("csv.hellWealth") === "1";
+    this.tapOverride = { nae: this.loadTap("nae"), euc: this.loadTap("euc") };
   }
 
   private loadTap(r: Region): TapOverrides {
     try {
-      const v = JSON.parse(localStorage.getItem(`csv.tap.${r}`) ?? "{}");
+      const v = JSON.parse(load(`csv.tap.${r}`) ?? "{}");
       return v && typeof v === "object" ? v : {};
     } catch {
       return {};
@@ -56,9 +55,7 @@ class HellSettings {
   }
 
   private persistTap(r: Region): void {
-    if (typeof localStorage !== "undefined") {
-      localStorage.setItem(`csv.tap.${r}`, JSON.stringify(this.tapOverride[r]));
-    }
+    save(`csv.tap.${r}`, JSON.stringify(this.tapOverride[r]));
   }
 
   setRarity(r: string): void {
@@ -68,7 +65,7 @@ class HellSettings {
 
   setWealth(on: boolean): void {
     this.wealth = on;
-    if (typeof localStorage !== "undefined") localStorage.setItem("csv.hellWealth", on ? "1" : "0");
+    save("csv.hellWealth", on ? "1" : "0");
   }
 
   setTapOverride(region: Region, o: TapOverrides): void {

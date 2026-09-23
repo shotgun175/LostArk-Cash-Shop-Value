@@ -2,6 +2,7 @@ import { app } from "../app.svelte";
 import type { Region } from "../api";
 import { F4_DIVISOR, F4_DEFAULT_INPUT } from "./exchange";
 import { BC_PER_BUNDLE } from "./data/marisShop";
+import { load, save } from "../storage";
 
 // A round, deliberately-illustrative default — not pulled from any live source. The user tunes it
 // once and it's remembered per region; we don't want the seeded value to look authoritative.
@@ -16,11 +17,9 @@ class F4 {
   map = $state<Record<Region, number>>({ nae: DEFAULTS.nae, euc: DEFAULTS.euc });
 
   constructor() {
-    if (typeof localStorage !== "undefined") {
-      for (const r of ["nae", "euc"] as Region[]) {
-        const v = Number(localStorage.getItem(`csv.f4.${r}`));
-        if (Number.isFinite(v) && v > 0) this.map[r] = v;
-      }
+    for (const r of ["nae", "euc"] as Region[]) {
+      const v = Number(load(`csv.f4.${r}`));
+      if (Number.isFinite(v) && v > 0) this.map[r] = v;
     }
   }
 
@@ -29,9 +28,7 @@ class F4 {
   }
   set value(v: number) {
     this.map[app.region] = v; // allow transient NaN while typing/clearing
-    if (typeof localStorage !== "undefined" && Number.isFinite(v) && v >= 0) {
-      localStorage.setItem(`csv.f4.${app.region}`, String(v));
-    }
+    if (Number.isFinite(v) && v >= 0) save(`csv.f4.${app.region}`, String(v));
   }
 
   get perRc(): number {
