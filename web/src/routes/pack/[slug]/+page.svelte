@@ -117,7 +117,7 @@
           <div class="cs-bar">
             <span class="cs-title">Choose {pack.customSelection.pick} of {pack.customSelection.options.length}</span>
             <span class="cs-count num">{countedChests.length}/{pack.customSelection.pick} picked</span>
-            <span class="cs-note">— tick the option chests below; the {pack.customSelection.pick} highest-gold ones count by default</span>
+            <span class="cs-note">(tick the option chests below; the {pack.customSelection.pick} highest-gold ones count by default)</span>
             {#if customSel.has(pack.slug)}
               <button class="chest-reset" title="Restore the highest-value picks" onclick={() => customSel.clearOne(pack.slug)}>reset picks</button>
             {/if}
