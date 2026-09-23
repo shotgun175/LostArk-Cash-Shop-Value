@@ -1,7 +1,9 @@
 import { loadPrices, type PricePayload, type Region } from "./api";
+import { load } from "./storage";
 
 class AppState {
-  region = $state<Region>("nae");
+  // The last-picked region (RegionToggle saves it); anything else, or no storage, opens in NA.
+  region = $state<Region>(load("csv.region") === "euc" ? "euc" : "nae");
   payload = $state<PricePayload | null>(null);
   status = $state<"loading" | "ok" | "error">("loading");
 

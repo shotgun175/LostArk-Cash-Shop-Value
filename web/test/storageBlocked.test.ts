@@ -65,6 +65,13 @@ describe("stores with site storage unavailable", () => {
     expect(f4.value).toBe(30000);
   });
 
+  it("the app imports cleanly and opens in NA when storage is blocked", async () => {
+    blockStorage();
+    vi.resetModules();
+    const { app } = await import("../src/lib/app.svelte");
+    expect(app.region).toBe("nae");
+  });
+
   it("a throwing setItem (quota full) still updates overrides in memory", async () => {
     Object.defineProperty(globalThis, "localStorage", {
       configurable: true,
