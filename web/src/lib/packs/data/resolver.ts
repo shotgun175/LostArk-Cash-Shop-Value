@@ -1,10 +1,10 @@
 import type { Chest } from "./types";
 
-// Chest -> terminal-slug resolver, keyed by chest display-name. 65 chests total
-// (44 fixed, 18 selection, 3 multi): the original registry transcribed verbatim from source B
-// (resolverFull), plus manual additions noted inline (gold bars; the 2026-07-15 summer-rotation
-// Season 4 tickets and astrogem chests; the 2026-08-12 rotation chests; the 2026-09-16
-// rotation chests and Jump-Up Boost rewards; the Tenebrous Judge Ark Pass chests).
+// Chest -> terminal-slug resolver, keyed by chest display-name: the original registry
+// transcribed verbatim from source B (resolverFull), plus manual additions noted inline (gold
+// bars; the 2026-07-15 summer-rotation Season 4 tickets and astrogem chests; the 2026-08-12
+// rotation chests; the 2026-09-16 rotation chests and Jump-Up Boost rewards; the Tenebrous
+// Judge Ark Pass chests).
 // Selection chests: use defaultPickSlug if set, else auto-pick the highest line-gold option.
 export const RESOLVER: Record<string, Chest> = {
   "Crystallized Destiny Destruction Stone Pouch": {
@@ -252,59 +252,8 @@ export const RESOLVER: Record<string, Chest> = {
       { slug: "glaciers-breath", qtyPerChest: 100 },
     ],
   },
-  "Wanderer's Shard Box": {
-    name: "Wanderer's Shard Box",
-    type: "selection",
-    defaultPickSlug: "destiny-shard-pouch-l",
-    outputs: [
-      { slug: "honor-shard-pouch-l", qtyPerChest: 20 },
-      { slug: "destiny-shard-pouch-l", qtyPerChest: 10 },
-    ],
-  },
-  "Wanderer's Special Honing Material Selection Chest": {
-    name: "Wanderer's Special Honing Material Selection Chest",
-    type: "selection",
-    outputs: [
-      { slug: "refined-obliteration-stone", qtyPerChest: 9000 },
-      { slug: "destiny-destruction-stone", qtyPerChest: 3000 },
-      { slug: "destiny-crystallized-destruction-stone", qtyPerChest: 1000 },
-      { slug: "refined-protection-stone", qtyPerChest: 45000 },
-      { slug: "destiny-guardian-stone", qtyPerChest: 15000 },
-      { slug: "destiny-crystallized-guardian-stone", qtyPerChest: 5000 },
-    ],
-  },
-  "Wanderer's Special Auxiliary Material Selection Chest": {
-    name: "Wanderer's Special Auxiliary Material Selection Chest",
-    type: "selection",
-    outputs: [
-      { slug: "solar-grace", qtyPerChest: 240 },
-      { slug: "solar-blessing", qtyPerChest: 120 },
-      { slug: "solar-protection", qtyPerChest: 60 },
-      { slug: "glaciers-breath", qtyPerChest: 60 },
-      { slug: "lavas-breath", qtyPerChest: 60 },
-    ],
-  },
-  "Wanderer's Special Breakthrough Stone Selection Chest": {
-    name: "Wanderer's Special Breakthrough Stone Selection Chest",
-    type: "selection",
-    defaultPickSlug: "great-destiny-leapstone",
-    outputs: [
-      { slug: "radiant-honor-leapstone", qtyPerChest: 450 },
-      { slug: "destiny-leapstone", qtyPerChest: 150 },
-      { slug: "great-destiny-leapstone", qtyPerChest: 50 },
-    ],
-  },
-  "Wanderer's Special Fusion Material Selection Chest": {
-    name: "Wanderer's Special Fusion Material Selection Chest",
-    type: "selection",
-    outputs: [
-      { slug: "prime-oreha-fusion-material", qtyPerChest: 360 },
-      { slug: "abidos-fusion-material", qtyPerChest: 180 },
-      { slug: "superior-abidos-fusion-material", qtyPerChest: 150 },
-    ],
-  },
-  // Tenebrous Judge Ark Pass (2026-09-16) premium chests, which replaced the Wanderer's chests
-  // above on the track. Contents from Lost Ark Codex's datamined box tables (items 61206011-18),
+  // Tenebrous Judge Ark Pass (2026-09-16) premium chests, which replaced the retired Wanderer's
+  // chests on the track. Contents from Lost Ark Codex's datamined box tables (items 61206011-18),
   // matching the Fandom wiki. Every option is bound; the Shard Chest is fixed, not a pick.
   "Tenebrous Shard Chest": {
     name: "Tenebrous Shard Chest",
