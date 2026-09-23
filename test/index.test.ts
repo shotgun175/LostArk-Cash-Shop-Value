@@ -1,4 +1,4 @@
-import { env, createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
+import { env, createExecutionContext, createScheduledController, waitOnExecutionContext } from "cloudflare:test";
 import { describe, it, expect, vi } from "vitest";
 import worker from "../src/index";
 import { writePayload } from "../src/store";
@@ -121,5 +121,20 @@ describe("worker fetch", () => {
   it("404s unknown routes", async () => {
     const res = await call("/nope");
     expect(res.status).toBe(404);
+  });
+});
+
+describe("worker scheduled", () => {
+  it("rejects when the refresh fails, so the cron run records an error", async () => {
+    const getSpy = vi.spyOn(env.PRICES, "get").mockRejectedValue(new Error("kv down"));
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const run = worker.scheduled(createScheduledController(), env, createExecutionContext());
+      await expect(run).rejects.toThrow("kv down");
+      expect(errSpy).toHaveBeenCalledWith("scheduled refresh failed", expect.any(Error));
+    } finally {
+      getSpy.mockRestore();
+      errSpy.mockRestore();
+    }
   });
 });
