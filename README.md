@@ -42,7 +42,7 @@ npm test           # worker suite (Cloudflare workers pool)
 npm run typecheck  # tsc over src/ + test/
 npm run build:web  # build the UI once; wrangler dev serves it from web/build
 npm run dev        # wrangler dev: local worker + the built UI at the root
-npm run deploy     # build web/ then deploy the worker
+npm run deploy     # build web/, run the worker suite and type-check, then deploy the worker
 ```
 
 `npm run deploy` targets the maintainer's Cloudflare account (the bound KV namespace and cron),
