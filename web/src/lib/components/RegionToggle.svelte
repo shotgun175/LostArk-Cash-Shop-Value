@@ -1,5 +1,6 @@
 <script lang="ts">
   import { app } from "$lib/app.svelte";
+  import { save } from "$lib/storage";
   const regions: { id: "nae" | "euc"; label: string }[] = [
     { id: "nae", label: "NA" },
     { id: "euc", label: "EU" },
@@ -10,7 +11,7 @@
   {#each regions as r (r.id)}
     <button
       class:active={app.region === r.id}
-      onclick={() => (app.region = r.id)}
+      onclick={() => { app.region = r.id; save("csv.region", r.id); }}
       aria-pressed={app.region === r.id}>{r.label}</button>
   {/each}
 </div>

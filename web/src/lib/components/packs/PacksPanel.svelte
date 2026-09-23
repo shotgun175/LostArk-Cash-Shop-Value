@@ -53,16 +53,20 @@
   const rcCash = $derived(RC_CASH_PER_12K[app.region]); // 100 (NA) / 94.99 (EU) per 12,000 RC
   const rcPerUnit = $derived(cashPerRc(app.region));
   const g2gOut = $derived(g2gValue ? g2gReadout(g2gValue, sym) : "—");
-  // Discreet hover-only freshness signal for the live rate (no visible text). Reads the shown
-  // region's per-currency success stamp (USD for NA, EUR for EU); the block-level fetchedAt is the
-  // poll-attempt rate-limiter and would claim a frozen leg was freshly updated.
-  const g2gTooltip = $derived.by(() => {
+  // Freshness of the live rate: a hover tooltip always, plus a visible amber cue once the shown
+  // leg is over 6 h old (twelve missed 30-minute polls) and no override is set; this revisits the
+  // 2026-06-16 hover-only choice. Reads the shown region's per-currency success stamp (USD for NA,
+  // EUR for EU); the block-level fetchedAt is the poll-attempt rate-limiter and would claim a
+  // frozen leg was freshly updated.
+  const g2gAt = $derived.by(() => {
     const g = app.payload?.g2g;
     const at = app.region === "euc" ? g?.eurFetchedAt : g?.usdFetchedAt;
     const t = at ? new Date(at) : null;
-    if (!t || Number.isNaN(t.getTime())) return "Live exchange rate";
-    return `Rate updated ${t.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" })}`;
+    return t && !Number.isNaN(t.getTime()) ? t : null;
   });
+  const g2gWhen = $derived(g2gAt?.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" }));
+  const g2gTooltip = $derived(g2gWhen ? `Rate updated ${g2gWhen}` : "Live exchange rate");
+  const g2gStale = $derived(g2gOverride == null && g2gAt != null && Date.now() - g2gAt.getTime() > 6 * 3_600_000);
 
   const basePrices = $derived({ ...(app.snapshot?.prices ?? {}), ...overrides.forRegion(app.region) });
 
@@ -154,7 +158,7 @@
       <span class="lbl">exchange (optional):</span>
       <span class="lbl">{sym}</span><input class="g2g-in" type="number" min="0" step="0.0001" value={g2gValue ?? ""} oninput={onG2gInput} onfocus={focusExchange} aria-label="G2G price per 1,000 gold" />
       <span class="lbl">for 1k</span><img class="ic" src="{base}/icons/gold.png" alt="gold" />
-      <span class="lbl">=</span> <b class="num accent">{g2gOut}</b> <span class="lbl">/ 100k</span>
+      <span class="lbl">=</span> <b class="num accent" class:stale={g2gStale}>{g2gOut}</b> <span class="lbl">/ 100k</span>{#if g2gStale} <span class="lbl">rate from {g2gWhen}</span>{/if}
     </span>
   </div>
 
@@ -169,7 +173,7 @@
   {:else if app.status === "error"}
     <p class="state bad">Failed to load prices.</p>
   {:else if !app.snapshot || Object.keys(app.snapshot.prices).length === 0}
-    <p class="state">No prices yet — the feed may be refreshing.</p>
+    <p class="state">No prices yet. The feed may be refreshing.</p>
   {:else}
     <div class="pack-grid">
       <!-- The wrapper div exists because animate: needs an element (not a component) as the
@@ -209,6 +213,7 @@
   .lbl { color: var(--muted); }
   .num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; }
   .accent { color: var(--accent); }
+  .accent.stale { color: var(--warn); }
   input { background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
     padding: 6px 10px; border-radius: 6px; font-size: 13px;
     font-family: "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; }

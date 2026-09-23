@@ -34,8 +34,8 @@
   <p class="season">{ARK_PASS_SEASON}</p>
   <p class="note">
     Premium gives a reward at every level; Super Premium adds the same plus milestone rewards at
-    levels 5/10/15/20/25/30 (skins/extras — not yet valued). Each selection reward defaults to its
-    highest-value option — expand “pick 1 of N” on a level to value it as a different choice.
+    levels 5/10/15/20/25/30 (skins and extras, not yet valued). Each selection reward defaults to its
+    highest-value option; expand “pick 1 of N” on a level to value it as a different choice.
   </p>
 
   <div class="summary">

@@ -10,7 +10,9 @@
   );
 </script>
 
-{#if f}
+{#if app.status === "error"}
+  <p class="fresh stale">Couldn't load live prices. Values below leave market-priced items out. Retrying every minute.</p>
+{:else if f}
   <p class="fresh" class:stale={f.stale}>
     {#if f.stale}prices may be outdated - last updated {f.time}{:else}{f.label}{/if}
   </p>

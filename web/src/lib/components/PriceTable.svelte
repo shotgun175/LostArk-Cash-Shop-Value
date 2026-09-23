@@ -17,7 +17,7 @@
 {:else if app.status === "error"}
   <p class="state err">Failed to load prices.</p>
 {:else if rows.length === 0}
-  <p class="state">No prices yet — the feed may be refreshing.</p>
+  <p class="state">No prices yet. The feed may be refreshing.</p>
 {:else}
   <table>
     <thead><tr><th>Item</th><th class="r">Gold</th></tr></thead>

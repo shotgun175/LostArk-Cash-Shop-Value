@@ -17,6 +17,7 @@ function seed(ageMinutes: number): void {
   };
   app.region = "nae";
   app.payload = payload;
+  app.status = "ok"; // reset so the error case below cannot leak into the others
 }
 
 const staleClass = /class="[^"]*\bstale\b[^"]*"/;
@@ -36,5 +37,13 @@ describe("FreshnessBanner", () => {
     expect(body).toMatch(staleClass); // class:stale -> the amber styling hook
     expect(body).toContain("prices may be outdated");
     expect(body).not.toContain("prices as of"); // the stale branch replaces the plain label
+  });
+
+  it("says so in amber when the price load failed", () => {
+    app.status = "error";
+    app.payload = null;
+    const { body } = render(FreshnessBanner);
+    expect(body).toMatch(staleClass);
+    expect(body).toContain("Couldn't load live prices. Values below leave market-priced items out. Retrying every minute.");
   });
 });

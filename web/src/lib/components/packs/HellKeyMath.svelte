@@ -68,11 +68,11 @@
   <h2>Hell Key math</h2>
   <p class="note">
     Each key opens one chest per floor and you keep the best of 3 (with a small best-of-4 blend).
-    Each card's value is the expected gold per key at current prices — the per-floor best pick plus
+    Each card's value is the expected gold per key at current prices: the per-floor best pick plus
     base rewards, weighted by how likely you are to draw that floor, summed across floors. Prices
     and trade-ups you set on the <a href="{base}/">Packs</a> page flow through here.
   </p>
-  <p class="vintage">Reward tables: {REWARD_DATA_VINTAGE} · prices live</p>
+  <p class="vintage">Reward tables: {REWARD_DATA_VINTAGE}{app.status === "ok" ? " · prices live" : ""}</p>
 
   <div class="controls">
     <label class="tierpick">

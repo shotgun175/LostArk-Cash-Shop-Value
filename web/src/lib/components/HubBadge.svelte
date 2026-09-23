@@ -1,5 +1,5 @@
 <!--
-  HubBadge — "Part of Lost Ark Tools" link back to the hub.
+  HubBadge: "Part of Lost Ark Tools" link back to the hub.
   Synced from shotgun175.github.io/snippets/hub-badge.html (the canonical source).
   Adapted to a Svelte component because a raw <style>-in-markup paste isn't valid Svelte
   template content; the markup + scoped styles below mirror the snippet 1:1. The app already
@@ -11,7 +11,7 @@
   href="https://shotgun175.github.io/"
   target="_blank"
   rel="noopener"
-  aria-label="Part of Lost Ark Tools — see all tools"
+  aria-label="Part of Lost Ark Tools, see all tools"
 >
   <svg class="lat-badge__mark" width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
     <rect width="32" height="32" rx="7" fill="#0a0b13" />

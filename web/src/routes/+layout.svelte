@@ -57,13 +57,13 @@
     <p class="sub">Live NA/EU market prices for Lost Ark cash-shop mats.</p>
     <nav>
       {#each tabs as t (t.href)}
-        <a href={t.href} class:active={isActive(t.href)}>{t.label}</a>
+        <a href={t.href} class:active={isActive(t.href)} aria-current={isActive(t.href) ? "page" : undefined}>{t.label}</a>
       {/each}
     </nav>
     <FreshnessBanner />
   </header>
 
-  {@render children()}
+  <main>{@render children()}</main>
 
   <footer class="hub-footer">
     <HubBadge />

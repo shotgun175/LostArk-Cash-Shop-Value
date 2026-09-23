@@ -24,7 +24,7 @@
 <div class="maris">
   <h2>Mari's Shop</h2>
   <p class="note">
-    Wares cost blue crystals (BC), which you buy with gold at the F4 exchange rate — so the gold
+    Wares cost blue crystals (BC), which you buy with gold at the F4 exchange rate, so the gold
     cost is <b>BC × (F4 gold ÷ {BC_PER_BUNDLE})</b>. "Savings vs AH" compares that to buying the same
     items outright on the Auction House at current prices (your Packs-page price edits apply here too).
   </p>

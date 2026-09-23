@@ -117,7 +117,7 @@
           <div class="cs-bar">
             <span class="cs-title">Choose {pack.customSelection.pick} of {pack.customSelection.options.length}</span>
             <span class="cs-count num">{countedChests.length}/{pack.customSelection.pick} picked</span>
-            <span class="cs-note">— tick the option chests below; the {pack.customSelection.pick} highest-gold ones count by default</span>
+            <span class="cs-note">(tick the option chests below; the {pack.customSelection.pick} highest-gold ones count by default)</span>
             {#if customSel.has(pack.slug)}
               <button class="chest-reset" title="Restore the highest-value picks" onclick={() => customSel.clearOne(pack.slug)}>reset picks</button>
             {/if}
@@ -204,7 +204,7 @@
           <span class="default-label">{!readOnly && selection.has(c.chest) ? "Picked" : "Default"}:</span>
           <span class="default-item">{displayName(chosen.slug)}{#if chosen.isBound}<span class="bound"> (Bound)</span>{/if}</span>
           <span class="sep">·</span>
-          <button class="opts-toggle" onclick={() => toggleChest(c.chest)}>{expandedChests[c.chest] ? "Hide options" : `Show all ${c.options.length} options`}</button>
+          <button class="opts-toggle" aria-expanded={!!expandedChests[c.chest]} onclick={() => toggleChest(c.chest)}>{expandedChests[c.chest] ? "Hide options" : `Show all ${c.options.length} options`}</button>
           {#if !readOnly && selection.has(c.chest)}
             <button class="chest-reset" title="Restore the highest-value pick" onclick={() => selection.clearOne(c.chest)}>reset pick</button>
           {/if}
@@ -282,9 +282,13 @@
   @media (max-width: 640px) {
     .body { flex-direction: column; }
     .img { width: 100%; max-width: 320px; }
-    /* Column + flex-start would size the items column to the table's min-width and overflow the
-       page; pin it to the viewport so the wide table scrolls inside its own container instead. */
+    /* Column + flex-start would size the items column to its content and overflow the page; pin
+       it to the viewport. The tables drop their min-width and tighten cell padding so every column,
+       Gold included, fits a phone; item names wrap and .tscroll stays as the fallback. The .tscroll
+       prefix outranks the base table/th/td rules below, which would otherwise win on source order. */
     .chests { width: 100%; }
+    .tscroll table { min-width: 0; }
+    .tscroll th, .tscroll td { padding-left: 5px; padding-right: 5px; }
   }
   h2 { margin: 8px 0 8px; font-size: 22px; }
   /* Store-listing meta chips under the title: cost readout + limited/recurrence/limit pills. */
