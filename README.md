@@ -24,7 +24,7 @@ The project is two loosely-coupled halves that deploy separately:
 | Target | What it is | How it ships |
 |---|---|---|
 | GitHub Pages | The public production UI | Automatically on push to `main` (`.github/workflows/pages.yml`); both test suites gate the deploy |
-| Cloudflare Worker | The data API, plus a live dev copy of the UI at the Worker root | Manually, `npm run deploy` from the repo root |
+| Cloudflare Worker | The data API, plus a live dev copy of the UI at the Worker root | Manually, `npm run deploy` from the repo root, and only when the Worker code (`src/`, `wrangler.jsonc`, root dependencies) changes; the dev copy of the UI can lag behind Pages in between |
 
 The Pages build is served under the repo subpath and fetches prices cross-origin from the Worker
 (`VITE_API_BASE`); the Worker-hosted copy serves the same UI same-origin. When a change alters the
@@ -42,7 +42,7 @@ npm test           # worker suite (Cloudflare workers pool)
 npm run typecheck  # tsc over src/ + test/
 npm run build:web  # build the UI once; wrangler dev serves it from web/build
 npm run dev        # wrangler dev: local worker + the built UI at the root
-npm run deploy     # build web/ then deploy the worker
+npm run deploy     # build web/, run the worker suite and type-check, then deploy the worker
 ```
 
 `npm run deploy` targets the maintainer's Cloudflare account (the bound KV namespace and cron),

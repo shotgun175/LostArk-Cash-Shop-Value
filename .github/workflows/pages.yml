@@ -11,11 +11,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Let the deploy job publish to Pages and mint the OIDC token deploy-pages needs.
+# Read-only by default; only the deploy job gets the Pages publish and OIDC scopes deploy-pages needs.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # One Pages publish at a time; never cancel an in-flight deploy.
 concurrency:
@@ -29,6 +27,7 @@ jobs:
   # suite (Cloudflare workers pool) and the web suite + svelte-check.
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
@@ -47,6 +46,8 @@ jobs:
         run: mkdir -p web/build
       - name: Worker tests (Cloudflare workers pool)
         run: npm test
+      - name: Worker type-check
+        run: npm run typecheck
       - name: Install web deps
         run: npm ci
         working-directory: web
@@ -60,6 +61,7 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       # Pages build profile. BASE_PATH must match the repo name exactly (Pages paths are
       # case-sensitive). VITE_API_BASE points the browser's price fetch at the Worker origin.
@@ -69,7 +71,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: web/package-lock.json
       - name: Install deps
@@ -93,6 +95,10 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    # No timeout-minutes here: deploy-pages v5 gives up after 10 minutes on its own.
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
