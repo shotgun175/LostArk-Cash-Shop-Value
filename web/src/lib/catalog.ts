@@ -68,7 +68,6 @@ const ONE_TO_ONE: readonly string[] = [
   // Summer Astrogem Package (2026-07-15) utility tickets — art cropped from in-game tooltips.
   "astrogem-processing-reset-ticket", "astrogem-processing-option-refresh-ticket",
   // [Monthly] 1200 Crystal Pack: Blue Crystal currency + the Lv.1 T4 gem (Rest Bonus brew reward).
-  // Art pending; until the 128x128 files land in static/icons, ItemIcon's onerror shows a chip.
   "blue-crystal", "lv-1-gem",
   // [3+1] Dimensionalist Welcome Package (2026-09-16): Pheon currency + the Processed Astrogem
   // Box, TJW's crops of the in-game detail popup (see ATTRIBUTION.txt).
