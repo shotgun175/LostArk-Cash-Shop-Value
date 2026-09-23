@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { buildPackRows } from "../src/lib/packs/packRows";
 import { F4_DEFAULT_INPUT } from "../src/lib/packs/exchange";
+import { buildPriceMap } from "../src/lib/packs/priceMap";
+import { BC_PER_BUNDLE } from "../src/lib/packs/data/marisShop";
 import fixture from "./fixtures/tjw-nae-prices.json";
 
 // Choose-N-of-M behavior needs a LIVE custom pack: retired rows display their frozen total, so
@@ -17,7 +19,8 @@ vi.mock("../src/lib/packs/data/packs", async (importOriginal) => {
   };
 });
 
-const prices = fixture.prices as Record<string, number>;
+// buildPackRows takes the fully layered map, built the way the Packs tab builds it.
+const prices = buildPriceMap(fixture.prices as Record<string, number>, { blueCrystalGold: F4_DEFAULT_INPUT / BC_PER_BUNDLE });
 const opts = { f4Input: F4_DEFAULT_INPUT, g2gInput: 0.03268824 };
 
 describe("buildPackRows with a live choose-N pack", () => {

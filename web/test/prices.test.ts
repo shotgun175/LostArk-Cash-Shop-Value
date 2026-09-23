@@ -70,3 +70,12 @@ describe("effectivePrices", () => {
     expect(honorFirst["honor-leapstone"]).toBe(20); // market great / 5
   });
 });
+
+describe("layeredPrices", () => {
+  it("carries the Hell Key tab's tap override for the current region", async () => {
+    const { layeredPrices } = await fresh({});
+    const { hellSettings } = await import("../src/lib/packs/hellSettings.svelte");
+    hellSettings.setTapOverride("nae", { transferred: 2000 });
+    expect(layeredPrices()["special-hone-tap-transferred"]).toBe(2000);
+  });
+});

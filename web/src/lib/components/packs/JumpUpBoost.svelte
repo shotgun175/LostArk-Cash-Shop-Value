@@ -1,10 +1,8 @@
 <script lang="ts">
   import { jumpUpRows } from "$lib/packs/jumpUpRows";
   import { JUMP_UP_RC, JUMP_UP_LEVELS } from "$lib/packs/data/jumpUp";
-  import { effectivePrices } from "$lib/packs/prices.svelte";
-  import { buildPriceMap } from "$lib/packs/priceMap";
+  import { layeredPrices } from "$lib/packs/prices.svelte";
   import { f4 } from "$lib/packs/f4.svelte";
-  import { BC_PER_BUNDLE } from "$lib/packs/data/marisShop";
   import { cashPerRc, currencySymbol, vsExchangePct } from "$lib/packs/exchange";
   import { app } from "$lib/app.svelte";
   import { formatGold, formatSignedPct } from "$lib/format";
@@ -12,10 +10,10 @@
   import ItemIcon from "../ItemIcon.svelte";
   import { base } from "$app/paths";
 
-  // The same fully layered map the Packs tab values against (baked seeds + live + BC items off
-  // the F4 input). Nothing on this track is a raw feed slug, so the raw effectivePrices() map
-  // would value every reward at 0.
-  const prices = $derived(buildPriceMap(effectivePrices(), { blueCrystalGold: f4.value / BC_PER_BUNDLE }));
+  // The same fully layered map the Packs tab values against (layeredPrices(): baked seeds + live +
+  // tap prices + BC items off the F4 input). Nothing on this track is a raw feed slug, so the raw
+  // effectivePrices() map would value every reward at 0.
+  const prices = $derived(layeredPrices());
   const result = $derived(jumpUpRows(prices));
   const f4base = $derived(f4.perRc);
   const vsF4 = $derived(vsExchangePct(result.goldPerRc, f4base));
