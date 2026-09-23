@@ -34,6 +34,7 @@ async function fetchOne(
         accept: "application/json",
         "user-agent": "Mozilla/5.0 (compatible; LostArkCashShopValue/1.0)",
       },
+      signal: AbortSignal.timeout(10_000),
     });
   } catch (e) {
     console.error("g2g: fetch failed", currency, e);

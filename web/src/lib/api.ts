@@ -14,7 +14,7 @@ type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 
 export async function loadPrices(fetchImpl: FetchLike = fetch): Promise<PricePayload> {
-  const res = await fetchImpl(`${API_BASE}/v1/prices`, { cache: "no-store" });
+  const res = await fetchImpl(`${API_BASE}/v1/prices`, { cache: "no-store", signal: AbortSignal.timeout(10_000) });
   if (!res.ok) throw new Error(`prices HTTP ${res.status}`);
   return (await res.json()) as PricePayload;
 }

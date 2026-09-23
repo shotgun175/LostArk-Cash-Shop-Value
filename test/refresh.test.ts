@@ -95,6 +95,59 @@ describe("refresh", () => {
     expect(stored?.regions.euc?.prices.grudge).toBe(60); // advanced
   });
 
+  it("gives up on a hung upstream after 10 s and keeps the last good data", async () => {
+    await refresh(env.PRICES, feedStub({
+      nae: [{ item_slug: "grudge", price: 100, timestamp: T_NEW }],
+      euc: [{ item_slug: "grudge", price: 50, timestamp: T_EUC }],
+    }));
+    vi.useFakeTimers();
+    // Fake timers do not drive the native AbortSignal.timeout, so route it onto the fake clock.
+    const timeoutSpy = vi.spyOn(AbortSignal, "timeout").mockImplementation((ms) => {
+      const c = new AbortController();
+      setTimeout(() => c.abort(new DOMException("timed out", "TimeoutError")), ms);
+      return c.signal;
+    });
+    // The nae feed and both g2g legs never answer; each rejects only once its request signal aborts.
+    let hung = 0;
+    let wake = () => {};
+    const hangs = (n: number) => new Promise<void>((r) => { wake = () => { if (hung >= n) r(); }; wake(); });
+    const stub: FetchLike = (url, init) => {
+      const isG2g = String(url).includes("sls.g2g.com");
+      if (!isG2g && JSON.parse(String(init?.body)).region_slug === "euc") {
+        return feedStub({ euc: [{ item_slug: "grudge", price: 60, timestamp: T_EUC + 10 }] })(url, init);
+      }
+      return new Promise((_, reject) => {
+        init?.signal?.addEventListener("abort", () => reject(init.signal?.reason));
+        hung++;
+        wake();
+      });
+    };
+    try {
+      const run = refresh(env.PRICES, stub, 0);
+      await hangs(1); // the nae request is open
+      expect(timeoutSpy).toHaveBeenLastCalledWith(10_000);
+      await vi.advanceTimersByTimeAsync(10_000); // nae deadline; euc answers, then both g2g legs hang
+      await hangs(3);
+      await vi.advanceTimersByTimeAsync(10_000); // g2g deadlines
+      const payload = await run;
+      expect(timeoutSpy).toHaveBeenCalledTimes(4); // nae, euc and one per g2g leg
+      expect(payload.regions.nae?.prices.grudge).toBe(100); // hung region keeps its snapshot
+      expect(payload.regions.euc?.prices.grudge).toBe(60); // the answering region still advances
+      expect(payload.g2g?.usdPer1kGold).toBe(G2G_USD); // hung g2g legs carry the last rates forward
+      expect(payload.g2g?.eurPer1kGold).toBe(G2G_EUR);
+    } finally {
+      timeoutSpy.mockRestore();
+      vi.useRealTimers();
+    }
+  });
+
+  it("has a working native AbortSignal.timeout in the Workers runtime", async () => {
+    const signal = AbortSignal.timeout(5);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(signal.aborted).toBe(true);
+    expect((signal.reason as DOMException).name).toBe("TimeoutError");
+  });
+
   it("lets a region recover after being empty", async () => {
     const first = await refresh(env.PRICES, feedStub({ nae: [], euc: [] }));
     expect(first.regions.nae).toBeUndefined();
