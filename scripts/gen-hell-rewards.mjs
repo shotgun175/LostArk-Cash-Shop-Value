@@ -346,8 +346,8 @@ function assertWealthRule(src) {
 // --- Main ---------------------------------------------------------------------------------
 
 const src = JSON.parse(readFileSync(SRC, "utf8"));
-assertWealthRule(src);
 const { block, floorCount } = generateBlock(src);
+assertWealthRule(src);
 
 const out = readFileSync(OUT, "utf8");
 const beginAt = out.indexOf(BEGIN);

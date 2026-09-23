@@ -14,7 +14,7 @@
 
 <span class="icon-box" class:framed style="width: {size}px; height: {size}px; --frame-url: url({base}/icons/frame-icon-2.png);">
   {#if showImg}
-    <img class="icon" src={iconUrl(slug)} alt={displayName(slug)} onerror={() => (broken = true)} />
+    <img class="icon" src={iconUrl(slug)} alt={displayName(slug)} loading="lazy" decoding="async" onerror={() => (broken = true)} />
   {:else}
     <span class="icon fallback" aria-hidden="true">{initials}</span>
   {/if}

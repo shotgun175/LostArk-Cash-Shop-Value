@@ -1,16 +1,18 @@
 import { describe, it, expect } from "vitest";
 import { buildPackRows } from "../src/lib/packs/packRows";
 import { F4_DEFAULT_INPUT } from "../src/lib/packs/exchange";
+import { buildPriceMap } from "../src/lib/packs/priceMap";
+import { BC_PER_BUNDLE } from "../src/lib/packs/data/marisShop";
 import fixture from "./fixtures/tjw-nae-prices.json";
 
-const prices = fixture.prices as Record<string, number>;
+// buildPackRows takes the fully layered map, built the way the Packs tab builds it.
+const prices = buildPriceMap(fixture.prices as Record<string, number>, { blueCrystalGold: F4_DEFAULT_INPUT / BC_PER_BUNDLE });
 const opts = { f4Input: F4_DEFAULT_INPUT, g2gInput: 0.03268824 }; // arbitrary g2g input (the old spec seed)
 
 describe("buildPackRows", () => {
   const rows = buildPackRows(prices, opts);
 
-  it("returns one row per pack with all display columns", () => {
-    expect(rows.length).toBe(35);
+  it("values a sampled active pack and fills both comparison columns", () => {
     // Sample a still-active pack (the 2026-08-12 rotation retired most of the old actives);
     // 172,875 / 45.5 is monthly-t4's TJW golden value on this fixture.
     const r = rows.find((x) => x.slug === "monthly-t4-growth-support")!;

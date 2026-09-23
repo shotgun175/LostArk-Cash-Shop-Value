@@ -1,11 +1,7 @@
 <script lang="ts">
   import { arkPassRows } from "$lib/packs/arkPassRows";
   import { ARK_PASS_PREMIUM_RC, ARK_PASS_SEASON, ARK_PASS_TOTAL_RC } from "$lib/packs/data/arkPass";
-  import { effectivePrices } from "$lib/packs/prices.svelte";
-  import { buildPriceMap } from "$lib/packs/priceMap";
-  import { f4 } from "$lib/packs/f4.svelte";
-  import { hellSettings } from "$lib/packs/hellSettings.svelte";
-  import { BC_PER_BUNDLE } from "$lib/packs/data/marisShop";
+  import { layeredPrices } from "$lib/packs/prices.svelte";
   import { arkSelection } from "$lib/packs/arkSelection.svelte";
   import { cashPerRc, currencySymbol } from "$lib/packs/exchange";
   import { app } from "$lib/app.svelte";
@@ -16,12 +12,7 @@
 
   // The same fully layered map the Packs tab values against, so the astrogem chests (baked) and
   // the Ebony Cube ticket chests (cube EV) get the gold they get on a pack card.
-  const prices = $derived(
-    buildPriceMap(effectivePrices(), {
-      blueCrystalGold: f4.value / BC_PER_BUNDLE,
-      tapOverrides: hellSettings.tapOverride[app.region],
-    }),
-  );
+  const prices = $derived(layeredPrices());
   const rows = $derived(arkPassRows(prices, arkSelection.map));
   const pickCount = $derived(arkSelection.count());
 

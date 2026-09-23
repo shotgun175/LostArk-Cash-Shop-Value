@@ -1,16 +1,7 @@
 import type { Pack } from "./types";
 
-// The cash-shop pack registry: the original 12 transcribed verbatim from TJW's compiled
-// registry (source A: result.packs.packs[]), plus the three [Weekly] T4 "III" packs added
-// from the live store on 2026-06-24, the four 2026-07-15 summer-rotation packs (Paradise
-// re-release, Summer Growth I/II, Summer Astrogem), the seven 2026-08-12 rotation packs
-// (Astrogem Package, Paradise Special, Summer Custom I/II, three Weekly Summer T4 packs; all
-// sales-end 09/16/2026; the four non-weekly tiles and Fusion & Leap retired 2026-09-16, the two
-// other weeklies re-listed through 10/21/2026), the six 2026-08-19 packs
-// (the 2+1 Crystal Pack, four BC-priced [Discount] tiles, and the x180 gem tile; all sales-end
-// 08/26/2026, retired 2026-09-10), and the three 2026-09-16 rotation packs (the [3+1]
-// Dimensionalist Welcome Package, the Dimensionalist Welcome Growth Package, and the second
-// Paradise Special Pack II; all sales-end 10/21/2026).
+// The cash-shop pack registry, active and retired, first transcribed from TJW's compiled
+// registry (source A: result.packs.packs[]); see git log for rotation history.
 // `contents[].chest` is the chest display-name; resolve via RESOLVER in ./resolver.
 export const PACKS: Pack[] = [
   {

@@ -1,9 +1,7 @@
 import { PACKS } from "./data/packs";
 import { packValue, type PackResult } from "./packValue";
-import { buildPriceMap } from "./priceMap";
 import { f4Baseline, vsExchangePct, g2gGoldPerDollar, vsG2GPct, F4_DIVISOR } from "./exchange";
 import { BC_PER_BUNDLE } from "./data/marisShop";
-import type { TapOverrides } from "./tapPrices";
 
 export interface PackRow extends PackResult {
   vsExchange: number | null;
@@ -16,26 +14,18 @@ interface PackRowOpts {
   picks?: Record<string, string>;
   customPicks?: Record<string, string[]>; // choose-N-of-M packs: pack slug -> checked chest names
   cashPerRc?: number; // region cost of one RC ($100/12k NA, €94.99/12k EU); defaults to NA in packValue
-  // The Hell Key tab's per-region tap-price override, so a manual tap price moves every pack
-  // that contains a hell/netherworld key, not just that tab. Caller passes it in (keeps this pure).
-  tapOverrides?: TapOverrides;
 }
 
 /**
- * Value every pack against the region price map and layer on the two comparison columns.
- * buildPriceMap is called once (not per pack) — it computes the hell-key/cube EVs. Active
+ * Value every pack against the fully layered price map (buildPriceMap output, built once by the
+ * caller so the same map can feed other views) and layer on the two comparison columns. Active
  * packs sort before retired; within each group, highest gold-per-RC first (choose-N packs
  * rank at their default-pick value so checkbox toggling never reshuffles the grid).
  */
 export function buildPackRows(
-  regionPrices: Record<string, number>,
+  prices: Record<string, number>,
   opts: PackRowOpts,
 ): PackRow[] {
-  // Blue Crystal ("Crystal" packs) tracks the same F4 gold input, at input/95 (vs input/238 for RC).
-  const prices = buildPriceMap(regionPrices, {
-    blueCrystalGold: opts.f4Input / BC_PER_BUNDLE,
-    tapOverrides: opts.tapOverrides,
-  });
   const baseline = f4Baseline(opts.f4Input);
   const g2gGpd = g2gGoldPerDollar(opts.g2gInput);
 

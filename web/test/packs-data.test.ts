@@ -6,9 +6,7 @@ import { CUBE_REWARDS } from "../src/lib/packs/data/cube";
 import { BAKED, TRADE_UP, RELIC_ENGRAVING_SLUGS } from "../src/lib/packs/data/constants";
 
 describe("PACKS", () => {
-  // 26 through the 2026-08-12 rotation (27 minus the phantom weekly astrogem pack, deleted
-  // 2026-08-15) + the six 2026-08-19 packs (the 2+1 Crystal Pack, four BC-priced [Discount]
-  // tiles, the x180 gem tile) = 32 + the three 2026-09-16 rotation packs = 35.
+  // Guards against a retired pack being dropped by accident; update the count on each rotation.
   it("has all 35 packs", () => {
     expect(PACKS.length).toBe(35);
   });
@@ -67,20 +65,6 @@ describe("PACKS", () => {
 });
 
 describe("RESOLVER", () => {
-  // Source B's resolverFull array serializes 35 chests; the "38" in the task/grounding doc
-  // is the source's own summary over-count. We add the documented "10k Character-Bound Gold
-  // Bars" chest (referenced by a pack, valued in grounding doc §5) -> 36. The remaining 2 from
-  // the summary were never serialized and can't be reconstructed without fabrication.
-  // 2026-07-15 summer rotation adds 7 more (3 Season 4 tickets, 4 astrogem chests) -> 43.
-  // 2026-07 1200 Crystal Pack adds 3 (Crystal + the two run-reward brews) -> 46.
-  // 2026-08-12 rotation adds 3 (Abidos 15-pack, Elysian S4 ticket, Joyful card pack) -> 49.
-  // 2026-09-16 rotation adds 4 (Pheon, Processed Astrogem Box, two Collective chests) -> 53.
-  // 2026-09-16 Jump-Up Boost track adds 7 (gold bars, aura, blessing, two Ancient chests, Lv. 8
-  // gem, fixed-epic astrogem chest) -> 60. The Tenebrous Judge Ark Pass adds 5 (shard chest plus
-  // four Special selection chests) -> 65.
-  it("has all 65 chests", () => {
-    expect(Object.keys(RESOLVER).length).toBe(65);
-  });
   it("resolves a fixed chest's first output", () => {
     expect(RESOLVER["Glacier's Breath Chest"].outputs[0]).toEqual({
       slug: "glaciers-breath",

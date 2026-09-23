@@ -1658,40 +1658,21 @@ const GENERATED_HELL_TIERS: Record<string, Omit<HellTier, "valuation">> = {
 // Hand-curated per-tier valuation overrides (see HellTier.valuation), kept OUTSIDE the
 // generated block so a regeneration never touches them. The sub-1730 Destiny tiers drop raw
 // destiny mats, so they override the mat-bearing columns.
+const SUB_1730_DESTINY: Record<string, ColumnVal> = {
+  // Circulated (sub-1730) free taps: the live special-hone tap price on the T4 track
+  // (tapPrices.ts), which is far below the Transferred track the 1730/1750 tiers use.
+  // 100 is Arkemys' old T4 unit, kept as the missing-inputs fallback.
+  "Free taps": { slug: "special-hone-tap-circulated", fallback: 100 },
+  Stones: { slug: "destiny-destruction-stone", fallback: 5 },
+  "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
+  "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
+  "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
+  Fusions: { slug: "abidos-fusion-material", fallback: 160 },
+};
 const TIER_VALUATION: Record<string, Record<string, ColumnVal>> = {
-  "1700 Destiny Rewards": {
-    // Circulated (sub-1730) free taps: the live special-hone tap price on the T4 track
-    // (tapPrices.ts), which is far below the Transferred track the 1730/1750 tiers use.
-    // 100 is Arkemys' old T4 unit, kept as the missing-inputs fallback.
-    "Free taps": { slug: "special-hone-tap-circulated", fallback: 100 },
-    Stones: { slug: "destiny-destruction-stone", fallback: 5 },
-    "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
-    "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
-    "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
-    Fusions: { slug: "abidos-fusion-material", fallback: 160 },
-  },
-  "1680 Destiny Rewards": {
-    // Circulated (sub-1730) free taps: the live special-hone tap price on the T4 track
-    // (tapPrices.ts), which is far below the Transferred track the 1730/1750 tiers use.
-    // 100 is Arkemys' old T4 unit, kept as the missing-inputs fallback.
-    "Free taps": { slug: "special-hone-tap-circulated", fallback: 100 },
-    Stones: { slug: "destiny-destruction-stone", fallback: 5 },
-    "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
-    "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
-    "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
-    Fusions: { slug: "abidos-fusion-material", fallback: 160 },
-  },
-  "1640 Destiny Rewards": {
-    // Circulated (sub-1730) free taps: the live special-hone tap price on the T4 track
-    // (tapPrices.ts), which is far below the Transferred track the 1730/1750 tiers use.
-    // 100 is Arkemys' old T4 unit, kept as the missing-inputs fallback.
-    "Free taps": { slug: "special-hone-tap-circulated", fallback: 100 },
-    Stones: { slug: "destiny-destruction-stone", fallback: 5 },
-    "Base red stones": { slug: "destiny-destruction-stone", fallback: 5 },
-    "Base blue stones": { slug: "destiny-guardian-stone", fallback: 0.1 },
-    "Base leapstones": { slug: "destiny-leapstone", fallback: 13 },
-    Fusions: { slug: "abidos-fusion-material", fallback: 160 },
-  },
+  "1700 Destiny Rewards": SUB_1730_DESTINY,
+  "1680 Destiny Rewards": SUB_1730_DESTINY,
+  "1640 Destiny Rewards": SUB_1730_DESTINY,
 };
 
 // The public table: script-generated reward data merged with the hand-curated valuation

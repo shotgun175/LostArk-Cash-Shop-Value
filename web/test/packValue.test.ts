@@ -4,6 +4,7 @@ import { packDetail } from "../src/lib/packs/packDetail";
 import { buildPriceMap } from "../src/lib/packs/priceMap";
 import { RESOLVER } from "../src/lib/packs/data/resolver";
 import { PACKS } from "../src/lib/packs/data/packs";
+import type { Chest } from "../src/lib/packs/data/types";
 import fixture from "./fixtures/tjw-nae-prices.json";
 
 const NAE = fixture.prices as Record<string, number>;
@@ -55,10 +56,20 @@ describe("resolveChest", () => {
     expect(r2.lines[0].slug).toBe("destiny-destruction-stone");
   });
 
-  it("honors defaultPickSlug regardless of lineGold (Wanderer's Shard Box)", () => {
+  it("honors defaultPickSlug regardless of lineGold", () => {
+    // No live chest sets defaultPickSlug today, so the rule is pinned on a local literal.
     // honor-shard-pouch-l x20 @500 = 10000 would win on value, but defaultPickSlug forces
     // destiny-shard-pouch-l x10 @658 = 6580.
-    const r = resolveChest(RESOLVER["Wanderer's Shard Box"], {
+    const box: Chest = {
+      name: "Test Shard Box",
+      type: "selection",
+      defaultPickSlug: "destiny-shard-pouch-l",
+      outputs: [
+        { slug: "honor-shard-pouch-l", qtyPerChest: 20 },
+        { slug: "destiny-shard-pouch-l", qtyPerChest: 10 },
+      ],
+    };
+    const r = resolveChest(box, {
       "honor-shard-pouch-l": 500,
       "destiny-shard-pouch-l": 658,
     });
