@@ -72,7 +72,7 @@
     base rewards, weighted by how likely you are to draw that floor, summed across floors. Prices
     and trade-ups you set on the <a href="{base}/">Packs</a> page flow through here.
   </p>
-  <p class="vintage">Reward tables: {REWARD_DATA_VINTAGE} · prices live</p>
+  <p class="vintage">Reward tables: {REWARD_DATA_VINTAGE}{#if app.status === "ok"} · prices live{/if}</p>
 
   <div class="controls">
     <label class="tierpick">
