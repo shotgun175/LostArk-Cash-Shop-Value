@@ -204,7 +204,7 @@
           <span class="default-label">{!readOnly && selection.has(c.chest) ? "Picked" : "Default"}:</span>
           <span class="default-item">{displayName(chosen.slug)}{#if chosen.isBound}<span class="bound"> (Bound)</span>{/if}</span>
           <span class="sep">·</span>
-          <button class="opts-toggle" onclick={() => toggleChest(c.chest)}>{expandedChests[c.chest] ? "Hide options" : `Show all ${c.options.length} options`}</button>
+          <button class="opts-toggle" aria-expanded={!!expandedChests[c.chest]} onclick={() => toggleChest(c.chest)}>{expandedChests[c.chest] ? "Hide options" : `Show all ${c.options.length} options`}</button>
           {#if !readOnly && selection.has(c.chest)}
             <button class="chest-reset" title="Restore the highest-value pick" onclick={() => selection.clearOne(c.chest)}>reset pick</button>
           {/if}
