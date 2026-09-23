@@ -127,7 +127,7 @@ describe("refresh", () => {
     };
     await refresh(env.PRICES, feed, 0); // force a poll -> stamps fetchedAt = now (independent of prior KV)
     const primed = g2gFetches;
-    await refresh(env.PRICES, feed); // default 1h interval, fetchedAt just set -> must NOT poll again
+    await refresh(env.PRICES, feed); // default 30-min interval, fetchedAt just set -> must NOT poll again
     expect(g2gFetches).toBe(primed);
   });
 
