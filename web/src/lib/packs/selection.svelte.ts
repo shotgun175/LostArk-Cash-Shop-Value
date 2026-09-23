@@ -2,24 +2,22 @@
 // Region-independent — the choice is *which item*, not its price — and persisted in localStorage.
 // Overrides the engine's default "highest-value option" rule so the pick drives the pack total
 // everywhere that chest appears (cards, drill-down, Ark Pass). Empty map = use the default pick.
+import { load, save } from "../storage";
+
 class Selection {
   map = $state<Record<string, string>>({});
 
   constructor() {
-    if (typeof localStorage !== "undefined") {
-      try {
-        const v = JSON.parse(localStorage.getItem("csv.pick") ?? "{}");
-        if (v && typeof v === "object") this.map = v;
-      } catch {
-        /* ignore malformed */
-      }
+    try {
+      const v = JSON.parse(load("csv.pick") ?? "{}");
+      if (v && typeof v === "object") this.map = v;
+    } catch {
+      /* ignore malformed */
     }
   }
 
   private persist(): void {
-    if (typeof localStorage !== "undefined") {
-      localStorage.setItem("csv.pick", JSON.stringify(this.map));
-    }
+    save("csv.pick", JSON.stringify(this.map));
   }
 
   get(chest: string): string | undefined {

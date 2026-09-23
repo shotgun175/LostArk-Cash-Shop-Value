@@ -11,13 +11,14 @@
   import HellFloorChests from "./HellFloorChests.svelte";
   import TapValuePanel from "./TapValuePanel.svelte";
   import { base } from "$app/paths";
+  import { load, save } from "$lib/storage";
 
   // Tier picker: one dropdown, newest first; the choice is remembered across visits.
   const ILVLS = [...new Set(Object.values(HELL_KEY_MAP).map((m) => HELL_TIERS[m.tierLabel].ilvl))].sort((a, b) => b - a);
-  const stored = typeof localStorage !== "undefined" ? Number(localStorage.getItem("csv.hellTier")) : NaN;
+  const stored = Number(load("csv.hellTier"));
   let ilvl = $state(ILVLS.includes(stored) ? stored : ILVLS[0]);
   $effect(() => {
-    if (typeof localStorage !== "undefined") localStorage.setItem("csv.hellTier", String(ilvl));
+    save("csv.hellTier", String(ilvl));
   });
 
   // Same map the pack engine values keys against (priceMap.ts layers withTapPrices too), so a

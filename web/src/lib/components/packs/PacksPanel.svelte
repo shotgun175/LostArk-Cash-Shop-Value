@@ -18,23 +18,21 @@
   import { PACKS } from "$lib/packs/data/packs";
   import PackCard from "./PackCard.svelte";
   import { base } from "$app/paths";
+  import { load, save } from "$lib/storage";
 
   // G2G real-money rate: auto-populated from the live feed for the selected region (USD for NA, EUR
   // for EU). A typed value overrides it per region and is remembered; clearing the box returns to the
   // live rate.
   const ovKey = (r: Region) => `csv.g2g.override.${r}`;
   function restoreOverride(r: Region): number | null {
-    if (typeof localStorage === "undefined") return null;
-    const raw = localStorage.getItem(ovKey(r));
+    const raw = load(ovKey(r));
     if (raw == null || raw === "") return null;
     const v = Number(raw);
     return Number.isFinite(v) && v > 0 ? v : null;
   }
-  if (typeof localStorage !== "undefined") {
-    // Retire pre-region keys (the old UI auto-saved its default; both must not read back as overrides).
-    localStorage.removeItem("csv.g2g");
-    localStorage.removeItem("csv.g2g.override");
-  }
+  // Retire pre-region keys (the old UI auto-saved its default; both must not read back as overrides).
+  save("csv.g2g", null);
+  save("csv.g2g.override", null);
   let g2gOverrides = $state<Record<Region, number | null>>({ nae: restoreOverride("nae"), euc: restoreOverride("euc") });
   const g2gOverride = $derived(g2gOverrides[app.region]);
   const g2gLive = $derived(
@@ -46,10 +44,10 @@
     const r = app.region;
     if (Number.isFinite(v) && v > 0) {
       g2gOverrides = { ...g2gOverrides, [r]: v };
-      if (typeof localStorage !== "undefined") localStorage.setItem(ovKey(r), String(v));
+      save(ovKey(r), String(v));
     } else {
       g2gOverrides = { ...g2gOverrides, [r]: null };
-      if (typeof localStorage !== "undefined") localStorage.removeItem(ovKey(r));
+      save(ovKey(r), null);
     }
   }
 
