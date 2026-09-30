@@ -14,8 +14,9 @@ The project is two loosely-coupled halves that deploy separately:
 - **Backend, the data API** (`src/`): a Cloudflare Worker. A 60-second cron pulls tracked item
   prices from a community market feed, sanitizes them (the feed is treated as untrusted), and
   stores a small JSON payload in Workers KV. `GET /v1/prices` serves that payload from the edge
-  cache; `GET /healthz` reports data freshness. Nothing unauthenticated can trigger an upstream
-  fetch.
+  cache; `GET /healthz` reports data freshness per region and returns HTTP 503 (`ok: false`) once
+  the oldest region's prices are more than 90 minutes old. Nothing unauthenticated can trigger an
+  upstream fetch.
 - **Frontend, the UI** (`web/`): a SvelteKit static SPA (Svelte 5). It fetches the price payload
   and does all pack-value math client-side, so the UI never needs to redeploy when prices move.
 
@@ -38,7 +39,7 @@ Backend (repo root):
 
 ```sh
 npm install        # also generates worker-configuration.d.ts (wrangler types)
-npm test           # worker suite (Cloudflare workers pool)
+npm test           # worker suite (Vitest 4 + @cloudflare/vitest-plugin)
 npm run typecheck  # tsc over src/ + test/
 npm run build:web  # build the UI once; wrangler dev serves it from web/build
 npm run dev        # wrangler dev: local worker + the built UI at the root
