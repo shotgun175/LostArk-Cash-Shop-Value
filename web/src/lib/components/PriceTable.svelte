@@ -5,13 +5,20 @@
   import ItemIcon from "./ItemIcon.svelte";
   import { base } from "$app/paths";
   import { save } from "$lib/storage";
-  import { loadPriceSort, sortPriceRows, PRICE_SORT_KEY, type PriceSort } from "$lib/priceSort";
+  import {
+    loadPriceSort, nextPriceSort, sortPriceRows, PRICE_SORT_KEY, type PriceSort, type PriceSortKey,
+  } from "$lib/priceSort";
 
-  const sorts: { id: PriceSort; label: string }[] = [
-    { id: "name", label: "A-Z" },
-    { id: "gold", label: "Highest gold" },
+  const cols: { key: PriceSortKey; label: string; right: boolean }[] = [
+    { key: "name", label: "Item", right: false },
+    { key: "gold", label: "Gold", right: true },
   ];
   let sort = $state<PriceSort>(loadPriceSort());
+
+  function sortBy(key: PriceSortKey): void {
+    sort = nextPriceSort(sort, key);
+    save(PRICE_SORT_KEY, `${sort.key}:${sort.dir}`);
+  }
 
   // Sorted [slug, gold] for the active region.
   const rows = $derived(sortPriceRows(app.snapshot?.prices ?? {}, sort));
@@ -24,19 +31,17 @@
 {:else if rows.length === 0}
   <p class="state">No prices yet. The feed may be refreshing.</p>
 {:else}
-  <div class="bar">
-    <span>Sort</span>
-    <div class="toggle" role="group" aria-label="Sort prices">
-      {#each sorts as s (s.id)}
-        <button
-          class:active={sort === s.id}
-          onclick={() => { sort = s.id; save(PRICE_SORT_KEY, s.id); }}
-          aria-pressed={sort === s.id}>{s.label}</button>
-      {/each}
-    </div>
-  </div>
   <table>
-    <thead><tr><th>Item</th><th class="r">Gold</th></tr></thead>
+    <thead>
+      <tr>
+        {#each cols as c (c.key)}
+          {@const active = sort.key === c.key}
+          <th class:r={c.right} aria-sort={active ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}>
+            <button class="sort" class:active onclick={() => sortBy(c.key)}>{c.label}<span class="arrow" aria-hidden="true">{active ? (sort.dir === "asc" ? "▲" : "▼") : "↕"}</span></button>
+          </th>
+        {/each}
+      </tr>
+    </thead>
     <tbody>
       {#each rows as [slug, gold] (slug)}
         <tr>
@@ -61,11 +66,11 @@
   .coin { width: 14px; height: 14px; vertical-align: -2px; margin-left: 5px; }
   .state { color: var(--muted); text-align: center; padding: 40px 0; }
   .state.err { color: var(--bad); }
-  /* Same segmented look as the NA/EU RegionToggle. */
-  .bar { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 10px 16px 4px; }
-  .bar > span { font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; color: var(--faint); }
-  .toggle { display: inline-flex; gap: 2px; background: var(--panel); border: 1px solid var(--line); border-radius: 9px; padding: 2px; }
-  .toggle button { background: none; border: 0; color: var(--muted); font: 500 12.5px "Sora", sans-serif; padding: 5px 12px; border-radius: 7px; cursor: pointer; }
-  .toggle button:hover { color: var(--txt); }
-  .toggle button.active { color: var(--bg); background: linear-gradient(180deg, var(--gold), var(--gold-2)); font-weight: 600; }
+  /* Clickable headers: the active column is brighter with a solid arrow; the other shows a faint
+     up-down hint so it reads as sortable too. */
+  .sort { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px; }
+  .sort:hover, .sort.active { color: var(--txt); }
+  .arrow { font-size: 10px; color: var(--faint); }
+  .sort.active .arrow { color: var(--gold); }
 </style>
