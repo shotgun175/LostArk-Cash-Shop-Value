@@ -21,6 +21,17 @@ import { CUBE_MAP } from "./data/cube";
 import { hellKeyEv, cubeEv, relicRecipe } from "./ev";
 import { withTapPrices, type TapOverrides } from "./tapPrices";
 
+// Slugs whose price buildPriceMap computes (layers 4 and 5 below), mapped to the read-only
+// tooltip the pack UIs show. Like F4_DERIVED_SLUGS, a click-to-edit override here would be
+// out-layered by the computation, so no edit is offered and stored overrides are dropped on load.
+const KEY_NOTE = "Expected value of the key's rewards at current prices. See the Hell Key tab.";
+const CUBE_NOTE = "Expected value of the cube's rewards at current mat prices. Edit those mat prices to change it.";
+export const COMPUTED_PRICE_NOTES: ReadonlyMap<string, string> = new Map([
+  ...Object.keys(HELL_KEY_MAP).map((s) => [s, KEY_NOTE] as const),
+  ...Object.keys(CUBE_MAP).map((s) => [s, CUBE_NOTE] as const),
+  ["relic-combat-engraving-recipe", "Priced as the most expensive relic combat engraving at current prices."],
+]);
+
 export function buildPriceMap(
   regionPrices: Record<string, number>,
   opts: { blueCrystalGold?: number; tapOverrides?: TapOverrides } = {},

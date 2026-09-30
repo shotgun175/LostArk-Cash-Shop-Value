@@ -1,5 +1,6 @@
 import type { Region } from "../api";
 import { load, save } from "../storage";
+import { COMPUTED_PRICE_NOTES } from "./priceMap";
 
 // User-supplied market-price overrides, per region, persisted in localStorage. Merged on top of
 // the live feed before pack values are computed, so editing a mat price flows through the EV math.
@@ -13,10 +14,13 @@ class Overrides {
   private load(r: Region): Record<string, number> {
     try {
       const v = JSON.parse(load(`csv.ov.${r}`) ?? "{}");
-      // Keep only what set() accepts: finite, non-negative numbers from a plain object.
+      // Keep only what set() accepts: finite, non-negative numbers from a plain object. Entries on
+      // computed-price slugs (keys, cubes, relic recipe) are left over from when those lines were
+      // editable; buildPriceMap overwrites them, so they would only inflate the custom-prices chip.
       const clean: Record<string, number> = {};
       if (v && typeof v === "object" && !Array.isArray(v)) {
         for (const [slug, n] of Object.entries(v)) {
+          if (COMPUTED_PRICE_NOTES.has(slug)) continue;
           if (typeof n === "number" && Number.isFinite(n) && n >= 0) clean[slug] = n;
         }
       }
