@@ -8,7 +8,7 @@
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
   import { customSel } from "$lib/packs/customSel.svelte";
-  import { F4_DERIVED_SLUGS } from "$lib/packs/priceMap";
+  import { F4_DERIVED_SLUGS, COMPUTED_PRICE_NOTES } from "$lib/packs/priceMap";
   import type { DetailOption } from "$lib/packs/packDetail";
   import ItemIcon from "../ItemIcon.svelte";
   import GoldRate from "./GoldRate.svelte";
@@ -151,6 +151,9 @@
               <!-- F4-derived currency: the exchange input is the single source of truth, so no
                    edit affordance (an override would be silently out-layered anyway). -->
               <span class="num price-ro" title="Priced from the F4 exchange input (gold / 95). Change the exchange input to change it.">{perUnit(line.gold, line.qty)}</span>
+            {:else if COMPUTED_PRICE_NOTES.has(line.slug)}
+              <!-- Computed by buildPriceMap (key / cube EV, relic recipe): read-only for the same reason. -->
+              <span class="num price-ro" title={COMPUTED_PRICE_NOTES.get(line.slug)}>{perUnit(line.gold, line.qty)}</span>
             {:else if editing === line.slug}
               <input
                 class="edit num" type="number" min="0" step="0.01" bind:value={draft}
