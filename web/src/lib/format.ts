@@ -22,12 +22,19 @@ export function formatMoney(n: number, sym: string): string {
 interface Freshness { label: string; time: string; stale: boolean; }
 
 // `now` is injectable for tests; defaults to current time. Time is shown in the viewer's local
-// timezone (with the tz abbreviation) — UTC reads as confusing to most users.
+// timezone (with the tz abbreviation) — UTC reads as confusing to most users. A snapshot from an
+// earlier local day also shows its date, so a multi-day feed outage doesn't read as last night.
 export function freshness(generatedAt: string, sourceValidAt: string, now = Date.now()): Freshness {
   const src = Date.parse(sourceValidAt);
   const ageMs = Number.isNaN(src) ? Infinity : now - src;
+  const sameDay = new Date(src).toDateString() === new Date(now).toDateString();
   const time = Number.isNaN(src)
     ? "—"
-    : new Date(src).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZoneName: "short" });
+    : new Date(src).toLocaleString([], {
+        ...(sameDay ? {} : { month: "short", day: "numeric" }),
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZoneName: "short",
+      });
   return { label: `prices as of ${time}`, time, stale: ageMs > STALE_MS };
 }

@@ -4,11 +4,28 @@ import worker from "../src/index";
 import { writePayload } from "../src/store";
 import type { PricePayload } from "../src/normalize";
 
+// Fresh as of module load, so /healthz sees it well inside the staleness threshold.
+const nowIso = new Date().toISOString();
 const seed: PricePayload = {
+  schema_version: 1,
+  generated_at: nowIso,
+  regions: { nae: { source_valid_at: nowIso, prices: { grudge: 100 } } },
+  bundles: {},
+};
+
+// Months old: a frozen upstream that /healthz must flag.
+const oldSeed: PricePayload = {
   schema_version: 1,
   generated_at: "2026-06-15T00:00:00.000Z",
   regions: { nae: { source_valid_at: "2026-06-15T00:00:00.000Z", prices: { grudge: 100 } } },
   bundles: {},
+};
+
+type Health = {
+  ok: boolean;
+  source_age_seconds: number | null;
+  g2g_age_seconds: number | null;
+  regions: Record<string, number | null>;
 };
 
 async function call(path: string, method = "GET"): Promise<Response> {
@@ -48,16 +65,47 @@ describe("worker fetch", () => {
     expect(res.status).toBe(405);
   });
 
-  it("/healthz reports ok and a numeric source age when data exists", async () => {
+  it("/healthz reports ok (200) with numeric source and per-region ages when data is fresh", async () => {
     await writePayload(env.PRICES, seed);
     const res = await call("/healthz");
-    const body = (await res.json()) as { ok: boolean; source_age_seconds: number };
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Health;
     expect(body.ok).toBe(true);
     expect(typeof body.source_age_seconds).toBe("number");
+    expect(body.regions.nae).toBeLessThan(60);
   });
 
-  it("/healthz reports not-ok with null age when KV is empty", async () => {
+  it("/healthz reports not-ok (503, uncached) when the source data is stale", async () => {
+    await writePayload(env.PRICES, oldSeed);
     const res = await call("/healthz");
+    expect(res.status).toBe(503);
+    expect(res.headers.get("cache-control")).toContain("no-store");
+    const body = (await res.json()) as Health;
+    expect(body.ok).toBe(false);
+    expect(body.source_age_seconds).toBeGreaterThan(90 * 60);
+  });
+
+  it("/healthz reports not-ok when one region is stale, aging from the OLDEST region", async () => {
+    const now = Date.now();
+    await writePayload(env.PRICES, {
+      ...seed,
+      regions: {
+        nae: { source_valid_at: new Date(now).toISOString(), prices: { grudge: 100 } },
+        euc: { source_valid_at: new Date(now - 7_200_000).toISOString(), prices: { grudge: 100 } }, // 2h frozen
+      },
+    });
+    const res = await call("/healthz");
+    expect(res.status).toBe(503);
+    const body = (await res.json()) as Health;
+    expect(body.ok).toBe(false); // a fresh region must not mask a frozen one
+    expect(body.source_age_seconds).toBeGreaterThanOrEqual(7200);
+    expect(body.regions.nae).toBeLessThan(60);
+    expect(body.regions.euc).toBeGreaterThanOrEqual(7200);
+  });
+
+  it("/healthz reports not-ok (503) with null age when KV is empty", async () => {
+    const res = await call("/healthz");
+    expect(res.status).toBe(503);
     const body = (await res.json()) as { ok: boolean; source_age_seconds: number | null };
     expect(body.ok).toBe(false);
     expect(body.source_age_seconds).toBeNull();

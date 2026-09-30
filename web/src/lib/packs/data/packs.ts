@@ -651,4 +651,25 @@ export const PACKS: Pack[] = [
       { chest: "Abidos Fusion Material Chest", qty: 30 },
     ],
   },
+  // --- 2026-09-30 shop check (from the user's purchase-window and contents captures; not in
+  // TJW's build yet). Sales period ends 10/21/2026 03:00. ---
+  {
+    // Weekly successor to the retired [Limited] Astrogem Package (1,100 RC): Rare - Epic chests
+    // 6 -> 10, Option Refresh tickets 3 -> 2, the 25 T4 Gem Chests dropped. 5 per roster,
+    // purchase count resets weekly (first reset 10/04/2026). The two processing tickets are
+    // BC-store items valued off the exchange input (BC_COSTS).
+    name: "[Weekly] Astrogem Package",
+    slug: "weekly-astrogem-package",
+    royalCrystalCost: 1000,
+    maxPurchases: 5,
+    limited: true,
+    retired: false,
+    contents: [
+      { chest: "Epic Astrogem Chest", qty: 1 },
+      { chest: "Epic Astrogem Selection Chest", qty: 1 },
+      { chest: "Astrogem Processing Reset Ticket", qty: 3 },
+      { chest: "Rare - Epic Astrogem Chest", qty: 10 },
+      { chest: "Astrogem Processing Option Refresh Ticket", qty: 2 },
+    ],
+  },
 ];

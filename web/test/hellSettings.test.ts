@@ -86,6 +86,16 @@ describe("hellSettings", () => {
     expect(s.rarity).toBe("Actual");
   });
 
+  it("drops negative, cleared and non-numeric stored tap prices but keeps the rest", async () => {
+    // A cleared override field is NaN in memory, which JSON persists as null; a reload must
+    // land unchecked instead of ticked-with-a-blank-field. Negatives never survive either.
+    localStorage.setItem("csv.tap.nae", JSON.stringify({ transferred: -5, circulated: null, target: 20 }));
+    localStorage.setItem("csv.tap.euc", JSON.stringify({ transferred: "9", circulated: 40 }));
+    const s = await freshStore();
+    expect(s.tapOverride.nae).toEqual({ target: 20 });
+    expect(s.tapOverride.euc).toEqual({ circulated: 40 });
+  });
+
   it("ignores and removes a legacy stored rarity", async () => {
     // An earlier build persisted csv.hellRarity; loads now discard and delete it.
     localStorage.setItem("csv.hellRarity", "Ancient");

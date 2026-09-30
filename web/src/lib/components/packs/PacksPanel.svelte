@@ -66,7 +66,7 @@
   });
   const g2gWhen = $derived(g2gAt?.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" }));
   const g2gTooltip = $derived(g2gWhen ? `Rate updated ${g2gWhen}` : "Live exchange rate");
-  const g2gStale = $derived(g2gOverride == null && g2gAt != null && Date.now() - g2gAt.getTime() > 6 * 3_600_000);
+  const g2gStale = $derived(g2gOverride == null && g2gAt != null && app.now - g2gAt.getTime() > 6 * 3_600_000);
 
   const basePrices = $derived({ ...(app.snapshot?.prices ?? {}), ...overrides.forRegion(app.region) });
 

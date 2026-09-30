@@ -7,10 +7,10 @@ import { BAKED, TRADE_UP, RELIC_ENGRAVING_SLUGS } from "../src/lib/packs/data/co
 
 describe("PACKS", () => {
   // Guards against a retired pack being dropped by accident; update the count on each rotation.
-  it("has all 35 packs", () => {
-    expect(PACKS.length).toBe(35);
+  it("has all 36 packs", () => {
+    expect(PACKS.length).toBe(36);
   });
-  it("lists exactly the 8 non-retired packs (post-2026-09-16 retirements)", () => {
+  it("lists exactly the 9 non-retired packs (post-2026-09-30 shop check)", () => {
     const active = PACKS.filter((p) => !p.retired).map((p) => p.slug).sort();
     expect(active).toEqual(
       [
@@ -22,6 +22,7 @@ describe("PACKS", () => {
         "paradise-special-pack-ii-2",
         "weekly-summer-t4-crystallized-stone", // re-listed through 10/21 (user's 2026-09-16 capture)
         "weekly-summer-t4-shards-support", // ditto; Fusion & Leap was gone and is retired
+        "weekly-astrogem-package", // added from the user's 2026-09-30 shop capture
       ].sort(),
     );
   });

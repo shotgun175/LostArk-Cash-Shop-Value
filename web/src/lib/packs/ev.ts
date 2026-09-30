@@ -198,7 +198,8 @@ export interface ColumnPrice {
   column: string;
   slug: string | null;
   perUnit: number;
-  source: "live" | "fallback" | "flat" | "untradable" | "—";
+  // "override" is never produced here: the Hell Key tab tags user-overridden slugs itself.
+  source: "live" | "fallback" | "flat" | "untradable" | "override" | "—";
 }
 
 export interface HellKeyBreakdownOpts {

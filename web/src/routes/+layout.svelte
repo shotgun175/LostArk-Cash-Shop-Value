@@ -36,10 +36,13 @@
     // on a page left open, without a manual reload. Hidden tabs skip the tick (a backgrounded tab
     // would otherwise poll forever against the Workers free-tier request cap); returning to the
     // tab refreshes immediately so it never feels stale.
+    // The clock ticks unconditionally so staleness cues advance even if every fetch fails.
     const id = setInterval(() => {
+      app.now = Date.now();
       if (!document.hidden) app.refresh();
     }, 60_000);
     const onVisibility = () => {
+      app.now = Date.now();
       if (!document.hidden) app.refresh();
     };
     document.addEventListener("visibilitychange", onVisibility);

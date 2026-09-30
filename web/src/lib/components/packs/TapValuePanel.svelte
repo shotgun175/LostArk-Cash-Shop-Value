@@ -35,7 +35,10 @@
   const fallback = $derived(columnPrice("Free taps", {}, tier));
   const shown = $derived(derivation ? derivation.goldPerTap : fallback);
 
+  // `on` tracks the key, not the number: a field cleared mid-edit holds NaN and must stay
+  // mounted for the next keystroke. Only a real number supersedes the computed price.
   const on = $derived(ov[kind] !== undefined);
+  const superseded = $derived(Number.isFinite(ov[kind]));
 
   function toggle(checked: boolean): void {
     const next: TapOverrides = { ...ov };
@@ -44,13 +47,15 @@
     hellSettings.setTapOverride(app.region, next);
   }
 
+  // min="0" is only advisory on a number input, so a typed negative is clamped here. NaN (a
+  // cleared field) passes through untouched and falls back to the computed price.
   function setValue(v: number): void {
-    hellSettings.setTapOverride(app.region, { ...ov, [kind]: v });
+    hellSettings.setTapOverride(app.region, { ...ov, [kind]: Number.isFinite(v) ? Math.max(0, v) : v });
   }
 </script>
 
 <div class="tap">
-  <div class="line" class:superseded={on}>
+  <div class="line" class:superseded>
     <span class="lbl">Special hone tap ({track}):</span>
     <b class="num accent">{formatGold(Math.round(shown))}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" />
     <!-- No derivation caption on purpose: the optimizer's "best use" (slot/level) read as a

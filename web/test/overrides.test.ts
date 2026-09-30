@@ -62,4 +62,19 @@ describe("overrides store load", () => {
     const s = await freshStore();
     expect(s.forRegion("euc")).toEqual({ d: 0 });
   });
+
+  it("drops stale overrides on computed-price slugs (keys, cubes, relic recipe)", async () => {
+    mem.setItem(
+      "csv.ov.nae",
+      JSON.stringify({
+        "hell-key-of-destiny-vi": 1,
+        "ebony-cube-4th-unlock": 2,
+        "relic-combat-engraving-recipe": 3,
+        "abidos-fusion-material": 95,
+      }),
+    );
+    const s = await freshStore();
+    expect(s.forRegion("nae")).toEqual({ "abidos-fusion-material": 95 });
+    expect(s.count("nae")).toBe(1);
+  });
 });
