@@ -93,6 +93,7 @@ describe("PacksPanel custom-pack checkbox block", () => {
 describe("PacksPanel stale G2G rate", () => {
   function seedG2g(ageMinutes: number): void {
     app.region = "nae";
+    app.now = Date.now();
     app.status = "ok";
     app.payload = {
       schema_version: 1,
@@ -106,6 +107,14 @@ describe("PacksPanel stale G2G rate", () => {
 
   it("marks a 7 h old rate stale and says when it is from", () => {
     seedG2g(7 * 60);
+    const { body } = render(PacksPanel);
+    expect(body).toMatch(staleReadout);
+    expect(body).toContain("rate from");
+  });
+
+  it("turns stale as time passes with no newer payload (our API unreachable)", () => {
+    seedG2g(10);
+    app.now = Date.now() + 7 * 3_600_000;
     const { body } = render(PacksPanel);
     expect(body).toMatch(staleReadout);
     expect(body).toContain("rate from");

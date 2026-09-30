@@ -48,7 +48,15 @@ class HellSettings {
   private loadTap(r: Region): TapOverrides {
     try {
       const v = JSON.parse(load(`csv.tap.${r}`) ?? "{}");
-      return v && typeof v === "object" ? v : {};
+      if (!v || typeof v !== "object") return {};
+      // Keep only finite, non-negative tap prices. A field cleared mid-edit is NaN in memory
+      // and persists as null; dropping it lets a reload land unchecked, not ticked-and-blank.
+      const clean: TapOverrides = { ...v };
+      for (const kind of ["transferred", "circulated"] as const) {
+        const n: unknown = clean[kind];
+        if (!(typeof n === "number" && Number.isFinite(n) && n >= 0)) delete clean[kind];
+      }
+      return clean;
     } catch {
       return {};
     }

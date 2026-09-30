@@ -4,8 +4,9 @@
   import { effectivePrices } from "$lib/packs/prices.svelte";
   import { withTapPrices, TAP_SLUGS } from "$lib/packs/tapPrices";
   import { hellSettings, RARITY_OPTIONS, REWARD_DATA_VINTAGE } from "$lib/packs/hellSettings.svelte";
+  import { overrides } from "$lib/packs/overrides.svelte";
   import { app } from "$lib/app.svelte";
-  import { formatGold } from "$lib/format";
+  import { formatGold, freshness } from "$lib/format";
   import { displayName } from "$lib/catalog";
   import ItemIcon from "../ItemIcon.svelte";
   import HellFloorChests from "./HellFloorChests.svelte";
@@ -26,6 +27,15 @@
   const prices = $derived(withTapPrices(effectivePrices(), hellSettings.tapOverride[app.region]));
   // "Actual" passes no opts at all, so the default view is byte-identical to the key's own rarity.
   const rarityOpts = $derived(hellSettings.rarity === "Actual" ? undefined : { rarity: hellSettings.rarity });
+  // hellKeyColumnPrices only sees the merged map, so a user's own number would read as "live".
+  // Re-tag a column priced by this region's tap override or a Packs-page price override.
+  const tagOverride = (c: ColumnPrice): ColumnPrice => {
+    const tapOv = hellSettings.tapOverride[app.region] ?? {};
+    const tapOverridden = (["transferred", "circulated"] as const).some(
+      (kind) => c.slug === TAP_SLUGS[kind] && Number.isFinite(tapOv[kind]),
+    );
+    return tapOverridden || (c.slug !== null && overrides.has(app.region, c.slug)) ? { ...c, source: "override" } : c;
+  };
   const keys = $derived(
     Object.keys(HELL_KEY_MAP)
       .filter((slug) => HELL_TIERS[HELL_KEY_MAP[slug].tierLabel].ilvl === ilvl)
@@ -33,7 +43,7 @@
       // which makes the Epic-variant card an exact duplicate of its Legendary sibling; show
       // the family once and bring the Epic card back on "Actual" (user 2026-08-03).
       .filter((slug) => hellSettings.rarity === "Actual" || !slug.endsWith("-epic"))
-      .map((slug) => ({ b: hellKeyBreakdown(slug, prices, rarityOpts), cols: hellKeyColumnPrices(slug, prices) }))
+      .map((slug) => ({ b: hellKeyBreakdown(slug, prices, rarityOpts), cols: hellKeyColumnPrices(slug, prices).map(tagOverride) }))
       .filter((k): k is { b: HellKeyBreakdown; cols: ColumnPrice[] } => k.b !== null)
       // Same rule for cards the picked rarity cannot apply to at all: a clamped Netherworld
       // card would just repeat its Actual numbers, so it hides instead (user 2026-08-03).
@@ -47,6 +57,15 @@
     if (hellSettings.rarity === "Actual") return null;
     return b.effectiveRarity !== b.rarityTier ? "what-if" : null;
   };
+
+  // A failed poll keeps status "ok" with the last payload, so "live" also needs a snapshot that
+  // is within the freshness banner's stale line.
+  const pricesLive = $derived(
+    app.status === "ok" &&
+      !!app.payload &&
+      !!app.snapshot &&
+      !freshness(app.payload.generated_at, app.snapshot.source_valid_at, app.now).stale,
+  );
 
   const pct = (p: number) => `${(p * 100).toFixed(1)}%`;
 
@@ -72,7 +91,7 @@
     base rewards, weighted by how likely you are to draw that floor, summed across floors. Prices
     and trade-ups you set on the <a href="{base}/">Packs</a> page flow through here.
   </p>
-  <p class="vintage">Reward tables: {REWARD_DATA_VINTAGE}{app.status === "ok" ? " · prices live" : ""}</p>
+  <p class="vintage">Reward tables: {REWARD_DATA_VINTAGE}{pricesLive ? " · prices live" : ""}</p>
 
   <div class="controls">
     <label class="tierpick">
@@ -256,4 +275,6 @@
   .src { font-size: 11px; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--border); color: var(--muted); }
   .src-live { color: var(--good); border-color: var(--good); }
   .src-fallback, .src-flat { color: var(--accent); border-color: var(--accent); }
+  /* Accent, like an edited price on the Packs page: the user's own number, not the market. */
+  .src-override { color: var(--accent); border-color: var(--accent); }
 </style>
