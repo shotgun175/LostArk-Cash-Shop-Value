@@ -2,10 +2,11 @@
   import { app } from "$lib/app.svelte";
   import { freshness } from "$lib/format";
 
-  // The snapshot time refreshes when the 60s poll swaps in a newer payload (see +layout).
+  // The snapshot time refreshes when the 60s poll swaps in a newer payload (see +layout); the
+  // age is measured against app.now, which that poll ticks even when the fetch fails.
   const f = $derived(
     app.payload && app.snapshot
-      ? freshness(app.payload.generated_at, app.snapshot.source_valid_at)
+      ? freshness(app.payload.generated_at, app.snapshot.source_valid_at, app.now)
       : null,
   );
 </script>

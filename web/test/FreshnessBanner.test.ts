@@ -16,6 +16,7 @@ function seed(ageMinutes: number): void {
     bundles: {},
   };
   app.region = "nae";
+  app.now = Date.now();
   app.payload = payload;
   app.status = "ok"; // reset so the error case below cannot leak into the others
 }
@@ -37,6 +38,18 @@ describe("FreshnessBanner", () => {
     expect(body).toMatch(staleClass); // class:stale -> the amber styling hook
     expect(body).toContain("prices may be outdated");
     expect(body).not.toContain("prices as of"); // the stale branch replaces the plain label
+  });
+
+  it("turns amber as time passes even when every poll fails to bring a newer payload", () => {
+    // Our API unreachable: refresh() keeps the last payload and status "ok", so the only thing
+    // that moves is the layout's ticking clock. The banner must read that clock, not a
+    // wall-clock read that never re-renders. (No time-string assertion: +2 h can cross midnight.)
+    seed(10);
+    expect(render(FreshnessBanner).body).not.toMatch(staleClass);
+    app.now = Date.now() + 2 * 3_600_000;
+    const { body } = render(FreshnessBanner);
+    expect(body).toMatch(staleClass);
+    expect(body).toContain("prices may be outdated");
   });
 
   it("says so in amber when the price load failed", () => {

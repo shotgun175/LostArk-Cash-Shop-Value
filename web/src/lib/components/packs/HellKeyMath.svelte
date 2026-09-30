@@ -6,7 +6,7 @@
   import { hellSettings, RARITY_OPTIONS, REWARD_DATA_VINTAGE } from "$lib/packs/hellSettings.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
   import { app } from "$lib/app.svelte";
-  import { formatGold } from "$lib/format";
+  import { formatGold, freshness } from "$lib/format";
   import { displayName } from "$lib/catalog";
   import ItemIcon from "../ItemIcon.svelte";
   import HellFloorChests from "./HellFloorChests.svelte";
@@ -58,6 +58,15 @@
     return b.effectiveRarity !== b.rarityTier ? "what-if" : null;
   };
 
+  // A failed poll keeps status "ok" with the last payload, so "live" also needs a snapshot that
+  // is within the freshness banner's stale line.
+  const pricesLive = $derived(
+    app.status === "ok" &&
+      !!app.payload &&
+      !!app.snapshot &&
+      !freshness(app.payload.generated_at, app.snapshot.source_valid_at, app.now).stale,
+  );
+
   const pct = (p: number) => `${(p * 100).toFixed(1)}%`;
 
   // One open floor per card: key slug -> the expanded floor range (or null).
@@ -82,7 +91,7 @@
     base rewards, weighted by how likely you are to draw that floor, summed across floors. Prices
     and trade-ups you set on the <a href="{base}/">Packs</a> page flow through here.
   </p>
-  <p class="vintage">Reward tables: {REWARD_DATA_VINTAGE}{app.status === "ok" ? " · prices live" : ""}</p>
+  <p class="vintage">Reward tables: {REWARD_DATA_VINTAGE}{pricesLive ? " · prices live" : ""}</p>
 
   <div class="controls">
     <label class="tierpick">

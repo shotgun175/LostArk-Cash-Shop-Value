@@ -12,6 +12,7 @@ import fixture from "./fixtures/tjw-nae-prices.json";
 beforeEach(() => {
   app.region = "nae";
   app.status = "ok";
+  app.now = Date.now();
   app.payload = {
     schema_version: 1,
     generated_at: new Date().toISOString(),
@@ -75,6 +76,27 @@ describe("HellKeyMath prices used", () => {
     } finally {
       hellSettings.setTapOverride("euc", {});
       overrides.clearAll("euc");
+    }
+  });
+});
+
+describe("HellKeyMath prices live note", () => {
+  it("says prices are live for a fresh snapshot", () => {
+    expect(render(HellKeyMath).body).toContain("prices live");
+  });
+
+  it("drops the claim once the snapshot is past the stale line", () => {
+    // Every poll failing leaves status "ok" with the old payload; only the clock moves.
+    app.now = Date.now() + 2 * 3_600_000;
+    expect(render(HellKeyMath).body).not.toContain("prices live");
+  });
+
+  it("drops the claim when the region has no snapshot", () => {
+    app.region = "euc";
+    try {
+      expect(render(HellKeyMath).body).not.toContain("prices live");
+    } finally {
+      app.region = "nae";
     }
   });
 });

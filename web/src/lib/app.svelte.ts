@@ -6,6 +6,9 @@ class AppState {
   region = $state<Region>(load("csv.region") === "euc" ? "euc" : "nae");
   payload = $state<PricePayload | null>(null);
   status = $state<"loading" | "ok" | "error">("loading");
+  // Reactive wall clock, ticked by the +layout poll whether or not the fetch succeeds. Staleness
+  // reads this instead of Date.now(), so a page whose every poll fails still turns stale.
+  now = $state(Date.now());
 
   async load(fetchImpl?: typeof fetch) {
     this.status = "loading";
