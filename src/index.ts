@@ -8,6 +8,12 @@ const CORS: Record<string, string> = {
   "access-control-allow-methods": "GET, OPTIONS",
 };
 
+// /healthz flips to not-ok once any region's source data is older than this. Mirrors STALE_MS in
+// web/src/lib/format.ts (the UI's stale-price banner; the Worker cannot import web/), so keep the
+// two in step. The upstream is a periodic batch scrape that's routinely 20-40 min behind, so only
+// flag data far enough behind to suggest a real outage.
+const STALE_MS = 90 * 60 * 1000;
+
 function emptyPayload(): PricePayload {
   return { schema_version: 1, generated_at: new Date().toISOString(), regions: {}, bundles: BUNDLES };
 }
@@ -78,10 +84,21 @@ export default {
           headers: { "content-type": "application/json", "cache-control": "no-store", ...CORS },
         });
       }
-      const snaps = payload ? (Object.values(payload.regions) as RegionSnapshot[]) : [];
-      const times = snaps.map((s) => Date.parse(s.source_valid_at)).filter((t) => !Number.isNaN(t));
-      const newestMs = times.length ? Math.max(...times) : 0;
-      const ageSeconds = newestMs ? Math.round((Date.now() - newestMs) / 1000) : null;
+      const now = Date.now();
+      const entries = payload ? (Object.entries(payload.regions) as [string, RegionSnapshot][]) : [];
+      // Per-region ages (null = unparsable stamp, kept so a monitor still sees the region).
+      const regionAges: Record<string, number | null> = {};
+      const times: number[] = [];
+      for (const [region, snap] of entries) {
+        const t = Date.parse(snap.source_valid_at);
+        regionAges[region] = Number.isNaN(t) ? null : Math.round((now - t) / 1000);
+        if (!Number.isNaN(t)) times.push(t);
+      }
+      // Age of the OLDEST region (worst case), so a single frozen region is not hidden behind the
+      // other region's fresh data.
+      const oldestMs = times.length ? Math.min(...times) : 0;
+      const ageSeconds = oldestMs ? Math.round((now - oldestMs) / 1000) : null;
+      const ok = times.length > 0 && now - oldestMs <= STALE_MS;
       // g2g observability: age of the OLDEST per-currency success stamp (worst case), so a single
       // frozen leg is visible to a monitor instead of hidden behind the other leg's fresh poll.
       // null = no successful poll recorded. Advisory only; deliberately not folded into `ok`,
@@ -89,13 +106,21 @@ export default {
       const g2gStamps = [payload?.g2g?.usdFetchedAt, payload?.g2g?.eurFetchedAt]
         .map((s) => (s ? Date.parse(s) : NaN))
         .filter((t) => !Number.isNaN(t));
-      const g2gAgeSeconds = g2gStamps.length ? Math.round((Date.now() - Math.min(...g2gStamps)) / 1000) : null;
-      // Freshness is minute-granular anyway, so let well-behaved clients cache for 30s instead of
-      // converting every anonymous hit 1:1 into a KV read against the free-tier daily read cap
-      // (this is the only endpoint with that property; /v1/prices is edge-cached).
+      const g2gAgeSeconds = g2gStamps.length ? Math.round((now - Math.min(...g2gStamps)) / 1000) : null;
+      // Freshness is minute-granular anyway, so let well-behaved clients cache an ok for 30s instead
+      // of converting every anonymous hit 1:1 into a KV read against the free-tier daily read cap
+      // (this is the only endpoint with that property; /v1/prices is edge-cached). Not-ok is a 503
+      // so uptime monitors see it, and is never cached, like the KV-failure branch above.
       return new Response(
-        JSON.stringify({ ok: times.length > 0, source_age_seconds: ageSeconds, g2g_age_seconds: g2gAgeSeconds }),
-        { headers: { "content-type": "application/json", "cache-control": "public, max-age=30", ...CORS } },
+        JSON.stringify({ ok, source_age_seconds: ageSeconds, g2g_age_seconds: g2gAgeSeconds, regions: regionAges }),
+        {
+          status: ok ? 200 : 503,
+          headers: {
+            "content-type": "application/json",
+            "cache-control": ok ? "public, max-age=30" : "no-store",
+            ...CORS,
+          },
+        },
       );
     }
 

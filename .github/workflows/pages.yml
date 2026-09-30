@@ -3,22 +3,21 @@ name: Deploy UI to GitHub Pages
 # The public production UI. Builds the SvelteKit front end with the Pages profile (served under the
 # repo subpath; prices fetched cross-origin from the Cloudflare Worker) and publishes it. Prices are
 # fetched live by the browser, so this never needs to redeploy on a price update -- only on a code
-# push to main. The Cloudflare Worker (npm run deploy) stays the data API + live dev site separately.
-# See docs/Split-Deploy-Plan-2026-06-17.md.
+# push to main. Pull requests to main run only the test job (no build, no deploy), so they get
+# checks without touching Pages. The Cloudflare Worker (npm run deploy) stays the data API + live dev
+# site separately. See docs/Split-Deploy-Plan-2026-06-17.md.
 
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
-# Read-only by default; only the deploy job gets the Pages publish and OIDC scopes deploy-pages needs.
+# Read-only by default (all a PR run needs); only the deploy job gets the Pages publish and OIDC
+# scopes deploy-pages needs.
 permissions:
   contents: read
-
-# One Pages publish at a time; never cancel an in-flight deploy.
-concurrency:
-  group: pages
-  cancel-in-progress: false
 
 jobs:
   # Gate on both test suites before anything deploys. build (and therefore deploy) only runs if
@@ -60,6 +59,8 @@ jobs:
 
   build:
     needs: test
+    # PRs stop after the tests; only main pushes and manual runs build and deploy.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -94,7 +95,13 @@ jobs:
 
   deploy:
     needs: build
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    # One Pages publish at a time; never cancel an in-flight deploy. Scoped to this job so a PR run
+    # never queues behind, or cancels, a pending main deploy.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     # No timeout-minutes here: deploy-pages v5 gives up after 10 minutes on its own.
     permissions:
       pages: write
