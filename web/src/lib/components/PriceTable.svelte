@@ -51,8 +51,9 @@
 <style>
   table { width: 100%; border-collapse: collapse; }
   th, td { padding: 8px 16px; text-align: left; }
-  thead th { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
-  th.r, td.r { text-align: right; font-family: "JetBrains Mono", monospace; color: var(--gold); white-space: nowrap; }
+  thead th { font-size: 13.5px; font-weight: 600; color: var(--muted); }
+  th.r, td.r { text-align: right; }
+  td.r { font-family: "JetBrains Mono", monospace; color: var(--gold); white-space: nowrap; }
   tbody tr { border-top: 1px solid #1c2030; }
   tbody tr:hover { background: var(--panel-2); }
   .mat { display: flex; align-items: center; gap: 10px; }

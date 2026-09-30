@@ -143,7 +143,7 @@
   .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table { width: 100%; min-width: 560px; border-collapse: collapse; }
   th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13.5px; }
-  th { color: var(--muted); font-weight: 500; }
+  th { color: var(--muted); font-weight: 600; }
   .right { text-align: right; }
   td.accent { color: var(--accent); }
   .ic-col { width: 30px; }

@@ -246,7 +246,7 @@
   summary { cursor: pointer; color: var(--accent); font-size: 13px; }
   table { width: 100%; border-collapse: collapse; margin-top: 8px; }
   th, td { padding: 5px 8px; border-bottom: 1px solid var(--border); font-size: 13px; text-align: left; }
-  th { color: var(--muted); font-weight: 500; }
+  th { color: var(--muted); font-weight: 600; }
   .right { text-align: right; }
   td.accent { color: var(--accent); }
   tr.zero td { opacity: .45; }

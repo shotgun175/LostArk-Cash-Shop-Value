@@ -84,7 +84,7 @@
   .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table { width: 100%; min-width: 620px; border-collapse: collapse; }
   th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13.5px; }
-  th { color: var(--muted); font-weight: 500; }
+  th { color: var(--muted); font-weight: 600; }
   .right { text-align: right; }
   .ic-col { width: 30px; }
   td.muted { color: var(--muted); }

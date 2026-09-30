@@ -351,7 +351,7 @@
   .default-item { color: var(--text); font-weight: 600; }
   .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table { width: 100%; min-width: 420px; border-collapse: collapse; }
-  th { padding: 5px 8px; text-align: left; font-size: 11px; font-weight: 500; color: var(--muted);
+  th { padding: 5px 8px; text-align: left; font-size: 13px; font-weight: 600; color: var(--muted);
     border-bottom: 1px solid var(--border); }
   td { padding: 6px 8px; border-bottom: 1px solid var(--border); font-size: 13.5px; }
   tbody tr:last-child td { border-bottom: 0; }
