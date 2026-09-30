@@ -19,6 +19,13 @@ on:
 permissions:
   contents: read
 
+# Main pushes run one at a time in push order and never cancel an in-flight deploy, so an older
+# build can't publish over a newer one. Each PR gets its own group (a newer push to the same PR
+# cancels its stale run), so PR checks never queue behind, or cancel, a pending main deploy.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'pages' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   # Gate on both test suites before anything deploys. build (and therefore deploy) only runs if
   # this passes, so a regression in the pack-value math, the EV engine, the wire contract, or the
@@ -97,11 +104,6 @@ jobs:
     needs: build
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    # One Pages publish at a time; never cancel an in-flight deploy. Scoped to this job so a PR run
-    # never queues behind, or cancels, a pending main deploy.
-    concurrency:
-      group: pages
-      cancel-in-progress: false
     # No timeout-minutes here: deploy-pages v5 gives up after 10 minutes on its own.
     permissions:
       pages: write
