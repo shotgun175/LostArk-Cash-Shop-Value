@@ -230,7 +230,7 @@
   .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; min-width: 0; }
   table { width: 100%; min-width: 360px; border-collapse: collapse; }
   th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
-  th { color: var(--muted); font-weight: 500; }
+  th { color: var(--muted); font-weight: 600; }
   th.right, td.right { text-align: right; }
   td.accent { color: var(--accent); }
   tr:hover td { background: var(--panel-2); }

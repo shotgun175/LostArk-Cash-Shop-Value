@@ -55,7 +55,7 @@
   table { width: 100%; border-collapse: collapse; margin: 0; }
   th, td { padding: 5px 8px; border-bottom: 1px solid var(--border); font-size: 12.5px; text-align: left; }
   tbody tr:last-child td { border-bottom: none; }
-  th { color: var(--muted); font-weight: 500; }
+  th { color: var(--muted); font-weight: 600; }
   .right { text-align: right; }
   .num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; }
   .accent { color: var(--accent); }
