@@ -18,8 +18,12 @@ class F4 {
 
   constructor() {
     for (const r of ["nae", "euc"] as Region[]) {
-      const v = Number(load(`csv.f4.${r}`));
-      if (Number.isFinite(v) && v > 0) this.map[r] = v;
+      // 0 is a valid saved input (the setter stores it), so only absent/empty falls back to the seed.
+      const raw = load(`csv.f4.${r}`);
+      if (raw !== null && raw !== "") {
+        const v = Number(raw);
+        if (Number.isFinite(v) && v >= 0) this.map[r] = v;
+      }
     }
   }
 
