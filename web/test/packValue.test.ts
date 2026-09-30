@@ -637,3 +637,20 @@ describe("2026-09-16 rotation packs (self-goldens at the pinned fixture)", () =>
     expect(base - picked).toBe(3 * (21588 - 14000));
   });
 });
+
+// ---------------------------------------------------------------------------
+// 2026-09-30 shop check: the [Weekly] Astrogem Package. Self-golden on the pinned fixture.
+// ---------------------------------------------------------------------------
+describe("2026-09-30 shop check packs (self-goldens at the pinned fixture)", () => {
+  it("weekly-astrogem-package: 33,000 + 43,000 + 10x3,750 with no exchange input", () => {
+    const r = packValue(pack("weekly-astrogem-package"), buildPriceMap(NAE));
+    expect(r.total).toBe(113500);
+    expect(r.maxPurchases).toBe(5);
+  });
+
+  it("prices both processing tickets off the exchange input", () => {
+    // gold/BC 200: reset 3x20,000 + refresh 2x3,600 = +67,200.
+    const mapBc = buildPriceMap(NAE, { blueCrystalGold: 200 });
+    expect(packValue(pack("weekly-astrogem-package"), mapBc).total).toBe(113500 + 67200);
+  });
+});
