@@ -29,6 +29,15 @@ describe("freshness", () => {
     const f = freshness("2026-06-15T06:25:00.000Z", "2026-06-15T04:00:00.000Z", now);
     expect(f.stale).toBe(true);
   });
+  it("adds the date when the prices are from an earlier day (a multi-day feed outage)", () => {
+    const src = "2026-06-13T01:53:00.000Z";
+    const f = freshness("2026-06-15T06:25:00.000Z", src, now);
+    const withDate = new Date(src).toLocaleString([], {
+      month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short",
+    });
+    expect(f.stale).toBe(true);
+    expect(f.time).toBe(withDate);
+  });
 });
 
 describe("formatSignedPct / formatMoney", () => {
