@@ -71,8 +71,10 @@ Run both suites when a change touches the wire format (`src/normalize.ts` types,
   minor+patch PR for the root and one for `web/`, with majors as separate PRs and security fixes
   grouped per directory. Each PR runs the CI test job and is merged by hand. The coupled
   Svelte/Vite/SvelteKit majors, TypeScript majors and `web/` `@types/node` majors are ignored there
-  and moved by hand. A merged root dependency update is a Worker deploy trigger: run `npm ci` in
-  the root first (it regenerates the Worker types), then `npm run deploy`.
+  and moved by hand. A Vitest major lands in the root and `web/` together (both suites stay on
+  one major), so take the two Dependabot PRs as one change or neither. A merged root dependency
+  update is a Worker deploy trigger: run `npm ci` in the root first (it regenerates the Worker
+  types), then `npm run deploy`.
 - The pack dataset (`web/src/lib/packs/data/`) is hand-transcribed and locked by golden tests
   (originally anchored to TheJungleWalrus's compiled cash-shop app, the reference this tool set
   out to match; hell-key values are now this project's own baseline). The hell-key reward tables
