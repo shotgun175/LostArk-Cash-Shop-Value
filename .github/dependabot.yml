@@ -1,0 +1,68 @@
+# Dependency updates arrive as one grouped minor+patch PR per directory per month, with majors as
+# separate PRs. Security updates are grouped per directory and skip the cooldown (cooldown only
+# applies to version updates). Every Dependabot PR runs the pages.yml test job; a human merges.
+#
+# Ignored majors are moved by hand, not by Dependabot:
+# - Svelte, Vite, SvelteKit, adapter-static and vite-plugin-svelte majors are coupled (kit 3 needs
+#   vite 8, vite-plugin-svelte 7, adapter-static 4 and TypeScript 6 together).
+# - TypeScript majors: kit and svelte-check cap TypeScript at ^6, and the Worker tsconfig moves with
+#   the kit migration.
+# - @types/node majors in web follow the CI Node line (node-version in pages.yml), not npm latest.
+# When Dependabot offers a vitest major, merge the root and web PRs together or neither, so both
+# suites stay on one vitest major.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      root-minor-patch:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: [minor, patch]
+      root-security:
+        applies-to: security-updates
+        patterns: ["*"]
+    ignore:
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: npm
+    directory: "/web"
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      web-minor-patch:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: [minor, patch]
+      web-security:
+        applies-to: security-updates
+        patterns: ["*"]
+    ignore:
+      - dependency-name: svelte
+        update-types: [version-update:semver-major]
+      - dependency-name: vite
+        update-types: [version-update:semver-major]
+      - dependency-name: "@sveltejs/kit"
+        update-types: [version-update:semver-major]
+      - dependency-name: "@sveltejs/adapter-static"
+        update-types: [version-update:semver-major]
+      - dependency-name: "@sveltejs/vite-plugin-svelte"
+        update-types: [version-update:semver-major]
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
