@@ -7,22 +7,21 @@ import { BAKED, TRADE_UP, RELIC_ENGRAVING_SLUGS } from "../src/lib/packs/data/co
 
 describe("PACKS", () => {
   // Guards against a retired pack being dropped by accident; update the count on each rotation.
-  it("has all 36 packs", () => {
-    expect(PACKS.length).toBe(36);
+  it("has all 40 packs", () => {
+    expect(PACKS.length).toBe(40);
   });
-  it("lists exactly the 9 non-retired packs (post-2026-09-30 shop check)", () => {
+  it("lists exactly the 7 non-retired packs (post-2026-10-21 rotation)", () => {
     const active = PACKS.filter((p) => !p.retired).map((p) => p.slug).sort();
     expect(active).toEqual(
       [
         "adventurers-path-package", // still in the live shop despite TJW's retired flag (2026-09-09)
-        "dimensionalist-welcome-growth-package",
-        "dimensionalist-welcome-package",
         "monthly-1200-crystal-pack",
         "monthly-t4-growth-support",
-        "paradise-special-pack-ii-2",
-        "weekly-summer-t4-crystallized-stone", // re-listed through 10/21 (user's 2026-09-16 capture)
-        "weekly-summer-t4-shards-support", // ditto; Fusion & Leap was gone and is retired
-        "weekly-astrogem-package", // added from the user's 2026-09-30 shop capture
+        // 2026-10-21 rotation, from the user's purchase-window captures
+        "autumn-paradise-pack",
+        "vambraces-growth-package",
+        "weekly-autumn-t4-crystallized-stone",
+        "weekly-autumn-t4-shards-support",
       ].sort(),
     );
   });

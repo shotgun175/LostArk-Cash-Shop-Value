@@ -56,15 +56,17 @@ describe("buildPackRows", () => {
 
   it("orders retired packs most-recently-retired first, then gold/RC desc", () => {
     const retired = rows.filter((r) => r.retired);
-    // Newest retirement leads the section (the 2026-09-16 cohort); within that shared date the
-    // higher frozen gold/RC wins (Paradise Special 434.7 over Summer Custom I 432.6, then the
-    // Astrogem Package 233.2 over Summer Custom II 231.1, then Fusion & Leap 180.3).
-    expect(retired.slice(0, 5).map((r) => r.slug)).toEqual([
-      "paradise-special-pack",
-      "summer-custom-pack-1",
-      "limited-astrogem-package",
-      "summer-custom-pack-2",
-      "weekly-summer-t4-fusion-leap",
+    // Newest retirement leads the section (the 2026-10-21 cohort); within that shared date the
+    // higher frozen gold/RC wins: Paradise Special II 373.3, Dimensionalist Welcome 317.4,
+    // Welcome Growth 275.1, Summer Crystallized Stone 258.5, Summer Shards 241.5, Weekly
+    // Astrogem 219.6.
+    expect(retired.slice(0, 6).map((r) => r.slug)).toEqual([
+      "paradise-special-pack-ii-2",
+      "dimensionalist-welcome-package",
+      "dimensionalist-welcome-growth-package",
+      "weekly-summer-t4-crystallized-stone",
+      "weekly-summer-t4-shards-support",
+      "weekly-astrogem-package",
     ]);
     // BC packs convert at x(95/238) to share the scale: in the 2026-08-26 cohort Breath's
     // 1058.7 g/BC = 422.6 RC-equivalent leads the 2+1 pack's 225.7 g/RC.

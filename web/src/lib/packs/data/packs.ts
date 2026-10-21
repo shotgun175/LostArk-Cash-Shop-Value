@@ -334,8 +334,8 @@ export const PACKS: Pack[] = [
   // --- 2026-08-12 rotation (all sales periods ended 09/16/2026 03:00). The four non-weekly
   // tiles left the shop at that sales end (TJW's 2026-09-16 capture) and are retired below. Of
   // the three [Weekly] Summer tiles, Crystallized Stone and Shards & Support were re-listed with
-  // 35d timers (through 10/21/2026) and stay live; Fusion & Leap was gone from the user's
-  // 2026-09-16 shop capture and is retired. ---
+  // 35d timers and left the shop at that 10/21/2026 sales end (retired 2026-10-21); Fusion & Leap
+  // was gone from the user's 2026-09-16 shop capture and is retired. ---
   {
     // 5 per roster. The two processing tickets are BC-store items valued off the exchange
     // input (BC_COSTS); the live store names the pick-one chest "Selection" (verified in the
@@ -444,15 +444,17 @@ export const PACKS: Pack[] = [
   },
   {
     // Successor to the retired Crystallized Stone & Fusion III (15/15/15 at 2,100 RC vs
-    // 15/30/10 at 1,700). 5 per roster per week. Re-listed on 2026-09-16 with a 35d timer
-    // (sales period now ends 10/21/2026).
+    // 15/30/10 at 1,700). 5 per roster per week. Re-listed on 2026-09-16 with a 35d timer;
+    // retired 2026-10-21 at that sales end, succeeded by its [Weekly] Autumn T4 counterpart.
     name: "[Weekly] Summer T4 Crystallized Stone & Fusion Pack",
     slug: "weekly-summer-t4-crystallized-stone",
+    frozenTotal: 542850, // NA card value captured 2026-10-21 (EU card showed 464,100)
     royalCrystalCost: 2100,
     maxPurchases: 5,
     limited: true,
     recurrence: "weekly",
-    retired: false,
+    retired: true,
+    retiredOn: "2026-10-21",
     contents: [
       { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 15 },
       { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 15 },
@@ -479,15 +481,17 @@ export const PACKS: Pack[] = [
   },
   {
     // Successor to the retired Shards & Support III (7 chests vs 5, 50 pouches vs 65).
-    // 5 per roster per week. Re-listed on 2026-09-16 with a 35d timer (sales period now ends
-    // 10/21/2026).
+    // 5 per roster per week. Re-listed on 2026-09-16 with a 35d timer; retired 2026-10-21 at
+    // that sales end, succeeded by its [Weekly] Autumn T4 counterpart.
     name: "[Weekly] Summer T4 Shards & Support Material Pack",
     slug: "weekly-summer-t4-shards-support",
+    frozenTotal: 338150, // NA card value captured 2026-10-21 (EU card showed 348,100)
     royalCrystalCost: 1400,
     maxPurchases: 5,
     limited: true,
     recurrence: "weekly",
-    retired: false,
+    retired: true,
+    retiredOn: "2026-10-21",
     contents: [
       { chest: "T4 Support Materials Selection Chest", qty: 7 },
       { chest: "Destiny Shard Pouch (L)", qty: 50 },
@@ -579,7 +583,8 @@ export const PACKS: Pack[] = [
     retiredOn: "2026-08-26",
     contents: [{ chest: "T4 Gem Chest (Lv. 3)", qty: 180 }],
   },
-  // --- 2026-09-16 rotation (all sales periods end 10/21/2026 03:00) ---
+  // --- 2026-09-16 rotation (all sales periods ended 10/21/2026 03:00; all three retired that
+  // day) ---
   {
     // Modeled as the full 3+1 deal (TJW 2026-09-16, the same treatment as the 2+1 Crystal
     // Pack): the tile sells one package for 3,500 RC with a 3-per-roster limit, and buying all
@@ -589,13 +594,15 @@ export const PACKS: Pack[] = [
     // Gem Chest (Lv. 3), 5 Ebony Cube chests (read off the purchase-window icon strip).
     // Pheons are a BC-store item (8.5 BC each, BC_COSTS); the Processed Astrogem Box (one
     // 5/4/1/1 8-cost fully cut astrogem) has no market, so its line renders as "no price".
-    // Replaces the retired [Limited] Astrogem Package.
+    // Replaces the retired [Limited] Astrogem Package. Retired 2026-10-21 at its sales end.
     name: "[3+1] Dimensionalist Welcome Package",
     slug: "dimensionalist-welcome-package",
+    frozenTotal: 3333020, // NA card value captured 2026-10-21 (EU card showed 3,298,440)
     royalCrystalCost: 10500,
     maxPurchases: 1,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-10-21",
     contents: [
       { chest: "Pheon", qty: 200 },
       { chest: "Rare - Epic Astrogem Chest", qty: 100 },
@@ -611,12 +618,15 @@ export const PACKS: Pack[] = [
     // were matched by TJW against the Growth Support family art (the Horizon/Summer packs use
     // the same pouches and chests); the two x3 Collective Support Materials Selection Chests
     // are new Ancient-grade pick-1-of-5 chests read from their in-game tooltips (see resolver).
+    // Retired 2026-10-21 at its sales end.
     name: "[Limited] Dimensionalist Welcome Growth Package",
     slug: "dimensionalist-welcome-growth-package",
+    frozenTotal: 1127750, // NA card value captured 2026-10-21 (EU card showed 1,026,140)
     royalCrystalCost: 4100,
     maxPurchases: 5,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-10-21",
     contents: [
       { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 20 },
       { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 60 },
@@ -635,13 +645,16 @@ export const PACKS: Pack[] = [
     // Legendary hell key 2 -> 1, Elysian 3 -> 2, cube chests 10 -> 5, gem chests 120 -> 50,
     // Abidos chests (the Epic 100-pack) 50 -> 30. 5 per roster, purchase count resets
     // 09/30/2026. The Legendary ticket's season suffix is truncated on the in-game contents
-    // list and assumed Season 4 like its siblings (TJW).
+    // list and assumed Season 4 like its siblings (TJW). Retired 2026-10-21 at its sales end;
+    // succeeded by the Autumn Paradise Pack (5,100 RC).
     name: "Paradise Special Pack II",
     slug: "paradise-special-pack-ii-2",
+    frozenTotal: 1120028, // NA card value captured 2026-10-21 (EU card showed 1,083,036)
     royalCrystalCost: 3000,
     maxPurchases: 5,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-10-21",
     contents: [
       { chest: "Epic Hell Key of Destiny Exchange Ticket (Season 4)", qty: 2 },
       { chest: "Legendary Hell Key of Destiny Exchange Ticket (Season 4)", qty: 1 },
@@ -652,24 +665,107 @@ export const PACKS: Pack[] = [
     ],
   },
   // --- 2026-09-30 shop check (from the user's purchase-window and contents captures; not in
-  // TJW's build yet). Sales period ends 10/21/2026 03:00. ---
+  // TJW's build yet). Sales period ended 10/21/2026 03:00 and it retired that day. ---
   {
     // Weekly successor to the retired [Limited] Astrogem Package (1,100 RC): Rare - Epic chests
     // 6 -> 10, Option Refresh tickets 3 -> 2, the 25 T4 Gem Chests dropped. 5 per roster,
     // purchase count resets weekly (first reset 10/04/2026). The two processing tickets are
-    // BC-store items valued off the exchange input (BC_COSTS).
+    // BC-store items valued off the exchange input (BC_COSTS). Retired 2026-10-21 at its sales
+    // end.
     name: "[Weekly] Astrogem Package",
     slug: "weekly-astrogem-package",
+    // Region-independent: every line is baked (astrogems) or F4-derived (the two tickets at the
+    // 30,000 default seed), so NA and EU captured identically.
+    frozenTotal: 219605, // card value captured 2026-10-21 (NA and EU both)
     royalCrystalCost: 1000,
     maxPurchases: 5,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-10-21",
     contents: [
       { chest: "Epic Astrogem Chest", qty: 1 },
       { chest: "Epic Astrogem Selection Chest", qty: 1 },
       { chest: "Astrogem Processing Reset Ticket", qty: 3 },
       { chest: "Rare - Epic Astrogem Chest", qty: 10 },
       { chest: "Astrogem Processing Option Refresh Ticket", qty: 2 },
+    ],
+  },
+  // --- 2026-10-21 rotation (all sales periods end 11/18/2026 04:00; from the user's
+  // purchase-window captures, not in TJW's build yet). The windows show icons and quantities
+  // only, so each line was pixel-matched against the same icon in an earlier pack's window. ---
+  {
+    // Successor to the retired Paradise Special Pack II (3,000 RC): the same seven lines as the
+    // 2026-08-12 Paradise Special Pack (5,400 RC) in the same order, with T4 Gem Chests
+    // 120 -> 125, at 5,100 RC. 5 per roster, purchase count resets 10/31/2026. The ticket art is
+    // identical across seasons, so the Season 4 suffix is assumed (the October 2026 roadmap
+    // announces no new Paradise season). No [Limited] banner in-game; tagged limited like the
+    // rest of the Paradise line since it is a one-off timed sale.
+    name: "Autumn Paradise Pack",
+    slug: "autumn-paradise-pack",
+    royalCrystalCost: 5100,
+    maxPurchases: 5,
+    limited: true,
+    retired: false,
+    contents: [
+      { chest: "Epic Hell Key of Destiny Exchange Ticket (Season 4)", qty: 3 },
+      { chest: "Legendary Hell Key of Destiny Exchange Ticket (Season 4)", qty: 2 },
+      { chest: "Legendary Netherworld Key Exchange Ticket (Season 4)", qty: 1 },
+      { chest: "Elysian Attempt +1 Exchange Ticket (Season 4)", qty: 3 },
+      { chest: "(NEW) Ebony Cube Entrance Ticket Selection Chest II", qty: 10 },
+      { chest: "T4 Gem Chest (Lv. 3)", qty: 125 },
+      { chest: "Abidos Fusion Material Chest", qty: 50 },
+    ],
+  },
+  {
+    // Sold alongside the Belgardin raid's new bracer equipment (the shop calls it "Vambraces"),
+    // but the contents are ordinary T4 honing mats: the first five lines of the retired Summer
+    // Growth Support Pack I in the same order, at 30/80/20/50/200. 5 per roster, no reset. No
+    // [Limited] banner in-game; tagged limited like the earlier growth packs since it is a
+    // one-off timed sale.
+    name: "Vambraces Growth Package",
+    slug: "vambraces-growth-package",
+    royalCrystalCost: 4800,
+    maxPurchases: 5,
+    limited: true,
+    retired: false,
+    contents: [
+      { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 30 },
+      { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 80 },
+      { chest: "Great Destiny Leapstone Chest", qty: 20 },
+      { chest: "Superior Abidos Fusion Material Chest", qty: 50 },
+      { chest: "Destiny Shard Pouch (L)", qty: 200 },
+    ],
+  },
+  {
+    // Successor to the retired Summer Crystallized Stone & Fusion weekly (15/15/15 at the same
+    // 2,100 RC): Guardian pouches 15 -> 20. 5 per roster per week (first reset 10/25/2026).
+    name: "[Weekly] Autumn T4 Crystallized Stone & Fusion Pack",
+    slug: "weekly-autumn-t4-crystallized-stone",
+    royalCrystalCost: 2100,
+    maxPurchases: 5,
+    limited: true,
+    recurrence: "weekly",
+    retired: false,
+    contents: [
+      { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 15 },
+      { chest: "Superior Abidos Fusion Material Chest", qty: 15 },
+      { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 20 },
+    ],
+  },
+  {
+    // Successor to the retired Summer Shards & Support weekly (7 chests + 50 pouches at
+    // 1,400 RC): 7 chests + 80 pouches at 1,600 RC. 5 per roster per week (first reset
+    // 10/25/2026).
+    name: "[Weekly] Autumn T4 Shards & Support Material Pack",
+    slug: "weekly-autumn-t4-shards-support",
+    royalCrystalCost: 1600,
+    maxPurchases: 5,
+    limited: true,
+    recurrence: "weekly",
+    retired: false,
+    contents: [
+      { chest: "T4 Support Materials Selection Chest", qty: 7 },
+      { chest: "Destiny Shard Pouch (L)", qty: 80 },
     ],
   },
 ];

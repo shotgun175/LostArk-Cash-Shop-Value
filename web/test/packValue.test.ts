@@ -654,3 +654,33 @@ describe("2026-09-30 shop check packs (self-goldens at the pinned fixture)", () 
     expect(packValue(pack("weekly-astrogem-package"), mapBc).total).toBe(113500 + 67200);
   });
 });
+
+// ---------------------------------------------------------------------------
+// 2026-10-21 rotation: Autumn Paradise, Vambraces Growth and the two Autumn weeklies.
+// Self-goldens hand-computed on the pinned fixture.
+// ---------------------------------------------------------------------------
+describe("2026-10-21 rotation packs (self-goldens at the pinned fixture)", () => {
+  const map = buildPriceMap(NAE);
+
+  const golden: [string, number][] = [
+    // 3xVI-epic(174,425) + 2xVI(253,842) + frost-VI(143,155) + 3x3,000 + 10x18,427 + 125x1,850
+    // + 50x13,700 (the 5,400 RC Paradise Special Pack's lines with 5 more gem chests)
+    ["autumn-paradise-pack", 2283634],
+    // 30x1000x29 + 80x1000x0.92 + 20x20x47 + 50x20x171 + 200x3000x0.224
+    ["vambraces-growth-package", 1267800],
+    // 15x1000x29 + 15x20x171 + 20x1000x0.92
+    ["weekly-autumn-t4-crystallized-stone", 504700],
+    // 7x31,900 (T4 support -> glaciers) + 80x3000x0.224
+    ["weekly-autumn-t4-shards-support", 277060],
+  ];
+  for (const [slug, total] of golden) {
+    it(`${slug}: total ${total} on the fixture`, () => {
+      expect(packValue(pack(slug), map).total).toBe(total);
+    });
+  }
+
+  it("the Autumn Paradise Pack is the 5,400 RC Paradise Special Pack plus 5 gem chests", () => {
+    const autumn = packValue(pack("autumn-paradise-pack"), map).total;
+    expect(autumn - packValue(pack("paradise-special-pack"), map).total).toBe(5 * 1850);
+  });
+});
