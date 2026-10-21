@@ -39,7 +39,7 @@ Backend (repo root):
 
 ```sh
 npm install        # also generates worker-configuration.d.ts (wrangler types)
-npm test           # worker suite (Vitest 4 + @cloudflare/vitest-plugin)
+npm test           # worker suite (Vitest + @cloudflare/vitest-plugin)
 npm run typecheck  # tsc over src/ + test/
 npm run build:web  # build the UI once; wrangler dev serves it from web/build
 npm run dev        # wrangler dev: local worker + the built UI at the root

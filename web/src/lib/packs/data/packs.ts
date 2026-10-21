@@ -692,14 +692,16 @@ export const PACKS: Pack[] = [
   },
   // --- 2026-10-21 rotation (all sales periods end 11/18/2026 04:00; from the user's
   // purchase-window captures, not in TJW's build yet). The windows show icons and quantities
-  // only, so each line was pixel-matched against the same icon in an earlier pack's window. ---
+  // only, so each line was pixel-matched against the same icon in an earlier pack's window;
+  // where two chests share the same art, the user's in-game tooltip captures settled it. ---
   {
     // Successor to the retired Paradise Special Pack II (3,000 RC): the same seven lines as the
     // 2026-08-12 Paradise Special Pack (5,400 RC) in the same order, with T4 Gem Chests
     // 120 -> 125, at 5,100 RC. 5 per roster, purchase count resets 10/31/2026. The ticket art is
-    // identical across seasons, so the Season 4 suffix is assumed (the October 2026 roadmap
-    // announces no new Paradise season). No [Limited] banner in-game; tagged limited like the
-    // rest of the Paradise line since it is a one-off timed sale.
+    // identical across seasons, so all four tickets were confirmed "(Season 4)" from in-game
+    // tooltips (Paradise Season 4 runs 07/15/2026 to 02/03/2027), as was the Abidos chest's 100
+    // per chest. No [Limited] banner in-game; tagged limited like the rest of the Paradise line
+    // since it is a one-off timed sale.
     name: "Autumn Paradise Pack",
     slug: "autumn-paradise-pack",
     royalCrystalCost: 5100,
@@ -717,11 +719,10 @@ export const PACKS: Pack[] = [
     ],
   },
   {
-    // Sold alongside the Belgardin raid's new bracer equipment (the shop calls it "Vambraces"),
-    // but the contents are ordinary T4 honing mats: the first five lines of the retired Summer
-    // Growth Support Pack I in the same order, at 30/80/20/50/200. 5 per roster, no reset. No
-    // [Limited] banner in-game; tagged limited like the earlier growth packs since it is a
-    // one-off timed sale.
+    // Sold alongside the Belgardin raid's new Vambraces equipment, but the contents are ordinary
+    // T4 honing mats: the first five lines of the retired Summer Growth Support Pack I in the
+    // same order, at 30/80/20/50/200. 5 per roster, no reset. No [Limited] banner in-game;
+    // tagged limited like the no-banner Paradise packs since it is a one-off timed sale.
     name: "Vambraces Growth Package",
     slug: "vambraces-growth-package",
     royalCrystalCost: 4800,
