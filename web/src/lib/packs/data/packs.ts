@@ -756,7 +756,9 @@ export const PACKS: Pack[] = [
   {
     // Successor to the retired Summer Shards & Support weekly (7 chests + 50 pouches at
     // 1,400 RC): 7 chests + 80 pouches at 1,600 RC. 5 per roster per week (first reset
-    // 10/25/2026).
+    // 10/25/2026). The x7 chest's art is identical to the T4 Breath Selection Chest's (about 5x
+    // cheaper); its in-game tooltip confirmed T4 Support Materials Selection Chest (25 Lava's or
+    // 100 Glacier's Breath).
     name: "[Weekly] Autumn T4 Shards & Support Material Pack",
     slug: "weekly-autumn-t4-shards-support",
     royalCrystalCost: 1600,
