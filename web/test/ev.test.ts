@@ -10,6 +10,7 @@ import {
   hellKeyColumnPrices,
   cubeEv,
   relicRecipe,
+  pheonGold,
 } from "../src/lib/packs/ev";
 import { buildPriceMap } from "../src/lib/packs/priceMap";
 import { BAKED } from "../src/lib/packs/data/constants";
@@ -127,13 +128,16 @@ describe("baseGold", () => {
 // Re-baselined 2026-08-14 (user sign-off): the selectable-astrogem pipe EV's epic side moved
 // 15,000 -> 43,000 (the NPC picked-epic anchor); both the Destiny AND FlameFrost 1730 tables
 // carry astrogem pipe cells, so all four keys rose.
+// (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule) Every chest
+// present on a floor now takes a best-of-3 slot, so all four keys dropped (were 208,169 /
+// 141,600 / 109,391 / 113,539).
 describe("hellKeyEv 1730 goldens (datamine tables, our model)", () => {
   const map = buildPriceMap(NAE);
   const golden: Record<string, number> = {
-    "splendid-hell-key-of-destiny-v": 208169,
-    "splendid-hell-key-of-destiny-v-epic": 141600,
-    "splendid-netherworld-flame-key": 109391,
-    "splendid-netherworld-frost-key": 113539,
+    "splendid-hell-key-of-destiny-v": 189450,
+    "splendid-hell-key-of-destiny-v-epic": 129313,
+    "splendid-netherworld-flame-key": 80995,
+    "splendid-netherworld-frost-key": 84125,
   };
   for (const [slug, expected] of Object.entries(golden)) {
     it(`reproduces ${slug} = ${expected} (±1)`, () => {
@@ -148,7 +152,10 @@ describe("hellKeyEv 1730 goldens (datamine tables, our model)", () => {
 describe("hellKeyEv per-floor reconstruction (engine internals)", () => {
   const map = buildPriceMap(NAE);
 
-  // Helper mirroring the inner loop, returning per-floor diagnostics.
+  // Helper mirroring the inner loop, returning per-floor diagnostics. It follows the current
+  // draw rule (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule):
+  // every chest present on the floor is an offer, so a 0-gold value is pushed too and only an
+  // absent cell is skipped.
   function perFloor(slug: string) {
     const m = HELL_KEY_MAP[slug];
     const tier = HELL_TIERS[m.tierLabel];
@@ -161,39 +168,58 @@ describe("hellKeyEv per-floor reconstruction (engine internals)", () => {
       const cands: number[] = [];
       for (const col of tier.columns) {
         if (SKIP_COLUMNS.has(col)) continue;
-        if (!rewards[col]) continue;
-        const v = chestVal(col, rewards[col], map);
-        if (v > 0) cands.push(v);
+        const cell = rewards[col];
+        if (cell === undefined || cell === null || cell === "") continue;
+        cands.push(chestVal(col, cell, map, tier));
       }
       cands.sort((a, b) => b - a);
       const bestPick = 0.95 * G(cands, 3) + 0.05 * G(cands, 4);
-      const base = baseGold(rewards, map);
-      return { range: pr.range, p, bestPick, base };
+      const base = baseGold(rewards, map, tier);
+      return { range: pr.range, p, bestPick, base, offers: cands.length };
     });
     return { rows, sump };
   }
 
-  it("legendary destiny floor 70-79: best-pick 165,199 / base 6,433 / contribution 41,395", () => {
-    // Reference history: TJW's June-vintage row was 148,053 / 6,433 / 37,260; then
-    // 157,779 / 6,433 / 39,606 after the priced Juice chest + datamine table swap
-    // (2026-07-30); the 2026-08-14 shift is the astrogem pipe-EV fix (epic 15k -> 43k).
-    const { rows, sump } = perFloor("splendid-hell-key-of-destiny-v");
-    const r = rows.find((x) => x.range === "70 - 79")!;
-    expect(Math.round(r.bestPick)).toBe(165199);
-    expect(Math.round(r.base)).toBe(6433);
-    const contribution = (r.bestPick + r.base) * (r.p / sump);
-    expect(Math.round(contribution)).toBe(41395);
+  it("matches hellKeyBreakdown on every floor of every key (best pick, base, offer count)", () => {
+    for (const slug of Object.keys(HELL_KEY_MAP)) {
+      const { rows, sump } = perFloor(slug);
+      const b = hellKeyBreakdown(slug, map)!;
+      expect(b.floors.map((f) => f.range)).toEqual(rows.map((r) => r.range));
+      expect(b.sump).toBeCloseTo(sump, 12);
+      rows.forEach((r, i) => {
+        const f = b.floors[i];
+        expect(f.bestPick).toBeCloseTo(r.bestPick, 6);
+        expect(f.base).toBeCloseTo(r.base, 6);
+        expect(f.candidates.length).toBe(r.offers);
+      });
+    }
   });
 
-  it("flame floor 10-19: best-pick 72,920 / base 0 / contribution 25,707", () => {
+  it("legendary destiny floor 70-79: best-pick 150,005 / base 6,433 / contribution 37,731", () => {
+    // Reference history: TJW's June-vintage row was 148,053 / 6,433 / 37,260; then
+    // 157,779 / 6,433 / 39,606 after the priced Juice chest + datamine table swap
+    // (2026-07-30); the 2026-08-14 shift is the astrogem pipe-EV fix (epic 15k -> 43k), to
+    // 165,199 / 6,433 / 41,395.
+    // (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule)
+    const { rows, sump } = perFloor("splendid-hell-key-of-destiny-v");
+    const r = rows.find((x) => x.range === "70 - 79")!;
+    expect(Math.round(r.bestPick)).toBe(150005);
+    expect(Math.round(r.base)).toBe(6433);
+    const contribution = (r.bestPick + r.base) * (r.p / sump);
+    expect(Math.round(contribution)).toBe(37731);
+  });
+
+  it("flame floor 10-19: best-pick 53,127 / base 0 / contribution 18,729", () => {
     // Was 36,000 / 0 / 12,691 on TJW's juice-less table; the datamine 1730 FlameFrost table
-    // gained a Juice column (75 units on this floor) that now leads the best-of-3 pool.
+    // gained a Juice column (75 units on this floor) that now leads the best-of-3 pool
+    // (72,920 / 0 / 25,707 until the draw-rule change).
+    // (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule)
     const { rows, sump } = perFloor("splendid-netherworld-flame-key");
     const r = rows.find((x) => x.range === "10 - 19")!;
-    expect(Math.round(r.bestPick)).toBe(72920);
+    expect(Math.round(r.bestPick)).toBe(53127);
     expect(Math.round(r.base)).toBe(0);
     const contribution = (r.bestPick + r.base) * (r.p / sump);
-    expect(Math.round(contribution)).toBe(25707);
+    expect(Math.round(contribution)).toBe(18729);
   });
 });
 
@@ -356,7 +382,9 @@ describe("1750 reward tables (datamine-locked cells)", () => {
   });
   it("floor 100 Ability stones is the datamine 220, not the sheet's 230", () => {
     // Caught by the 2026-07-30 adversarial verify pass: the Arkemys sheet (and the gap doc's
-    // reconciled table) carried 230; both datamine views say 220. EV-neutral (untradable).
+    // reconciled table) carried 230; both datamine views say 220. EV-neutral while Include
+    // pheons is off (the default: the chest is a 0-gold offer at any count); with it on, the
+    // count is priced at 9 pheons each.
     expect(HELL_TIERS["1750 Destiny Rewards"].floors["100"]["Ability stones"]).toBe(220);
   });
   it("FlameFrost VI Lv. 8 Gems are 5/6/7 at 80-89/90-99/Max (was 4/5/6 at 1730)", () => {
@@ -402,13 +430,15 @@ describe("1750 hell key map", () => {
 // blanket re-anchor.
 // Re-baselined 2026-08-14 (user sign-off): astrogem pipe-EV epic 15k -> 43k (both 1750 tables
 // carry astrogem pipe cells), lifting all four VI keys.
+// (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule) Every chest
+// present on a floor now takes a best-of-3 slot (were 253,842 / 174,425 / 137,864 / 143,155).
 describe("1750 hellKeyEv self-goldens (our baseline)", () => {
   const map = buildPriceMap(NAE);
   const golden: Record<string, number> = {
-    "hell-key-of-destiny-vi": 253842,
-    "hell-key-of-destiny-vi-epic": 174425,
-    "netherworld-flame-key-vi": 137864,
-    "netherworld-frost-key-vi": 143155,
+    "hell-key-of-destiny-vi": 231145,
+    "hell-key-of-destiny-vi-epic": 159450,
+    "netherworld-flame-key-vi": 102825,
+    "netherworld-frost-key-vi": 106795,
   };
   for (const [slug, expected] of Object.entries(golden)) {
     it(`${slug} = ${expected} exactly`, () => {
@@ -433,19 +463,22 @@ describe("lower-tier hellKeyEv self-goldens (our baseline)", () => {
   const map = buildPriceMap(NAE);
   // 1700 re-baselined 2026-08-14: its tables price "Astrogem chests" (numeric cells), whose
   // baked box value moved 4,300 -> 3,750 (official-KR 90/10 odds); 1640/1680 are unaffected.
+  // All twelve (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule).
+  // Were, in order: 189,893 / 131,127 / 94,794 / 98,464; 186,488 / 127,613 / 93,292 / 96,510;
+  // 134,983 / 91,641 / 71,792 / 74,425.
   const golden: Record<string, number> = {
-    "hell-key-of-destiny-iv": 189893,
-    "hell-key-of-destiny-iv-epic": 131127,
-    "netherworld-flame-key-iv": 94794,
-    "netherworld-frost-key-iv": 98464,
-    "hell-key-of-destiny-iii": 186488,
-    "hell-key-of-destiny-iii-epic": 127613,
-    "netherworld-flame-key-iii": 93292,
-    "netherworld-frost-key-iii": 96510,
-    "hell-key-of-destiny-ii": 134983,
-    "hell-key-of-destiny-ii-epic": 91641,
-    "netherworld-flame-key-ii": 71792,
-    "netherworld-frost-key-ii": 74425,
+    "hell-key-of-destiny-iv": 170678,
+    "hell-key-of-destiny-iv-epic": 118346,
+    "netherworld-flame-key-iv": 71904,
+    "netherworld-frost-key-iv": 74716,
+    "hell-key-of-destiny-iii": 165855,
+    "hell-key-of-destiny-iii-epic": 113889,
+    "netherworld-flame-key-iii": 63283,
+    "netherworld-frost-key-iii": 65523,
+    "hell-key-of-destiny-ii": 119633,
+    "hell-key-of-destiny-ii-epic": 81533,
+    "netherworld-flame-key-ii": 48084,
+    "netherworld-frost-key-ii": 49847,
   };
   for (const [slug, expected] of Object.entries(golden)) {
     it(`${slug} = ${expected} exactly`, () => {
@@ -470,12 +503,22 @@ describe("lower-tier hellKeyEv self-goldens (our baseline)", () => {
 
 describe("hellKeyBreakdown candidates / wealth / rarity opts", () => {
   const map = buildPriceMap(NAE);
-  it("exposes DESC-sorted positive candidates whose top value drives bestPick", () => {
+  it("exposes every present chest as a DESC-sorted candidate, 0-gold included, whose top value bounds bestPick", () => {
+    // (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule) Was
+    // "positive candidates" (every gold > 0) under the old positive-gold-only pool.
     const b = hellKeyBreakdown("hell-key-of-destiny-vi", map)!;
+    const tier = HELL_TIERS["1750 Destiny Rewards"];
     for (const f of b.floors) {
       const golds = f.candidates.map((c) => c.gold);
       expect(golds).toEqual([...golds].sort((x, y) => y - x));
-      expect(golds.every((g) => g > 0)).toBe(true);
+      expect(golds.every((g) => g >= 0)).toBe(true);
+      const present = tier.columns.filter(
+        (col) => !SKIP_COLUMNS.has(col) && tier.floors[f.range][col] !== undefined,
+      );
+      expect(f.candidates.map((c) => c.column).sort()).toEqual([...present].sort());
+      const stones = f.candidates.find((c) => c.column === "Ability stones")!;
+      expect(stones.gold).toBe(0);
+      expect(stones.note).toBe("Pheons excluded");
       if (golds.length > 0) expect(f.bestPick).toBeLessThanOrEqual(golds[0]);
     }
   });
@@ -548,5 +591,114 @@ describe("buildPriceMap", () => {
   it("lets region prices override baked values", () => {
     const overridden = buildPriceMap({ "lv-3-gem": 9999 });
     expect(overridden["lv-3-gem"]).toBe(9999);
+  });
+});
+
+// Decision 1 (TJW 2026-10-21, adopted 2026-10-25): every chest PRESENT on a floor is an offer in
+// the best-of-3 pick, even at 0 gold; only an absent cell is skipped.
+describe("zero-gold offers count in the draw (TJW 2026-10-21 rule)", () => {
+  const map = buildPriceMap(NAE);
+
+  it("a 0-gold offer dilutes the best-of-3 pick", () => {
+    // [100, 50, 0, 0] best of 3: C(4,3) = 4 draws; max is 100 in 3 of them, 50 in 1 -> 87.5.
+    expect(G([100, 50, 0, 0], 3)).toBe(87.5);
+    expect(G([100, 50], 3)).toBe(100);
+  });
+
+  it("every floor of every key offers exactly its present non-skip cells", () => {
+    for (const [slug, m] of Object.entries(HELL_KEY_MAP)) {
+      const tier = HELL_TIERS[m.tierLabel];
+      for (const f of hellKeyBreakdown(slug, map)!.floors) {
+        const rewards = tier.floors[f.range];
+        const present = tier.columns.filter((col) => !SKIP_COLUMNS.has(col) && rewards[col] !== undefined);
+        expect(f.candidates.length).toBe(present.length);
+      }
+    }
+  });
+
+  it("an absent cell is not an offer; the same chest is a 0-gold offer where present", () => {
+    const tier = HELL_TIERS["1730 Destiny Rewards"];
+    const b = hellKeyBreakdown("splendid-hell-key-of-destiny-v", map)!;
+    const low = b.floors.find((f) => f.range === "0 - 9")!;
+    expect(tier.floors["0 - 9"]["Elysian ticket"]).toBeUndefined();
+    expect(low.candidates.some((c) => c.column === "Elysian ticket")).toBe(false);
+    const high = b.floors.find((f) => f.range === "50 - 59")!;
+    expect(tier.floors["50 - 59"]["Elysian ticket"]).toBeDefined();
+    const ticket = high.candidates.find((c) => c.column === "Elysian ticket")!;
+    expect(ticket.gold).toBe(0);
+    expect(ticket.note).toBe("No gold value");
+  });
+});
+
+// Decision 2 (TJW 2026-10-21, adopted 2026-10-25): opt-in "Include pheons" values each Ability
+// stone at 9 pheons. Pheons-on values are tested by hand cases and direction only, never pinned
+// as goldens (they scale with the user's F4 rate).
+describe("Include pheons (opt-in Ability stones valuation)", () => {
+  const tier = HELL_TIERS["1730 Destiny Rewards"];
+  const keys = Object.keys(HELL_KEY_MAP);
+
+  it("values Ability stones at 9 pheons each when on, 0 when off", () => {
+    // 8 stones x 9 pheons x 1,700 gold = 122,400.
+    expect(chestVal("Ability stones", 8, { pheon: 1700 }, tier, { includePheons: true })).toBe(122400);
+    expect(chestVal("Ability stones", 8, { pheon: 1700 }, tier)).toBe(0);
+    expect(chestVal("Ability stones", 8, { pheon: 1700 }, tier, { includePheons: false })).toBe(0);
+    expect(columnPrice("Ability stones", { pheon: 1700 }, tier, { includePheons: true })).toBe(15300);
+  });
+
+  it("pheonGold: a pheon price wins, else 8.5 BC at the blue-crystal price, else 0", () => {
+    expect(pheonGold({ pheon: 2000, "blue-crystal": 200 })).toBe(2000);
+    expect(pheonGold({ "blue-crystal": 200 })).toBe(1700);
+    expect(pheonGold({})).toBe(0);
+    expect(pheonGold({ pheon: Number.NaN })).toBe(0);
+    expect(pheonGold({ "blue-crystal": -5 })).toBe(0);
+  });
+
+  it("lists the Ability stones row as excluded when off and exchange-priced when on", () => {
+    const row = (prices: Record<string, number>, includePheons?: boolean) =>
+      hellKeyColumnPrices("hell-key-of-destiny-vi", prices, { includePheons }).find(
+        (c) => c.column === "Ability stones",
+      )!;
+    expect(row({ "blue-crystal": 200 })).toEqual({ column: "Ability stones", slug: "pheon", perUnit: 0, source: "excluded" });
+    expect(row({ "blue-crystal": 200 }, true)).toEqual({ column: "Ability stones", slug: "pheon", perUnit: 15300, source: "exchange" });
+    // On but unpriced (no exchange rate, no pheon price): the existing no-data source.
+    expect(row({}, true)).toEqual({ column: "Ability stones", slug: "pheon", perUnit: 0, source: "—" });
+  });
+
+  it("raises every key EV in buildPriceMap when on with an exchange rate", () => {
+    const off = buildPriceMap(NAE, { blueCrystalGold: 200 });
+    const on = buildPriceMap(NAE, { blueCrystalGold: 200, includePheons: true });
+    for (const slug of keys) expect(on[slug]).toBeGreaterThan(off[slug]);
+  });
+
+  it("leaves the map unchanged when on without an exchange rate or pheon price", () => {
+    expect(buildPriceMap(NAE, { includePheons: true })).toEqual(buildPriceMap(NAE));
+  });
+
+  it("moving the BC layer before the key EVs is value-neutral while off", () => {
+    const plain = buildPriceMap(NAE);
+    const withBc = buildPriceMap(NAE, { blueCrystalGold: 200 });
+    for (const slug of keys) expect(withBc[slug]).toBe(plain[slug]);
+  });
+
+  it("a user pheon price drives the key EVs and wins over the BC derivation", () => {
+    const own = { ...NAE, pheon: 3000 };
+    const viaBc = buildPriceMap(NAE, { blueCrystalGold: 200, includePheons: true });
+    const withOverride = buildPriceMap(own, { blueCrystalGold: 200, includePheons: true });
+    expect(withOverride["pheon"]).toBe(3000);
+    for (const slug of keys) {
+      expect(withOverride[slug]).toBeGreaterThan(viaBc[slug]); // 3,000 > 1,700 per pheon
+      // Only the pheon price reaches the keys, so the exchange rate no longer matters.
+      expect(buildPriceMap(own, { includePheons: true })[slug]).toBe(withOverride[slug]);
+    }
+  });
+
+  it("drops the Pheons excluded note and prices the chest when on", () => {
+    const map = buildPriceMap(NAE, { blueCrystalGold: 200, includePheons: true });
+    const f = hellKeyBreakdown("hell-key-of-destiny-vi", map, { includePheons: true })!.floors.find(
+      (x) => x.range === "100",
+    )!;
+    const stones = f.candidates.find((c) => c.column === "Ability stones")!;
+    expect(stones.gold).toBe(220 * 9 * 1700);
+    expect(stones.note).toBeNull();
   });
 });

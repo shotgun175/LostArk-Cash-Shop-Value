@@ -1,8 +1,14 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render } from "svelte/server";
 import PacksPanel from "../src/lib/components/packs/PacksPanel.svelte";
 import { app } from "../src/lib/app.svelte";
+import { hellSettings } from "../src/lib/packs/hellSettings.svelte";
 import fixture from "./fixtures/tjw-nae-prices.json";
+
+// Include pheons is a shared singleton that moves every key valuation, so each case starts off.
+beforeEach(() => {
+  hellSettings.setIncludePheons(false);
+});
 
 // The checkbox-block guard below needs LIVE choose-N packs (retired cards render compact, with
 // no option rows). Both Summer Custom packs retired 2026-09-16 and nothing choose-N has replaced
@@ -84,6 +90,40 @@ describe("PacksPanel custom-pack checkbox block", () => {
     const gemRow = rows.find((r) => r.includes(">Lv 3 Gem<"));
     expect(gemRow).toBeDefined();
     expect(gemRow!).toContain("price-btn");
+  });
+});
+
+// The Hell Key tab's Include pheons setting moves every key value on this page, so the note says
+// so while it is on. Indicator only: the control itself lives on the Hell Key tab.
+describe("PacksPanel Include pheons indicator", () => {
+  const INDICATOR = "Key values include ability stones at 9 pheons each (Hell Key tab setting).";
+  function seed(): void {
+    app.region = "nae";
+    app.status = "ok";
+    app.payload = {
+      schema_version: 1,
+      generated_at: new Date().toISOString(),
+      regions: { nae: { prices: fixture.prices, source_valid_at: new Date().toISOString() } },
+      bundles: {},
+    } as unknown as typeof app.payload;
+  }
+
+  it("is absent while the setting is off", () => {
+    seed();
+    const { body } = render(PacksPanel);
+    expect(body).not.toContain(INDICATOR);
+    expect(body).not.toContain("Include pheons"); // no second control on this page
+  });
+
+  it("appears in the note while the setting is on", () => {
+    seed();
+    hellSettings.setIncludePheons(true);
+    const { body } = render(PacksPanel);
+    const note = (body.match(/<p class="note[^"]*">[\s\S]*?<\/p>/)?.[0] ?? "")
+      .replace(/<!--[^>]*-->/g, "")
+      .replace(/\s+/g, " ");
+    expect(note).toContain(`Click any market price to enter your own AH price. ${INDICATOR}`);
+    expect(body).not.toContain("Include pheons");
   });
 });
 

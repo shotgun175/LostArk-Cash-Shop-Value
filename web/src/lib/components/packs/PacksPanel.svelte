@@ -9,6 +9,7 @@
   import { tradeUp } from "$lib/packs/tradeup.svelte";
   import { selection } from "$lib/packs/selection.svelte";
   import { customSel } from "$lib/packs/customSel.svelte";
+  import { hellSettings } from "$lib/packs/hellSettings.svelte";
   import { TRADE_UP } from "$lib/packs/data/constants";
   import { layeredPrices } from "$lib/packs/prices.svelte";
   import { packDetail, type DetailOption } from "$lib/packs/packDetail";
@@ -165,7 +166,7 @@
   <p class="note">
     Sorted by g/RC (Blue-Crystal-priced packs slot in at their exchange equivalent, 95 BC = 238 RC). Selection chests use their highest-value option. Choose-N packs rank by their default picks, so toggling options won't move the card. Drill into a pack for all options + screenshot. Conversion:
     <b class="num">12,000</b> <img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" /> = {sym}{rcCash.toLocaleString("en-US")} ({sym}{rcPerUnit.toFixed(4)}/RC).
-    Click any market price to enter your own AH price.{#if customCount > 0 || tuCount > 0 || pickCount > 0} <span class="custom"><span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && (tuCount > 0 || pickCount > 0)} · {/if}{#if pickCount > 0}<b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"}{/if}{#if pickCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span> <button class="reset-all" onclick={resetAll}>reset all</button></span>{/if}
+    Click any market price to enter your own AH price.{#if hellSettings.includePheons}{" "}Key values include ability stones at 9 pheons each (Hell Key tab setting).{/if}{#if customCount > 0 || tuCount > 0 || pickCount > 0} <span class="custom"><span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && (tuCount > 0 || pickCount > 0)} · {/if}{#if pickCount > 0}<b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"}{/if}{#if pickCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span> <button class="reset-all" onclick={resetAll}>reset all</button></span>{/if}
   </p>
 
   {#if app.status === "loading"}

@@ -1,4 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
+import { HELL_KEY_MAP } from "../src/lib/packs/data/hellRewards";
+import { hellKeyBreakdown } from "../src/lib/packs/ev";
+import { withTapPrices } from "../src/lib/packs/tapPrices";
+import fixture from "./fixtures/tjw-nae-prices.json";
 
 // effectivePrices() is the input to every valuation on the site, so a layering-order regression
 // here would move every number while the goldens (handed a price map directly) stay green. The
@@ -72,10 +76,37 @@ describe("effectivePrices", () => {
 });
 
 describe("layeredPrices", () => {
+  // Each case imports hellSettings from its own fresh module graph (fresh() resets modules), so
+  // Include pheons starts off in every case and a toggle cannot leak between them.
   it("carries the Hell Key tab's tap override for the current region", async () => {
     const { layeredPrices } = await fresh({});
     const { hellSettings } = await import("../src/lib/packs/hellSettings.svelte");
     hellSettings.setTapOverride("nae", { transferred: 2000 });
     expect(layeredPrices()["special-hone-tap-transferred"]).toBe(2000);
+  });
+
+  it("raises every key EV when the Hell Key tab's Include pheons is on", async () => {
+    // The F4 input sits at its 30,000 seed in node (no storage), so pheons have a price.
+    const { layeredPrices } = await fresh(fixture.prices as Record<string, number>);
+    const { hellSettings } = await import("../src/lib/packs/hellSettings.svelte");
+    expect(hellSettings.includePheons).toBe(false);
+    const off = layeredPrices();
+    hellSettings.setIncludePheons(true);
+    const on = layeredPrices();
+    for (const slug of Object.keys(HELL_KEY_MAP)) expect(on[slug]).toBeGreaterThan(off[slug]);
+  });
+
+  it("values keys exactly as the Hell Key tab's old tap-only map did while pheons are off", async () => {
+    // The tab switched from withTapPrices(effectivePrices()) to layeredPrices(); the extra baked,
+    // BC and EV layers must not move a single key EV.
+    const { layeredPrices, effectivePrices } = await fresh(fixture.prices as Record<string, number>);
+    const { hellSettings } = await import("../src/lib/packs/hellSettings.svelte");
+    hellSettings.setTapOverride("nae", { transferred: 1500 });
+    const layered = layeredPrices();
+    expect(layered["blue-crystal"]).toBeGreaterThan(0); // the BC layer is really there
+    const tapOnly = withTapPrices(effectivePrices(), hellSettings.tapOverride.nae);
+    for (const slug of Object.keys(HELL_KEY_MAP)) {
+      expect(hellKeyBreakdown(slug, layered)!.ev).toBe(hellKeyBreakdown(slug, tapOnly)!.ev);
+    }
   });
 });

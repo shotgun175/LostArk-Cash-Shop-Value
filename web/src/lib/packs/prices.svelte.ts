@@ -20,12 +20,14 @@ export function effectivePrices(): Record<string, number> {
   return p;
 }
 
-// The fully layered map every pack-valuing view reads (Packs, the drill-down, Ark Pass, Jump-Up):
-// effectivePrices() plus baked seeds, tap prices with the Hell Key tab's per-region override,
-// key/cube EVs and the F4-priced blue crystal and BC items. Reactive like effectivePrices().
+// The fully layered map every pack-valuing view reads (Packs, the drill-down, Ark Pass, Jump-Up,
+// the Hell Key tab): effectivePrices() plus baked seeds, tap prices with the Hell Key tab's
+// per-region override, the F4-priced blue crystal and BC items, and key/cube EVs that honor the
+// Hell Key tab's global Include pheons setting. Reactive like effectivePrices().
 export function layeredPrices(): Record<string, number> {
   return buildPriceMap(effectivePrices(), {
     blueCrystalGold: f4.perBc,
     tapOverrides: hellSettings.tapOverride[app.region],
+    includePheons: hellSettings.includePheons,
   });
 }

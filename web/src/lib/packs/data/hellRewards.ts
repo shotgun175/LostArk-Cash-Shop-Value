@@ -1761,9 +1761,14 @@ export const HELL_KEY_MAP: Record<string, { tierLabel: string; rarityTier: strin
   "netherworld-frost-key-ii": { tierLabel: "1640 FlameFrost Rewards", rarityTier: "Legendary", probKey: "Frost" },
 };
 
+// Pheons per Ability stone under the opt-in Include pheons setting (TJW 2026-10-21: 9 each).
+export const PHEONS_PER_ABILITY_STONE = 9;
+
 // Column -> slug/fallback/flat valuation (source B columnToSlug). The 1730 and 1750 tiers
 // share mats; the 1640-1700 tiers override the mat-bearing entries per tier (HellTier
-// valuation field). Untradable columns value to 0. The "Juice" column is absent here on
+// valuation field). Untradable columns value to 0. "Ability stones" is the one opt-in column:
+// worth PHEONS_PER_ABILITY_STONE pheons each when the Hell Key tab's Include pheons setting is
+// on, else 0 (see ev.ts columnPrice). The "Juice" column is absent here on
 // purpose: it is priced by a special case in ev.ts chestVal (1 lavas-breath +
 // 3 glaciers-breath per unit) on EVERY tier — a deliberate divergence from TJW (user
 // 2026-07-30), whose engine leaves Juice unvalued.
@@ -1791,7 +1796,9 @@ export const COLUMN_VALUATION: Record<string, ColumnVal> = {
   "Free taps": { slug1730: "special-hone-tap-transferred", fallback1730: 1000 },
   Bracelets: { flat: 10 },
   Accessories: { untradable: true },
-  "Ability stones": { untradable: true },
+  // Untradable, so 0 gold by default. Opt-in (TJW 2026-10-21, adopted by the user 2026-10-25):
+  // with Include pheons on, each stone is worth 9 pheons at the pheon price (see ev.ts pheonGold).
+  "Ability stones": { pheons: PHEONS_PER_ABILITY_STONE },
   "Elysian ticket": { untradable: true },
   Quality: { untradable: true },
   Cards: { untradable: true },
