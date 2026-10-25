@@ -1,13 +1,17 @@
 // Mari's Shop — the current rotating wares (transcribed from TheJungleWalrus, 2026-06-16).
 // Static data; refresh when the in-game rotation changes. Each ware costs blue crystals (BC);
 // gold cost = bc * (F4 gold input / BC_PER_BUNDLE). Value shown = savings vs the AH price.
+// The user confirmed the two Basic Life Energy Potion rows' BC prices (x10 230 BC, x15 330 BC)
+// on 2026-10-25.
 interface MariWare {
-  slug: string | null; // unbound AH slug for valuation; null = no market price (bound-only)
+  // Valuation slug: an AH item's (unbound) slug, or for the untradable Basic Life Energy Potion
+  // the slug the price map fills with its logging default (lifeEnergy.ts). null = no price.
+  slug: string | null;
   name: string;
   qty: number; // units per purchase
   bc: number; // current blue-crystal cost (sale price if on sale)
   wasBc?: number; // pre-sale BC cost, when on sale
-  icon?: string; // icon slug when the item has no valuation slug (bound-only) but does have art
+  icon?: string; // icon slug for the row's art when it differs from the valuation slug or there is none
 }
 
 // Blue crystals per F4-exchange unit: gold-per-BC = F4 gold input / 95.
@@ -30,6 +34,6 @@ export const MARIS_WARES: MariWare[] = [
   { slug: "artisans-tailoring-level-1", name: "Artisan's Tailoring: Level 1", qty: 2, bc: 18 },
   { slug: "solar-grace", name: "Solar Grace", qty: 120, bc: 24 },
   { slug: null, name: "Stone of Soaring Engraving Setting Kit Chest", qty: 10, bc: 460, icon: "stone-of-soaring-kit" },
-  { slug: null, name: "Basic Life Energy Potion ×10", qty: 10, bc: 230, icon: "basic-life-energy-potion" },
-  { slug: null, name: "Basic Life Energy Potion ×15", qty: 15, bc: 330, wasBc: 345, icon: "basic-life-energy-potion" },
+  { slug: "basic-life-energy-potion", name: "Basic Life Energy Potion ×10", qty: 10, bc: 230, icon: "basic-life-energy-potion" },
+  { slug: "basic-life-energy-potion", name: "Basic Life Energy Potion ×15", qty: 15, bc: 330, wasBc: 345, icon: "basic-life-energy-potion" },
 ];
