@@ -2,7 +2,7 @@
   import { base } from "$app/paths";
   import { app } from "$lib/app.svelte";
   import { BONUS_ROOM } from "$lib/packs/data/bonusRoom";
-  import { bonusRoomActive, bonusRoomRows, timeLeft, type BonusProductRow } from "$lib/packs/bonusRoom";
+  import { bonusRoomActive, bonusRoomRows, timeLeft, type BonusGroupRow, type BonusProductRow } from "$lib/packs/bonusRoom";
   import { layeredPrices } from "$lib/packs/prices.svelte";
   import { f4 } from "$lib/packs/f4.svelte";
   import { g2g } from "$lib/packs/g2g.svelte";
@@ -101,6 +101,28 @@
     }
     return p.hasUnpriced && p.valueSet ? "Some contents have no price" : null;
   }
+
+  // A product holding one chest several times shows the count as a badge ("×6"), unless its
+  // in-game name already ends with it ("... X 125", "... X10"). The count comes from the data,
+  // since a row's lines can expand one chest into several materials.
+  const productData = new Map((room?.groups ?? []).flatMap((g) => g.products).map((p) => [p.slug, p]));
+  function badgeFor(p: BonusProductRow): string | null {
+    const c = productData.get(p.slug)?.contents;
+    if (!c || c.length !== 1 || !(c[0].qty > 1) || /\bX\s?\d+\s*$/i.test(p.name)) return null;
+    return `×${c[0].qty}`;
+  }
+
+  // The footer names what the group total leaves out: unpriced products and bonus, and "(part)" for
+  // one that is valued but has an unpriced line.
+  function notCounted(g: BonusGroupRow): string | null {
+    const items = [...g.products, g.bonus];
+    const names = items
+      .filter((x) => x.hasUnpriced)
+      .map((x) => (x.valueSet ? `${x.name} (part)` : x.name));
+    if (names.length === 0) return null;
+    const potion = g.products.some((p) => p.hasUnpriced && p.calculator === "life-energy");
+    return `Not counted (no price yet): ${names.join(", ")}.${potion ? " Enter a Life Energy Potion value above to count it." : ""}`;
+  }
 </script>
 
 <div class="br">
@@ -164,6 +186,7 @@
       <div class="groups">
         {#each groups as g, i (g.slug)}
           {@const n = g.products.length}
+          {@const left = notCounted(g)}
           <section class="group" aria-labelledby="br-{g.slug}">
             <header class="ghead">
               <span class="gnum num" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
@@ -173,7 +196,7 @@
 
             <div class="products">
               {#each g.products as p (p.slug)}
-                <PackCard row={p} link={false} collapsible unpriced={!p.valueSet} notice={noticeFor(p)} />
+                <PackCard row={p} link={false} collapsible unpriced={!p.valueSet} notice={noticeFor(p)} icon={p.icon} badge={badgeFor(p)} />
               {/each}
             </div>
 
@@ -215,7 +238,7 @@
                   <b class="num">{formatSignedPct(g.vsG2G)}</b> <span class="lbl">vs</span><img class="ic g2g" src="{base}/icons/g2g.png" alt="G2G" />
                 </span>
               </div>
-              {#if g.hasUnpriced}<p class="fine">Total includes priced contents only.</p>{/if}
+              {#if left}<p class="fine">{left}</p>{/if}
             </footer>
           </section>
         {/each}

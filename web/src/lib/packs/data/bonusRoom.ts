@@ -66,7 +66,7 @@ function astrogemPack(numeral: string): BonusProduct {
     maxPurchases: 1,
     limited: false,
     retired: false,
-    icon: "epic-astrogem",
+    icon: `autumn-astrogem-pack-${numeral.toLowerCase()}`, // the in-game tile: I red, II orange, III blue
     contents: ASTROGEM_PACK_CONTENTS.map((c) => ({ ...c })),
   };
 }

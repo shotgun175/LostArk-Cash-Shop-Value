@@ -90,6 +90,14 @@ describe("Autumn Bonus Room items (2026-10-21)", () => {
     expect(iconUrl("ancient-astrogem-selection-chest")).toBe("/icons/ancient-astrogem-selection-chest.png");
     expect(iconUrl("ancient-core-random-selection-chest")).toBe("/icons/ancient-core-random-selection-chest.png");
   });
+  it("maps the three Astrogem Pack tile crops 1:1 and names them with Roman numerals", () => {
+    for (const n of ["i", "ii", "iii"]) {
+      expect(hasIcon(`autumn-astrogem-pack-${n}`)).toBe(true);
+      expect(iconUrl(`autumn-astrogem-pack-${n}`)).toBe(`/icons/autumn-astrogem-pack-${n}.png`);
+    }
+    expect(displayName("autumn-astrogem-pack-ii")).toBe("Autumn Astrogem Pack II");
+    expect(displayName("autumn-astrogem-pack-iii")).toBe("Autumn Astrogem Pack III");
+  });
   it("shares the existing kit and card pack art", () => {
     expect(iconUrl("stone-of-soaring-engraving-setting-kit")).toBe("/icons/stone-of-soaring-kit.png");
     expect(iconUrl("joyful-legendary-card-pack")).toBe("/icons/legendary-card-pack.png");

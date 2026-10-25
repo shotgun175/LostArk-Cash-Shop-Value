@@ -21,3 +21,7 @@ in-game item tooltips (Jump-Up Boost rewards), not sourced from TJW.
 2026-10-25: ancient-astrogem-selection-chest.png and
 ancient-core-random-selection-chest.png were cropped from in-game item
 tooltips (Autumn Bonus Room bonus pack), not sourced from TJW.
+
+2026-10-25: autumn-astrogem-pack-i.png, autumn-astrogem-pack-ii.png and
+autumn-astrogem-pack-iii.png were cropped from the user's in-game Bonus Room
+tile captures, not sourced from TJW.

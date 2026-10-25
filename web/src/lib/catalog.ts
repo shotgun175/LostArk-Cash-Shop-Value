@@ -82,6 +82,8 @@ const ONE_TO_ONE: readonly string[] = [
   "lv-8-gem", "ancient-bracelet-chest", "crystalline-aura-plus-14d", "azenas-blessing-28d",
   // Autumn Bonus Room Ark Grid bonus (2026-10-21): the user's in-game tooltip crops (2026-10-25).
   "ancient-astrogem-selection-chest", "ancient-core-random-selection-chest",
+  // Autumn Bonus Room Astrogem Pack tiles: the user's in-game Bonus Room crops (2026-10-25).
+  "autumn-astrogem-pack-i", "autumn-astrogem-pack-ii", "autumn-astrogem-pack-iii",
 ];
 
 const ICON_FILES: Readonly<Record<string, string>> = {
@@ -114,6 +116,9 @@ const NAME_OVERRIDES: Record<string, string> = {
   "lv-8-gem": "Lv. 8 Brilliant Gem",
   "fixed-epic-astrogem-selection": "Fixed Epic Astrogem (player-picked)",
   "stone-of-soaring-engraving-setting-kit": "Stone of Soaring Engraving Setting Kit",
+  "autumn-astrogem-pack-i": "Autumn Astrogem Pack I",
+  "autumn-astrogem-pack-ii": "Autumn Astrogem Pack II",
+  "autumn-astrogem-pack-iii": "Autumn Astrogem Pack III",
   // Hell key display names use the datamine labels (no "Splendid", tier numeral appended);
   // rarity comes from the card pills, with an "(Epic)" disambiguator only where two cards
   // would otherwise share a name (user 2026-07-30).

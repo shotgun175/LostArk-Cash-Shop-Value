@@ -143,7 +143,7 @@ describe("bonusRoomRows at the fixture prices, F4 30,000", () => {
     expect(r.total).toBe(896775);
     expect(r.valueSet).toBe(true);
     expect(r.hasUnpriced).toBe(false);
-    expect(r.icon).toBe("epic-astrogem");
+    expect(r.icon).toBe("autumn-astrogem-pack-i");
     expect(r.costGold!).toBeCloseTo((4000 * F4) / 238, 6); // 504,201.68
     expect(r.goldPerRc!).toBeCloseTo(224.19375, 9);
     expect(r.vsExchange!).toBeCloseTo(77.860375, 6);

@@ -7,6 +7,7 @@
   import type { DetailOption } from "$lib/packs/packDetail";
   import GoldRate from "./GoldRate.svelte";
   import PackLinesTable from "./PackLinesTable.svelte";
+  import ItemIcon from "../ItemIcon.svelte";
   import { base } from "$app/paths";
 
   interface CustomBlock {
@@ -14,11 +15,11 @@
     options: { chest: string; qty: number; gold: number; counted: boolean }[];
   }
 
-  // The optional link / collapsible / unpriced / notice props serve the Bonus Room's product cards;
-  // their defaults render the Packs tab's card unchanged.
+  // The optional link / collapsible / unpriced / notice / icon / badge props serve the Bonus Room's
+  // product cards; their defaults render the Packs tab's card unchanged.
   let {
     row, tradeUpInfo = {}, alts = {}, custom = null, compact = false,
-    link = true, collapsible = false, unpriced = false, notice = null,
+    link = true, collapsible = false, unpriced = false, notice = null, icon = null, badge = null,
   }: {
     row: PackRow;
     tradeUpInfo?: Record<string, { ratio: number; deltaPct: number }>;
@@ -29,6 +30,8 @@
     collapsible?: boolean; // true: the material table sits in a closed-by-default <details>
     unpriced?: boolean; // true: no content line has a price, so the gold total reads "no price"
     notice?: string | null; // a small warning line under the comparison chips
+    icon?: string | null; // a catalog slug: a 40 px item icon before the title
+    badge?: string | null; // a short tag right after the title (e.g. "×6")
   } = $props();
 
   const sym = $derived(currencySymbol(app.region)); // $ for NA, € for EU — RC priced per region
@@ -45,7 +48,13 @@
 
 <div class="card" class:retired={row.retired}>
   <div class="head">
-    {#if link}<a class="title" href="{base}/pack/{row.slug}">{row.name}</a>{:else}<span class="title">{row.name}</span>{/if}
+    {#snippet title()}
+      {#if link}<a class="title" href="{base}/pack/{row.slug}">{row.name}</a>{:else}<span class="title">{row.name}</span>{/if}
+    {/snippet}
+    <!-- The icon and title share one flex item, so a long title wraps beside the icon instead of
+         dropping below it. -->
+    {#if icon}<span class="lead"><ItemIcon slug={icon} size={40} />{@render title()}</span>{:else}{@render title()}{/if}
+    {#if badge}<span class="tag">{badge}</span>{/if}
     {#if row.retired}<span class="tag retired-tag">{retiredLabel(row.retiredOn)}</span>{/if}
     {#if row.recurrence}<span class="tag">{row.recurrence}</span>{/if}
     {#if row.limited}<span class="tag">limited</span>{/if}
@@ -115,7 +124,8 @@
 
   {#if collapsible}
     <details class="contents">
-      <summary>Contents · {row.lines.length} material{row.lines.length === 1 ? "" : "s"}</summary>
+      <!-- One line needs no count (the product's quantity is in its name or badge). -->
+      <summary>Contents{row.lines.length === 1 ? "" : ` · ${row.lines.length} materials`}</summary>
       <PackLinesTable lines={row.lines} {tradeUpInfo} {alts} />
     </details>
   {:else}
@@ -147,6 +157,8 @@
   .ref-link:hover { text-decoration: underline; text-underline-offset: 3px; }
   .head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
   .title { font-weight: 600; color: var(--text); text-decoration: none; }
+  .lead { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+  .lead .title { min-width: 0; }
   a.title:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
   .tag { padding: 2px 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border);
     font-size: 12px; color: var(--muted); }

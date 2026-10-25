@@ -18,6 +18,17 @@ const INSIDE = Date.parse("2026-10-25T12:00:00Z");
 const AFTER = Date.parse("2026-11-19T00:00:00Z");
 const KIT_NOTE = "Counts as 0 gold while pheons are excluded (setting above).";
 const KIT_UNPRICED_NOTE = "Counts as 0 gold until an F4 exchange rate prices pheons (above).";
+const PRODUCTS = [
+  "Autumn Astrogem Pack I",
+  "Autumn Astrogem Pack II",
+  "Autumn Astrogem Pack III",
+  "T4 Gem Chest (Lv. 3) X 125",
+  "Stone of Soaring Engraving Setting Kit Chest",
+  "Joyful Legendary - Epic Card Pack X10",
+  "(NEW) Ebony Cube Entrance Ticket Selection Chest II",
+  "Basic Life Energy Potion X20",
+  "Superior Abidos Fusion Material Chest",
+];
 
 function loadFixture(now = INSIDE): void {
   app.region = "nae";
@@ -95,8 +106,47 @@ describe("BonusRoom while the room runs", () => {
 
     // The Packs-style card pieces: collapsed contents and the shared material table inside it.
     expect(body).toContain("Contents · 6 materials");
-    expect(body).toContain("Contents · 1 material<");
+    expect(body).toMatch(/<summary[^>]*>Contents<\/summary>/);
     expect(body).toContain('class="tscroll');
+  });
+
+  it("shows an icon on every product card, the Astrogem Packs' own tile art", () => {
+    const { body } = render(BonusRoom);
+    for (const n of ["I", "II", "III"]) {
+      const pack = card(body, `Autumn Astrogem Pack ${n}`);
+      expect(pack).toMatch(new RegExp(`<img class="icon[^"]*" src="[^"]*/autumn-astrogem-pack-${n.toLowerCase()}\\.png"`));
+      expect(pack.match(/<img class="icon/g)).toHaveLength(1 + 6); // the card icon + 6 material rows
+    }
+    for (const name of PRODUCTS) {
+      // The card icon is the 40 px ItemIcon that comes before the title.
+      const head = card(body, name).split(`>${name}</span>`)[0];
+      expect(head, name).toMatch(/class="icon-box[^"]*" style="width: 40px; height: 40px;/);
+      expect(head, name).toMatch(/<img class="icon/);
+    }
+  });
+
+  it("badges a product holding one chest several times, unless its name already shows the count", () => {
+    const { body } = render(BonusRoom);
+    const badge = /<span class="tag[^"]*">×(\d+)<\/span>/g;
+    expect([...body.matchAll(badge)].map((m) => m[1])).toEqual(["10", "6", "35"]);
+    const expected: Record<string, string> = {
+      "Stone of Soaring Engraving Setting Kit Chest": "10",
+      "(NEW) Ebony Cube Entrance Ticket Selection Chest II": "6",
+      "Superior Abidos Fusion Material Chest": "35",
+    };
+    for (const name of PRODUCTS) {
+      const found = [...card(body, name).matchAll(badge)].map((m) => m[1]);
+      expect(found, name).toEqual(expected[name] ? [expected[name]] : []);
+    }
+  });
+
+  it("drops the material count from single-line summaries", () => {
+    const { body } = render(BonusRoom);
+    expect(body).not.toContain("1 material");
+    for (const name of PRODUCTS) {
+      const summary = card(body, name).match(/<summary[^>]*>([^<]*)<\/summary>/)?.[1];
+      expect(summary, name).toBe(name.startsWith("Autumn Astrogem Pack") ? "Contents · 6 materials" : "Contents");
+    }
   });
 
   it("marks unpriced products and groups instead of reading 0 gold", () => {
@@ -109,8 +159,22 @@ describe("BonusRoom while the room runs", () => {
     expect(joyful).not.toMatch(/<b class="num[^"]*">0<\/b>/);
     expect(joyful).not.toContain("-100%");
     expect(joyful).not.toContain("Some contents have no price");
-    // Two groups hold an unpriced line, so two footers carry the note.
-    expect((body.match(/Total includes priced contents only\./g) ?? []).length).toBe(2);
+    // Two groups hold an unpriced line, so two footers name what their total leaves out.
+    expect((body.match(/Not counted \(no price yet\)/g) ?? []).length).toBe(2);
+    expect(body).toContain(
+      "Not counted (no price yet): Joyful Legendary - Epic Card Pack X10, [Bonus] Joyful Legendary Card Pack X 3.</p>",
+    );
+    expect(body).toContain(
+      "Not counted (no price yet): Basic Life Energy Potion X20. Enter a Life Energy Potion value above to count it.</p>",
+    );
+    expect(body).not.toContain("Total includes priced contents only.");
+  });
+
+  it("drops the potion from the footer once it has a value", () => {
+    overrides.set("nae", "basic-life-energy-potion", 50);
+    const { body } = render(BonusRoom);
+    expect((body.match(/Not counted \(no price yet\)/g) ?? []).length).toBe(1);
+    expect(body).not.toContain("Enter a Life Energy Potion value above");
   });
 
   it("explains the soaring kit's 0 gold while pheons are excluded, and drops the note when included", () => {
@@ -159,6 +223,10 @@ describe("BonusRoom while the room runs", () => {
       const pack = card(body, "Autumn Astrogem Pack I");
       expect(pack).toContain("Some contents have no price");
       expect(pack).toContain("391,385");
+      // The footer lists a partly priced product as "(part)".
+      expect(body).toContain(
+        "Not counted (no price yet): Autumn Astrogem Pack I (part), Autumn Astrogem Pack II (part), Autumn Astrogem Pack III (part).</p>",
+      );
       expect(body).not.toContain("gold at your F4 rate"); // no exchange rate, no gold cost
     } finally {
       f4.value = saved;
