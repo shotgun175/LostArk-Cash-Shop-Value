@@ -3,9 +3,9 @@ import { ALL_SLUGS, REGIONS, FETCH_SLUGS, PRICE_SOURCE_SLUGS, BOUND_FROM_UNBOUND
 import { BUNDLES } from "../src/bundles";
 
 describe("items catalog", () => {
-  it("tracks 95 unique slugs", () => {
-    expect(ALL_SLUGS.length).toBe(95);
-    expect(new Set(ALL_SLUGS).size).toBe(95);
+  it("tracks 99 unique slugs", () => {
+    expect(ALL_SLUGS.length).toBe(99);
+    expect(new Set(ALL_SLUGS).size).toBe(99);
   });
 
   it("includes known anchor slugs", () => {

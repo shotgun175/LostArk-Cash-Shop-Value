@@ -98,4 +98,10 @@ export const BUNDLES: Record<string, number> = {
   "refined-obliteration-stone": 1000,
   "refined-protection-stone": 10000,
   "honor-shard-pouch-l": 1,
+  // Logging mats (2026-10-25, the Life Energy Potion default): the feed quotes them per stack of
+  // 100, the same per-100 unit the logging sheet uses (live probe: NA timber 85, abidos 926).
+  "timber": 100,
+  "tender-timber": 100,
+  "sturdy-timber": 100,
+  "abidos-timber": 100,
 };
