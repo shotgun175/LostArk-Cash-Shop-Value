@@ -86,7 +86,7 @@ describe("BonusRoom while the room runs", () => {
     expect(body).toContain("3,290,325");
     expect(body).toContain("+118%");
     expect(body).toContain("(1,512,605 gold at your F4 rate)"); // 12,000 RC x 30,000 / 238
-    expect(body).toContain("147,127"); // Growth & Life Skills: cube + Abidos + bonus, potion unpriced
+    expect(body).toContain("239,262"); // Growth & Life Skills: 6 cube chests + Abidos + bonus, potion unpriced
 
     // The Packs-style card pieces: collapsed contents and the shared material table inside it.
     expect(body).toContain("Contents · 6 materials");
@@ -210,7 +210,7 @@ describe("BonusRoom while the room runs", () => {
     expect(body).toMatch(/id="br-gem"[^>]*value=""/);
     expect(body).toMatch(/id="br-potion"[^>]*value="50"/);
     expect(card(body, "Basic Life Energy Potion X20")).toContain("1,000"); // 20 x 50
-    expect(body).toContain("148,127"); // the Growth group gains the 1,000
+    expect(body).toContain("240,262"); // the Growth group gains the 1,000
 
     app.region = "euc";
     body = render(BonusRoom).body; // EU: the gem only (no EU payload, so no groups render)

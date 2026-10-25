@@ -12,8 +12,10 @@
 // (identical for I, II and III), the two Ancient chests' choices (Attack or Support Astrogem
 // Selection Chest; Ancient Order or Chaos Sun/Moon/Star Core Random Chest; both Required Item
 // Lv. 1700, bound to roster, untradable) and 20 Superior Abidos Fusion Material (Bound) per
-// chest. Not visible in those screenshots, so kept at TJW's values: the Autumn Astrogem Packs'
-// 4,000 RC price and the 35-chest count of the Superior Abidos product.
+// chest. The user confirmed the same day the two values those screenshots could not show (the
+// Autumn Astrogem Packs cost 4,000 RC each; the Superior Abidos product holds 35 chests) and
+// corrected TJW's data in two places: the Ebony Cube selection product holds 6 chests and the
+// Stone of Soaring product 10 (TJW's data has 1 of each).
 import type { Pack } from "./types";
 
 /** One purchasable product: a Pack (exactly one of royalCrystalCost / blueCrystalCost) plus its tile icon. */
@@ -111,7 +113,7 @@ export const BONUS_ROOM: BonusRoom | null = {
           limited: false,
           retired: false,
           icon: "stone-of-soaring-engraving-setting-kit",
-          contents: [{ chest: "Stone of Soaring Engraving Setting Kit Chest", qty: 1 }],
+          contents: [{ chest: "Stone of Soaring Engraving Setting Kit Chest", qty: 10 }],
         },
         {
           slug: "joyful-card-pack-10",
@@ -143,7 +145,7 @@ export const BONUS_ROOM: BonusRoom | null = {
           limited: false,
           retired: false,
           icon: "ebony-cube-4th-unlock",
-          contents: [{ chest: "(NEW) Ebony Cube Entrance Ticket Selection Chest II", qty: 1 }],
+          contents: [{ chest: "(NEW) Ebony Cube Entrance Ticket Selection Chest II", qty: 6 }],
         },
         {
           slug: "basic-life-energy-potion-20",

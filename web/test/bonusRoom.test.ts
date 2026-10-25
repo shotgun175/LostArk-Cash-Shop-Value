@@ -214,13 +214,16 @@ describe("bonusRoomRows at the fixture prices, F4 30,000", () => {
   });
 
   it("totals Growth & Life Skills without the unpriced potions", () => {
-    // 18,427 (ebony cube) + 119,700 (abidos) + 9,000 bonus (3 x 3,000 Elysian) = 147,127.
+    // 6 x 18,427 (ebony cube selection chests) + 119,700 (abidos) + 9,000 bonus (3 x 3,000
+    // Elysian) = 239,262. Re-pinned 2026-10-25: the user's in-game count is 6 cube chests per
+    // product (TJW's data, and the first pin of 147,127, had 1).
     const g = group(rows, "growth-and-life-skills");
+    expect(product(rows, "ebony-cube-selection").total).toBe(6 * 18427);
     expect(g.bonus.total).toBe(9000);
-    expect(g.total).toBe(147127);
+    expect(g.total).toBe(239262);
     expect(g.bcCost).toBe(850);
     expect(g.costGold!).toBeCloseTo((850 * F4) / 95, 6); // 268,421.05
-    expect(g.vsExchange!).toBeCloseTo(-45.18798, 4);
+    expect(g.vsExchange!).toBeCloseTo(-10.863176, 4);
     expect(g.hasUnpriced).toBe(true);
   });
 
@@ -246,7 +249,7 @@ describe("bonusRoomRows at the fixture prices, F4 30,000", () => {
     expect(zero.vsExchange).toBe(-100);
     const fifty = bonusRoomRows(ROOM, layered({ "basic-life-energy-potion": 50 }), OPTS);
     expect(product(fifty, "basic-life-energy-potion-20").total).toBe(1000); // 20 x 50
-    expect(group(fifty, "growth-and-life-skills").total).toBe(147127 + 1000);
+    expect(group(fifty, "growth-and-life-skills").total).toBe(239262 + 1000);
     expect(group(fifty, "growth-and-life-skills").hasUnpriced).toBe(false);
   });
 });
@@ -296,8 +299,10 @@ describe("bonusRoomRows edge cases", () => {
     const on = layered({}, true);
     expect(on[KIT]).toBeCloseTo(9 * pheonGold(on), 9); // 9 x 8.5 x 30,000 / 95 = 24,157.89
     const rows = bonusRoomRows(ROOM, on, OPTS);
-    expect(product(rows, "soaring-engraving-kit").total).toBe(24158);
-    expect(group(rows, "gems-and-cards").total).toBe(231250 + 24158);
+    // 10 kits per product (the user's in-game count, re-pinned 2026-10-25; TJW's data has 1).
+    expect(product(rows, "soaring-engraving-kit").total).toBe(10 * 24158);
+    expect(group(rows, "gems-and-cards").total).toBe(231250 + 241580);
+    expect(group(rows, "gems-and-cards").vsExchange!).toBeCloseTo(24.774583, 4);
     // A user pheon price moves the kit too.
     expect(layered({ pheon: 2000 }, true)[KIT]).toBe(18000);
   });
