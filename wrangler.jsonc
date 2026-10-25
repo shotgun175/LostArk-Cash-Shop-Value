@@ -1,6 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "lostark-cash-shop-value",
+  // The Cloudflare account that owns this Worker and its KV namespace. Pinned because the deploy
+  // login can reach more than one account, and wrangler won't pick one non-interactively.
+  "account_id": "54f3f98a86b6b393b108ac5891fbfca0",
   "main": "src/index.ts",
   // Kept at/under the bundled workerd's supported date (test + deploy runtimes).
   // Bump deliberately when upgrading wrangler. Sufficient for fetch/KV/Cache.
