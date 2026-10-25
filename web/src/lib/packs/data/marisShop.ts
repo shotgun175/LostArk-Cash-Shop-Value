@@ -3,9 +3,13 @@
 // gold cost = bc * (F4 gold input / BC_PER_BUNDLE). Value shown = savings vs the AH price.
 // The user confirmed the two Basic Life Energy Potion rows' BC prices (x10 230 BC, x15 330 BC)
 // on 2026-10-25.
+import { SOARING_KIT } from "../priceMap";
+
 interface MariWare {
   // Valuation slug: an AH item's (unbound) slug, or for the untradable Basic Life Energy Potion
-  // the slug the price map fills with its logging default (lifeEnergy.ts). null = no price.
+  // the slug the price map fills with its logging default (lifeEnergy.ts), or for the untradable
+  // Stone of Soaring kit the computed SOARING_KIT slug (9 pheons with Include pheons on, else 0).
+  // null = no price.
   slug: string | null;
   name: string;
   qty: number; // units per purchase
@@ -33,7 +37,7 @@ export const MARIS_WARES: MariWare[] = [
   { slug: "prime-oreha-fusion-material", name: "Prime Oreha Fusion Material", qty: 120, bc: 36 },
   { slug: "artisans-tailoring-level-1", name: "Artisan's Tailoring: Level 1", qty: 2, bc: 18 },
   { slug: "solar-grace", name: "Solar Grace", qty: 120, bc: 24 },
-  { slug: null, name: "Stone of Soaring Engraving Setting Kit Chest", qty: 10, bc: 460, icon: "stone-of-soaring-kit" },
+  { slug: SOARING_KIT, name: "Stone of Soaring Engraving Setting Kit Chest", qty: 10, bc: 460, icon: "stone-of-soaring-kit" },
   { slug: "basic-life-energy-potion", name: "Basic Life Energy Potion ×10", qty: 10, bc: 230, icon: "basic-life-energy-potion" },
   { slug: "basic-life-energy-potion", name: "Basic Life Energy Potion ×15", qty: 15, bc: 330, wasBc: 345, icon: "basic-life-energy-potion" },
 ];
