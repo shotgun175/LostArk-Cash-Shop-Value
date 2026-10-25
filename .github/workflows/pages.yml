@@ -74,7 +74,9 @@ jobs:
       # Pages build profile. BASE_PATH must match the repo name exactly (Pages paths are
       # case-sensitive). VITE_API_BASE points the browser's price fetch at the Worker origin.
       BASE_PATH: /LostArk-Cash-Shop-Value
-      VITE_API_BASE: https://lostark-cash-shop-value.foleyjake50.workers.dev
+      # The Worker's workers.dev URL: <worker name>.<account subdomain>.workers.dev. The account
+      # ("Lost Ark Tools") moved from the foleyjake50 subdomain to lostark-tools on 2026-10-25.
+      VITE_API_BASE: https://lostark-cash-shop-value.lostark-tools.workers.dev
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
