@@ -316,23 +316,34 @@ describe("BonusRoom potion default from logging", () => {
     expect(body).not.toContain("Enter a Life Energy Potion value above");
   });
 
-  it("shows the default as the placeholder and in the hint", () => {
+  // The hint shows the default (no tool bonuses) and the best-in-slot all-in-one tool's value per
+  // potion; at NA prices that tool is worth 3,000 x 1.141325... = 3,423.98 gold. The hover text
+  // carries the gold per LE and the tool's five lines.
+  const HINT = /id="br-potion-hint" title="([^"]*)">([\s\S]*?)<\/p>/;
+  const TIP =
+    "Logging at live timber prices: 3,000 LE × 0.755 gold per LE with no tool bonuses, or × 1.141 with a best-in-slot all-in-one tool (Rare, Treasure Attempt, Kick Reward, All Materials Drop and Kick Attempt at max rolls).";
+  function expectHint(body: string): void {
+    const [, title, text] = body.match(HINT) ?? [];
+    expect(title).toBe(TIP);
+    expect(text).toMatch(/No tool bonuses \(default\): <b class="num accent[^"]*">2,265<\/b><img[^>]*alt="gold"[^>]*\/?> per potion<br\s*\/?>/);
+    expect(text).toMatch(/Best-in-slot tool: <b class="num[^"]*">3,424<\/b><img[^>]*alt="gold"[^>]*\/?> per potion/);
+  }
+
+  it("shows the default as the placeholder and both logging values in the hint", () => {
     const { body } = render(BonusRoom);
     expect(body).toMatch(/id="br-potion"[^>]*placeholder="2265"[^>]*aria-describedby="br-potion-hint br-potion-note"[^>]*value=""/);
-    expect(body).toMatch(/id="br-potion-hint">(<!--[^>]*-->)?Default: <b class="num accent[^"]*">2,265<\/b>/);
-    expect(body).toContain("per potion (3,000 LE at 0.755 gold per LE)");
+    expectHint(body);
     expect(body).toContain("The default is what 3,000 Life Energy earns logging at live timber prices (Lv. 70 Logging, Relic charm, no tool bonuses). Clear the box to go back to it.");
     expect(body).not.toContain("Leave empty for no price");
   });
 
-  it("uses a typed value over the default and keeps the default in the hint", () => {
+  it("uses a typed value over the default and keeps both logging values in the hint", () => {
     overrides.set("nae", "basic-life-energy-potion", 50);
     const { body } = render(BonusRoom);
     expect(body).toMatch(/id="br-potion"[^>]*value="50"/);
     expect(card(body, "Basic Life Energy Potion X20")).toContain("1,000"); // 20 x 50
     expect(body).toContain("240,262");
-    expect(body).toMatch(/id="br-potion-hint">(<!--[^>]*-->)?Logging default: <b class="num accent[^"]*">2,265<\/b>/);
-    expect(body).not.toContain("per potion (3,000 LE at");
+    expectHint(body);
   });
 
   it("has no hint and keeps the old note without timber prices", () => {

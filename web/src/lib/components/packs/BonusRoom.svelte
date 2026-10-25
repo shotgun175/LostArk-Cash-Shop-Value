@@ -12,7 +12,7 @@
   import { cashPerRc } from "$lib/packs/exchange";
   import { pheonGold } from "$lib/packs/ev";
   import { SOARING_KIT } from "$lib/packs/priceMap";
-  import { LE_PER_BASIC_POTION, loggingGoldPerLe } from "$lib/packs/lifeEnergy";
+  import { LE_PER_BASIC_POTION, bestToolGoldPerLe, loggingGoldPerLe } from "$lib/packs/lifeEnergy";
   import { formatGold, formatSignedPct } from "$lib/format";
   import ItemIcon from "../ItemIcon.svelte";
   import PackCard from "./PackCard.svelte";
@@ -65,9 +65,17 @@
   const lv3 = $derived(prices[GEM_SLUG] ?? 0);
   // The potion's logging default (lifeEnergy.ts), from the same layered map: it reads only the
   // timber and blue-crystal prices, which the potion's own override never touches.
+  // The best-in-slot tool figure sits beside it for reference; it never becomes the value.
   const leDefault = $derived.by(() => {
     const perLe = loggingGoldPerLe(prices);
-    return perLe === null ? null : { perLe, potion: LE_PER_BASIC_POTION * perLe };
+    const best = bestToolGoldPerLe(prices);
+    if (perLe === null || best === null) return null;
+    const lines = `${best.lines.slice(0, -1).join(", ")} and ${best.lines[best.lines.length - 1]}`;
+    return {
+      potion: LE_PER_BASIC_POTION * perLe,
+      bestPotion: LE_PER_BASIC_POTION * best.goldPerLe,
+      tip: `Logging at live timber prices: 3,000 LE × ${perLe.toFixed(3)} gold per LE with no tool bonuses, or × ${best.goldPerLe.toFixed(3)} with a best-in-slot all-in-one tool (${lines} at max rolls).`,
+    };
   });
   // Rounded like a pack card's price editor so 150,000 / 81 x 81 reads back as 150000.
   const gemShown = $derived(gemOv != null ? Number((gemOv * LV3_PER_LV7).toFixed(4)) : "");
@@ -177,8 +185,9 @@
           <img class="ic" src="{base}/icons/gold.png" alt="gold" />
         </div>
         {#if leDefault}
-          <p class="hint" id="br-potion-hint">
-            {#if potionOv != null}Logging default: <b class="num accent">{formatGold(leDefault.potion)}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" />{:else}Default: <b class="num accent">{formatGold(leDefault.potion)}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" /> per potion (3,000 LE at {leDefault.perLe.toFixed(3)} gold per LE){/if}
+          <p class="hint" id="br-potion-hint" title={leDefault.tip}>
+            No tool bonuses (default): <b class="num accent">{formatGold(leDefault.potion)}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" /> per potion<br />
+            Best-in-slot tool: <b class="num">{formatGold(leDefault.bestPotion)}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" /> per potion
           </p>
           <p class="fine" id="br-potion-note">Gold per potion, saved for this region. The default is what 3,000 Life Energy earns logging at live timber prices (Lv. 70 Logging, Relic charm, no tool bonuses). Clear the box to go back to it.</p>
         {:else}

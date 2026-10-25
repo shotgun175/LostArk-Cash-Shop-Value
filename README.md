@@ -11,7 +11,7 @@ while an in-game Bonus Room is running: it values each product and each group's 
 (the products plus the group's free bonus pack) against the F4 exchange and against G2G real
 money, and hides itself again when the room ends. The untradable Life Energy Potion gets a
 default value from logging at live timber prices (Lv. 70 Logging, Relic charm, no tool bonuses),
-which you can override per region.
+shown next to what a best-in-slot logging tool would earn, and you can override it per region.
 
 Live site: https://shotgun175.github.io/LostArk-Cash-Shop-Value/
 
