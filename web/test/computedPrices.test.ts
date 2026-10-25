@@ -6,7 +6,7 @@ import { app } from "../src/lib/app.svelte";
 import { PACKS } from "../src/lib/packs/data/packs";
 import { HELL_KEY_MAP } from "../src/lib/packs/data/hellRewards";
 import { CUBE_MAP } from "../src/lib/packs/data/cube";
-import { buildPriceMap, COMPUTED_PRICE_NOTES } from "../src/lib/packs/priceMap";
+import { buildPriceMap, COMPUTED_PRICE_NOTES, F4_DERIVED_SLUGS } from "../src/lib/packs/priceMap";
 import { displayName } from "../src/lib/catalog";
 import fixture from "./fixtures/tjw-nae-prices.json";
 
@@ -76,6 +76,44 @@ describe("computed-price slugs", () => {
         expect(r).toContain("price-ro");
         expect(r).not.toContain("price-btn");
       }
+    }
+  });
+});
+
+describe("Life Energy Potion default layer", () => {
+  const POTION = "basic-life-energy-potion";
+  const TIMBER = { timber: 0.85, "tender-timber": 1.78, "sturdy-timber": 8.2, "abidos-timber": 9.26 }; // NA live per unit
+  const OPTS = [{}, { blueCrystalGold: 30000 / 95 }, { blueCrystalGold: 30000 / 95, includePheons: true }];
+
+  it("defaults the potion from logging when all four timber prices are present", () => {
+    for (const opts of OPTS) {
+      expect(buildPriceMap({ ...prices, ...TIMBER }, opts)[POTION]).toBeCloseTo(2264.7732063544, 9);
+    }
+  });
+
+  it("leaves the potion unpriced without timber prices", () => {
+    for (const opts of OPTS) expect(POTION in buildPriceMap(prices, opts)).toBe(false);
+    const { "abidos-timber": _dropped, ...three } = TIMBER;
+    expect(POTION in buildPriceMap({ ...prices, ...three })).toBe(false);
+  });
+
+  it("passes a user potion value through unchanged, 0 included", () => {
+    for (const v of [50, 0]) {
+      expect(buildPriceMap({ ...prices, ...TIMBER, [POTION]: v })[POTION]).toBe(v);
+      expect(buildPriceMap({ ...prices, ...TIMBER, [POTION]: v }, OPTS[1])[POTION]).toBe(v);
+    }
+  });
+
+  it("stays editable (not a computed read-only slug)", () => {
+    expect(COMPUTED_PRICE_NOTES.has(POTION)).toBe(false);
+    expect(F4_DERIVED_SLUGS.has(POTION)).toBe(false);
+  });
+
+  it("moves no other slug when the timber prices arrive", () => {
+    const skip = new Set([POTION, ...Object.keys(TIMBER)]);
+    const strip = (m: Record<string, number>) => Object.fromEntries(Object.entries(m).filter(([k]) => !skip.has(k)));
+    for (const opts of OPTS) {
+      expect(strip(buildPriceMap({ ...prices, ...TIMBER }, opts))).toEqual(strip(buildPriceMap(prices, opts)));
     }
   });
 });

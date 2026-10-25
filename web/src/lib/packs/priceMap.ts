@@ -3,9 +3,11 @@
 //   2. live region prices (override baked where present)
 //   3. computed special-hone tap pseudo-slugs (the "Free taps" reward column)
 //   4. blue-crystal currency + BC-store-costed items (optional), priced off the F4 gold input
-//   5. computed EV overrides for the hell/netherworld keys and the ebony cubes
-//   6. relic-recipe override (max engraving)
-//   7. the Stone of Soaring Engraving Setting Kit (Bonus Room): 9 pheons with Include pheons on,
+//   5. the Basic Life Energy Potion default (lifeEnergy.ts: 3,000 LE x logging gold per LE at
+//      live timber prices) unless the user set a value (2026-10-25)
+//   6. computed EV overrides for the hell/netherworld keys and the ebony cubes
+//   7. relic-recipe override (max engraving)
+//   8. the Stone of Soaring Engraving Setting Kit (Bonus Room): 9 pheons with Include pheons on,
 //      else 0 (TJW 2026-10-21, adopted 2026-10-25)
 // Order matters: EV is computed from the baked+region+taps+BC map, so EV inputs see live
 // prices, hell keys value their free taps at the live tap price, and with Include pheons on
@@ -24,12 +26,17 @@ import { HELL_KEY_MAP, PHEONS_PER_ABILITY_STONE } from "./data/hellRewards";
 import { CUBE_MAP } from "./data/cube";
 import { hellKeyEv, cubeEv, relicRecipe, pheonGold } from "./ev";
 import { withTapPrices, type TapOverrides } from "./tapPrices";
+import { potionDefault } from "./lifeEnergy";
 
 // The Bonus Room's Stone of Soaring Engraving Setting Kit: untradable, so like the hell keys'
 // Ability stones it is worth PHEONS_PER_ABILITY_STONE pheons only while Include pheons is on.
 export const SOARING_KIT = "stone-of-soaring-engraving-setting-kit";
 
-// Slugs whose price buildPriceMap computes (layers 5 to 7 below), mapped to the read-only
+// The Bonus Room's Basic Life Energy Potion: untradable, so with no user value it defaults to the
+// gold 3,000 LE earns logging (layer 5 below).
+export const LIFE_ENERGY_POTION = "basic-life-energy-potion";
+
+// Slugs whose price buildPriceMap computes (layers 6 to 8 below), mapped to the read-only
 // tooltip the pack UIs show. Like F4_DERIVED_SLUGS, a click-to-edit override here would be
 // out-layered by the computation, so no edit is offered and stored overrides are dropped on load.
 const KEY_NOTE = "Expected value of the key's rewards at current prices. See the Hell Key tab.";
@@ -62,6 +69,14 @@ export function buildPriceMap(
     for (const [slug, cost] of Object.entries(BC_COSTS)) {
       if (!(slug in regionPrices)) m[slug] = cost * bc;
     }
+  }
+  // Basic Life Energy Potion default: 3,000 LE x logging gold per LE at live timber prices (and
+  // the blue-crystal price above, when set). The potion is never in the live feed, so a value in
+  // regionPrices is the user's and wins, as with BC_COSTS. Not in COMPUTED_PRICE_NOTES: it stays
+  // editable. Without all four timber prices the potion stays unpriced.
+  if (!(LIFE_ENERGY_POTION in regionPrices)) {
+    const potion = potionDefault(m);
+    if (potion !== null) m[LIFE_ENERGY_POTION] = potion;
   }
   for (const slug of Object.keys(HELL_KEY_MAP)) {
     m[slug] = hellKeyEv(slug, m, { includePheons: opts.includePheons });

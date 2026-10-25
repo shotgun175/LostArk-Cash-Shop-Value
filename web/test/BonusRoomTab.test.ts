@@ -30,14 +30,18 @@ const PRODUCTS = [
   "Superior Abidos Fusion Material Chest",
 ];
 
-function loadFixture(now = INSIDE): void {
+// NA live logging mat prices per unit (2026-10-25). The shared fixture has no timber, so the
+// potion is unpriced there; with these it gets its logging default (lifeEnergy.ts).
+const TIMBER = { timber: 0.85, "tender-timber": 1.78, "sturdy-timber": 8.2, "abidos-timber": 9.26 };
+
+function loadFixture(now = INSIDE, extra: Record<string, number> = {}): void {
   app.region = "nae";
   app.status = "ok";
   app.now = now;
   app.payload = {
     schema_version: 1,
     generated_at: new Date(INSIDE).toISOString(),
-    regions: { nae: { prices: fixture.prices, source_valid_at: new Date(INSIDE).toISOString() } },
+    regions: { nae: { prices: { ...fixture.prices, ...extra }, source_valid_at: new Date(INSIDE).toISOString() } },
     bundles: {},
   } as unknown as typeof app.payload;
 }
@@ -292,6 +296,51 @@ describe("BonusRoom while the room runs", () => {
     expect(body).toContain("1,852");
     expect(body).toMatch(/id="br-potion"[^>]*value=""/);
     expect(body).toContain("No prices yet. The feed may be refreshing.");
+  });
+});
+
+describe("BonusRoom potion default from logging", () => {
+  // At F4 30,000 the BC restoration route (-789 gold) loses to crafting, so the default is the
+  // same as with no exchange rate: 3,000 x 0.754924... = 2,264.77 gold, 2,265 per chest.
+  beforeEach(() => loadFixture(INSIDE, TIMBER));
+
+  it("prices the potion product at its logging default and drops it from the footer", () => {
+    const { body } = render(BonusRoom);
+    const potion = card(body, "Basic Life Energy Potion X20");
+    expect(potion).toContain("45,300"); // 20 x 2,265
+    expect(potion).not.toContain("no price");
+    expect(body).toContain("284,562"); // Growth & Life Skills: 239,262 + 45,300
+    expect((body.match(/no price</g) ?? []).length).toBe(2); // Joyful x10 and its bonus only
+    expect((body.match(/Not counted \(no price yet\)/g) ?? []).length).toBe(1);
+    expect(body).not.toContain("Basic Life Energy Potion X20.");
+    expect(body).not.toContain("Enter a Life Energy Potion value above");
+  });
+
+  it("shows the default as the placeholder and in the hint", () => {
+    const { body } = render(BonusRoom);
+    expect(body).toMatch(/id="br-potion"[^>]*placeholder="2265"[^>]*aria-describedby="br-potion-hint br-potion-note"[^>]*value=""/);
+    expect(body).toMatch(/id="br-potion-hint">(<!--[^>]*-->)?Default: <b class="num accent[^"]*">2,265<\/b>/);
+    expect(body).toContain("per potion (3,000 LE at 0.755 gold per LE)");
+    expect(body).toContain("The default is what 3,000 Life Energy earns logging at live timber prices (Lv. 70 Logging, Relic charm, no tool bonuses). Clear the box to go back to it.");
+    expect(body).not.toContain("Leave empty for no price");
+  });
+
+  it("uses a typed value over the default and keeps the default in the hint", () => {
+    overrides.set("nae", "basic-life-energy-potion", 50);
+    const { body } = render(BonusRoom);
+    expect(body).toMatch(/id="br-potion"[^>]*value="50"/);
+    expect(card(body, "Basic Life Energy Potion X20")).toContain("1,000"); // 20 x 50
+    expect(body).toContain("240,262");
+    expect(body).toMatch(/id="br-potion-hint">(<!--[^>]*-->)?Logging default: <b class="num accent[^"]*">2,265<\/b>/);
+    expect(body).not.toContain("per potion (3,000 LE at");
+  });
+
+  it("has no hint and keeps the old note without timber prices", () => {
+    loadFixture();
+    const { body } = render(BonusRoom);
+    expect(body).not.toContain("br-potion-hint");
+    expect(body).toMatch(/id="br-potion"[^>]*placeholder="Your value"/);
+    expect(body).toContain("Gold per potion, saved for this region. Leave empty for no price; 0 counts as zero.");
   });
 });
 

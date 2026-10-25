@@ -28,3 +28,8 @@ tile captures, not sourced from TJW.
 
 2026-10-25: superior-abidos-fusion-material-chest.png was cropped from an
 in-game item tooltip (Autumn Bonus Room product), not sourced from TJW.
+
+2026-10-25: timber.png, tender-timber.png, sturdy-timber.png and
+abidos-timber.png use the item art embedded in the user's copy of Lulu's
+Logging Guide spreadsheet, composited onto rarity backgrounds rebuilt from
+our existing icons; not sourced from TJW.

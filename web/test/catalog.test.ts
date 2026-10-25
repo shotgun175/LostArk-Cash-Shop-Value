@@ -115,3 +115,19 @@ describe("Autumn Bonus Room items (2026-10-21)", () => {
     expect(displayName("basic-life-energy-potion")).toBe("Basic Life Energy Potion");
   });
 });
+
+describe("logging mats (2026-10-25, the Life Energy Potion default)", () => {
+  it("maps the four timber icons 1:1 and names them the way the game does", () => {
+    const names: Record<string, string> = {
+      timber: "Timber",
+      "tender-timber": "Tender Timber",
+      "sturdy-timber": "Sturdy Timber",
+      "abidos-timber": "Abidos Timber",
+    };
+    for (const [slug, name] of Object.entries(names)) {
+      expect(hasIcon(slug)).toBe(true);
+      expect(iconUrl(slug)).toBe(`/icons/${slug}.png`);
+      expect(displayName(slug)).toBe(name);
+    }
+  });
+});

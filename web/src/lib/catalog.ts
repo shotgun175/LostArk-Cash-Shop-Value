@@ -86,6 +86,9 @@ const ONE_TO_ONE: readonly string[] = [
   "autumn-astrogem-pack-i", "autumn-astrogem-pack-ii", "autumn-astrogem-pack-iii",
   // Autumn Bonus Room Superior Abidos product: the user's in-game tooltip crop (2026-10-25).
   "superior-abidos-fusion-material-chest",
+  // Logging mats (2026-10-25, the Life Energy Potion default): the item art embedded in the
+  // user's copy of Lulu's Logging Guide sheet, on rarity backgrounds rebuilt from our icons.
+  "timber", "tender-timber", "sturdy-timber", "abidos-timber",
 ];
 
 const ICON_FILES: Readonly<Record<string, string>> = {

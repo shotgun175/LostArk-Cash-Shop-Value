@@ -12,6 +12,7 @@
   import { cashPerRc } from "$lib/packs/exchange";
   import { pheonGold } from "$lib/packs/ev";
   import { SOARING_KIT } from "$lib/packs/priceMap";
+  import { LE_PER_BASIC_POTION, loggingGoldPerLe } from "$lib/packs/lifeEnergy";
   import { formatGold, formatSignedPct } from "$lib/format";
   import ItemIcon from "../ItemIcon.svelte";
   import PackCard from "./PackCard.svelte";
@@ -62,6 +63,12 @@
   const gemOv = $derived(regionOv[GEM_SLUG]);
   const potionOv = $derived(regionOv[POTION_SLUG]);
   const lv3 = $derived(prices[GEM_SLUG] ?? 0);
+  // The potion's logging default (lifeEnergy.ts), from the same layered map: it reads only the
+  // timber and blue-crystal prices, which the potion's own override never touches.
+  const leDefault = $derived.by(() => {
+    const perLe = loggingGoldPerLe(prices);
+    return perLe === null ? null : { perLe, potion: LE_PER_BASIC_POTION * perLe };
+  });
   // Rounded like a pack card's price editor so 150,000 / 81 x 81 reads back as 150000.
   const gemShown = $derived(gemOv != null ? Number((gemOv * LV3_PER_LV7).toFixed(4)) : "");
 
@@ -162,13 +169,21 @@
       <div class="ctl">
         <label class="ctl-label" for="br-potion">Life Energy Potion value</label>
         <div class="ctl-row">
-          <input id="br-potion" type="number" min="0" step="any" placeholder="Your value"
-            aria-describedby="br-potion-note" value={shownValue("potion", potionOv ?? "")}
+          <input id="br-potion" type="number" min="0" step="any"
+            placeholder={leDefault ? String(Math.round(leDefault.potion)) : "Your value"}
+            aria-describedby={leDefault ? "br-potion-hint br-potion-note" : "br-potion-note"} value={shownValue("potion", potionOv ?? "")}
             onfocus={() => startTyping("potion", potionOv ?? "")} onblur={(e) => stopTyping(e.currentTarget, potionOv ?? "")}
             oninput={(e) => onPriceInput(POTION_SLUG, 1, e.currentTarget)} />
           <img class="ic" src="{base}/icons/gold.png" alt="gold" />
         </div>
-        <p class="fine" id="br-potion-note">Gold per potion, saved for this region. Leave empty for no price; 0 counts as zero.</p>
+        {#if leDefault}
+          <p class="hint" id="br-potion-hint">
+            {#if potionOv != null}Logging default: <b class="num accent">{formatGold(leDefault.potion)}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" />{:else}Default: <b class="num accent">{formatGold(leDefault.potion)}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" /> per potion (3,000 LE at {leDefault.perLe.toFixed(3)} gold per LE){/if}
+          </p>
+          <p class="fine" id="br-potion-note">Gold per potion, saved for this region. The default is what 3,000 Life Energy earns logging at live timber prices (Lv. 70 Logging, Relic charm, no tool bonuses). Clear the box to go back to it.</p>
+        {:else}
+          <p class="fine" id="br-potion-note">Gold per potion, saved for this region. Leave empty for no price; 0 counts as zero.</p>
+        {/if}
       </div>
     </div>
 
