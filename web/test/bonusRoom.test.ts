@@ -171,6 +171,7 @@ describe("bonusRoomRows at the fixture prices, F4 30,000", () => {
     // 35 chests x round(171 x 20) = 119,700 for 250 BC.
     const r = product(rows, "superior-abidos-chest");
     expect(r.total).toBe(119700);
+    expect(r.icon).toBe("superior-abidos-fusion-material-chest"); // the chest art, not the bare mat
     expect(r.vsExchange!).toBeCloseTo(51.62, 6);
   });
 

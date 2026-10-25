@@ -165,7 +165,7 @@ export const BONUS_ROOM: BonusRoom | null = {
           maxPurchases: 1,
           limited: false,
           retired: false,
-          icon: "superior-abidos-fusion-material",
+          icon: "superior-abidos-fusion-material-chest", // the chest art from its in-game tooltip
           contents: [{ chest: "Superior Abidos Fusion Material Chest", qty: 35 }],
         },
       ],

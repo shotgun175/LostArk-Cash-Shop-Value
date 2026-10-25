@@ -90,6 +90,11 @@ describe("Autumn Bonus Room items (2026-10-21)", () => {
     expect(iconUrl("ancient-astrogem-selection-chest")).toBe("/icons/ancient-astrogem-selection-chest.png");
     expect(iconUrl("ancient-core-random-selection-chest")).toBe("/icons/ancient-core-random-selection-chest.png");
   });
+  it("maps the Superior Abidos chest tooltip crop 1:1", () => {
+    expect(hasIcon("superior-abidos-fusion-material-chest")).toBe(true);
+    expect(iconUrl("superior-abidos-fusion-material-chest")).toBe("/icons/superior-abidos-fusion-material-chest.png");
+    expect(displayName("superior-abidos-fusion-material-chest")).toBe("Superior Abidos Fusion Material Chest");
+  });
   it("maps the three Astrogem Pack tile crops 1:1 and names them with Roman numerals", () => {
     for (const n of ["i", "ii", "iii"]) {
       expect(hasIcon(`autumn-astrogem-pack-${n}`)).toBe(true);

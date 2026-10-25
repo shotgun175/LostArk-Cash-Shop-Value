@@ -84,6 +84,8 @@ const ONE_TO_ONE: readonly string[] = [
   "ancient-astrogem-selection-chest", "ancient-core-random-selection-chest",
   // Autumn Bonus Room Astrogem Pack tiles: the user's in-game Bonus Room crops (2026-10-25).
   "autumn-astrogem-pack-i", "autumn-astrogem-pack-ii", "autumn-astrogem-pack-iii",
+  // Autumn Bonus Room Superior Abidos product: the user's in-game tooltip crop (2026-10-25).
+  "superior-abidos-fusion-material-chest",
 ];
 
 const ICON_FILES: Readonly<Record<string, string>> = {
