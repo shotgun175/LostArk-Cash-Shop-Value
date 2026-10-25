@@ -31,6 +31,12 @@ export const BAKED: Record<string, number> = {
   // from the regular picked epic (epic-astrogem-selected stays 43,000): flat 75,000.
   "lv-8-gem": 375000,
   "fixed-epic-astrogem-selection": 75000,
+  // Autumn Bonus Room Ark Grid bonus (2026-10-21): TJW's seeds (his app, "user-specified"
+  // 2026-10-21), adopted 2026-10-25. The astrogem chest lets the buyer choose an Attack or
+  // Support astrogem selection chest; the core chest grants one Ancient Order or Chaos
+  // Sun/Moon/Star core random chest. Neither has a market; both are editable by click-to-edit.
+  "ancient-astrogem-selection-chest": 500000,
+  "ancient-core-random-selection-chest": 100000,
 };
 
 // Blue-Crystal store cost of untradable BC-store items: the Arkgrid processing tickets (reset

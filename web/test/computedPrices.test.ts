@@ -10,11 +10,17 @@ import { buildPriceMap, COMPUTED_PRICE_NOTES } from "../src/lib/packs/priceMap";
 import { displayName } from "../src/lib/catalog";
 import fixture from "./fixtures/tjw-nae-prices.json";
 
-// Hell/netherworld keys, ebony cubes and the relic recipe are priced by buildPriceMap itself
-// (EV / max engraving), which overwrites any region or override value. Offering click-to-edit on
-// them showed "edited" while the value never moved, so the pack UIs render them read-only.
+// Hell/netherworld keys, ebony cubes, the relic recipe and the Bonus Room's soaring kit are
+// priced by buildPriceMap itself (EV / max engraving / 9 pheons), which overwrites any region or
+// override value. Offering click-to-edit on them showed "edited" while the value never moved, so
+// the pack UIs render them read-only.
 const prices = fixture.prices as Record<string, number>;
-const COMPUTED = [...Object.keys(HELL_KEY_MAP), ...Object.keys(CUBE_MAP), "relic-combat-engraving-recipe"];
+const COMPUTED = [
+  ...Object.keys(HELL_KEY_MAP),
+  ...Object.keys(CUBE_MAP),
+  "relic-combat-engraving-recipe",
+  "stone-of-soaring-engraving-setting-kit",
+];
 
 beforeAll(() => {
   app.region = "nae";
@@ -35,7 +41,7 @@ function computedRows(body: string): string[] {
 }
 
 describe("computed-price slugs", () => {
-  it("covers every key, cube and the relic recipe", () => {
+  it("covers every key, cube, the relic recipe and the soaring kit", () => {
     expect([...COMPUTED_PRICE_NOTES.keys()].sort()).toEqual([...COMPUTED].sort());
   });
 
@@ -43,6 +49,12 @@ describe("computed-price slugs", () => {
     const base = buildPriceMap(prices);
     const edited = buildPriceMap({ ...prices, ...Object.fromEntries(COMPUTED.map((s) => [s, 123456789])) });
     for (const s of COMPUTED) expect(edited[s]).toBe(base[s]);
+    // Also with an exchange rate and Include pheons on, where the kit is worth 9 pheons, not 0.
+    const opts = { blueCrystalGold: 30000 / 95, includePheons: true };
+    const baseOn = buildPriceMap(prices, opts);
+    const editedOn = buildPriceMap({ ...prices, ...Object.fromEntries(COMPUTED.map((s) => [s, 123456789])) }, opts);
+    expect(baseOn["stone-of-soaring-engraving-setting-kit"]).toBeGreaterThan(0);
+    for (const s of COMPUTED) expect(editedOn[s]).toBe(baseOn[s]);
   });
 
   it("renders them read-only on pack cards", () => {

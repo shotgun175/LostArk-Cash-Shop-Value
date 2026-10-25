@@ -28,6 +28,11 @@ const SHARED: Record<string, string> = {
   "destiny-shard": "destiny-shard-pouch-l.png",
   // Summer Custom Pack II card option — same generic card art as the Ark Pass row.
   "joyful-legendary-epic-card-pack": "legendary-card-pack.png",
+  // Autumn Bonus Room (2026-10-21): the Gems & Cards bonus card pack uses the same generic card
+  // art, and the Stone of Soaring Engraving Setting Kit keeps TJW's slug (so upstream diffs line
+  // up) while reusing the Mari's Shop kit art.
+  "joyful-legendary-card-pack": "legendary-card-pack.png",
+  "stone-of-soaring-engraving-setting-kit": "stone-of-soaring-kit.png",
   // All non-1730 key tiers (II/III/IV/VI) share the corresponding V key art (user 2026-07-30).
   ...Object.fromEntries(
     ["ii", "iii", "iv", "vi"].flatMap((n) => [
@@ -75,6 +80,8 @@ const ONE_TO_ONE: readonly string[] = [
   // Jump-Up Boost rewards (2026-09-16): TJW's crops of the Lv. 8 gem and the Ancient bracelet
   // chest, plus the user's in-game tooltip crops of the two timed buffs.
   "lv-8-gem", "ancient-bracelet-chest", "crystalline-aura-plus-14d", "azenas-blessing-28d",
+  // Autumn Bonus Room Ark Grid bonus (2026-10-21): the user's in-game tooltip crops (2026-10-25).
+  "ancient-astrogem-selection-chest", "ancient-core-random-selection-chest",
 ];
 
 const ICON_FILES: Readonly<Record<string, string>> = {
@@ -106,6 +113,7 @@ const NAME_OVERRIDES: Record<string, string> = {
   "ancient-accessory-set-chest": "Ancient Accessory Set",
   "lv-8-gem": "Lv. 8 Brilliant Gem",
   "fixed-epic-astrogem-selection": "Fixed Epic Astrogem (player-picked)",
+  "stone-of-soaring-engraving-setting-kit": "Stone of Soaring Engraving Setting Kit",
   // Hell key display names use the datamine labels (no "Splendid", tier numeral appended);
   // rarity comes from the card pills, with an "(Epic)" disambiguator only where two cards
   // would otherwise share a name (user 2026-07-30).

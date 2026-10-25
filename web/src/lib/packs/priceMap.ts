@@ -5,6 +5,8 @@
 //   4. blue-crystal currency + BC-store-costed items (optional), priced off the F4 gold input
 //   5. computed EV overrides for the hell/netherworld keys and the ebony cubes
 //   6. relic-recipe override (max engraving)
+//   7. the Stone of Soaring Engraving Setting Kit (Bonus Room): 9 pheons with Include pheons on,
+//      else 0 (TJW 2026-10-21, adopted 2026-10-25)
 // Order matters: EV is computed from the baked+region+taps+BC map, so EV inputs see live
 // prices, hell keys value their free taps at the live tap price, and with Include pheons on
 // the keys' Ability stones read the pheon price (a user override or the BC-store derivation),
@@ -18,12 +20,16 @@ import { BAKED, BC_COSTS } from "./data/constants";
 // The BC_COSTS items (see data/constants.ts) are NOT here on purpose: their BC store costs are
 // assumptions, so a user override on those is honored.
 export const F4_DERIVED_SLUGS: ReadonlySet<string> = new Set(["blue-crystal"]);
-import { HELL_KEY_MAP } from "./data/hellRewards";
+import { HELL_KEY_MAP, PHEONS_PER_ABILITY_STONE } from "./data/hellRewards";
 import { CUBE_MAP } from "./data/cube";
-import { hellKeyEv, cubeEv, relicRecipe } from "./ev";
+import { hellKeyEv, cubeEv, relicRecipe, pheonGold } from "./ev";
 import { withTapPrices, type TapOverrides } from "./tapPrices";
 
-// Slugs whose price buildPriceMap computes (layers 5 and 6 below), mapped to the read-only
+// The Bonus Room's Stone of Soaring Engraving Setting Kit: untradable, so like the hell keys'
+// Ability stones it is worth PHEONS_PER_ABILITY_STONE pheons only while Include pheons is on.
+const SOARING_KIT = "stone-of-soaring-engraving-setting-kit";
+
+// Slugs whose price buildPriceMap computes (layers 5 to 7 below), mapped to the read-only
 // tooltip the pack UIs show. Like F4_DERIVED_SLUGS, a click-to-edit override here would be
 // out-layered by the computation, so no edit is offered and stored overrides are dropped on load.
 const KEY_NOTE = "Expected value of the key's rewards at current prices. See the Hell Key tab.";
@@ -32,6 +38,7 @@ export const COMPUTED_PRICE_NOTES: ReadonlyMap<string, string> = new Map([
   ...Object.keys(HELL_KEY_MAP).map((s) => [s, KEY_NOTE] as const),
   ...Object.keys(CUBE_MAP).map((s) => [s, CUBE_NOTE] as const),
   ["relic-combat-engraving-recipe", "Priced as the most expensive relic combat engraving at current prices."],
+  [SOARING_KIT, "9 pheons when Include pheons is on (Hell Key tab), else 0. Read-only."],
 ]);
 
 export function buildPriceMap(
@@ -64,5 +71,9 @@ export function buildPriceMap(
   }
   const recipe = relicRecipe(m);
   if (recipe > 0) m["relic-combat-engraving-recipe"] = recipe;
+  // Always present (0 when off), so the kit reads as priced at 0, not unpriced, as in TJW's
+  // Bonus Room. Set last: it reads the pheon price from the BC layer above and ignores any
+  // user value on the kit itself (a user pheon price still moves it).
+  m[SOARING_KIT] = opts.includePheons ? PHEONS_PER_ABILITY_STONE * pheonGold(m) : 0;
   return m;
 }

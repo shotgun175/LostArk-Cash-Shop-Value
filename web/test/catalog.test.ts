@@ -82,3 +82,23 @@ describe("Jump-Up Boost items (2026-09-16)", () => {
     expect(displayName("ancient-bracelet-chest")).toBe("Ancient Bracelet");
   });
 });
+
+describe("Autumn Bonus Room items (2026-10-21)", () => {
+  it("maps the two Ancient chest crops 1:1", () => {
+    expect(hasIcon("ancient-astrogem-selection-chest")).toBe(true);
+    expect(hasIcon("ancient-core-random-selection-chest")).toBe(true);
+    expect(iconUrl("ancient-astrogem-selection-chest")).toBe("/icons/ancient-astrogem-selection-chest.png");
+    expect(iconUrl("ancient-core-random-selection-chest")).toBe("/icons/ancient-core-random-selection-chest.png");
+  });
+  it("shares the existing kit and card pack art", () => {
+    expect(iconUrl("stone-of-soaring-engraving-setting-kit")).toBe("/icons/stone-of-soaring-kit.png");
+    expect(iconUrl("joyful-legendary-card-pack")).toBe("/icons/legendary-card-pack.png");
+  });
+  it("names the new slugs the way the game does", () => {
+    expect(displayName("stone-of-soaring-engraving-setting-kit")).toBe("Stone of Soaring Engraving Setting Kit");
+    expect(displayName("ancient-astrogem-selection-chest")).toBe("Ancient Astrogem Selection Chest");
+    expect(displayName("ancient-core-random-selection-chest")).toBe("Ancient Core Random Selection Chest");
+    expect(displayName("joyful-legendary-card-pack")).toBe("Joyful Legendary Card Pack");
+    expect(displayName("basic-life-energy-potion")).toBe("Basic Life Energy Potion");
+  });
+});

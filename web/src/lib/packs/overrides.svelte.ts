@@ -56,6 +56,15 @@ class Overrides {
     this.map[r] = { ...this.map[r], [slug]: value };
     this.persist(r);
   }
+
+  /** Removes one slug's override for the region (back to the market or default price). */
+  clear(r: Region, slug: string): void {
+    if (!(slug in this.map[r])) return;
+    const next = { ...this.map[r] };
+    delete next[slug];
+    this.map[r] = next;
+    this.persist(r);
+  }
 }
 
 export const overrides = new Overrides();

@@ -3,6 +3,7 @@ import { render } from "svelte/server";
 import PacksPanel from "../src/lib/components/packs/PacksPanel.svelte";
 import { app } from "../src/lib/app.svelte";
 import { hellSettings } from "../src/lib/packs/hellSettings.svelte";
+import { g2g } from "../src/lib/packs/g2g.svelte";
 import fixture from "./fixtures/tjw-nae-prices.json";
 
 // Include pheons is a shared singleton that moves every key valuation, so each case starts off.
@@ -168,18 +169,17 @@ describe("PacksPanel stale G2G rate", () => {
   });
 
   it("shows neither when the region has a stored override", () => {
-    vi.stubGlobal("localStorage", {
-      getItem: (k: string) => (k === "csv.g2g.override.nae" ? "0.06" : null),
-      setItem: () => {},
-      removeItem: () => {},
-    });
+    // The override lives in the shared g2g store (read from storage once, at import), so set it
+    // through the store's API and clear it afterwards for the other cases.
+    seedG2g(7 * 60);
+    g2g.setFromInput(0.06);
     try {
-      seedG2g(7 * 60);
       const { body } = render(PacksPanel);
       expect(body).not.toMatch(staleReadout);
       expect(body).not.toContain("rate from");
+      expect(body).toContain('value="0.06"');
     } finally {
-      vi.unstubAllGlobals();
+      g2g.setFromInput(Number.NaN);
     }
   });
 });
