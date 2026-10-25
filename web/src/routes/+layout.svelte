@@ -4,6 +4,8 @@
   import { page } from "$app/state";
   import { base } from "$app/paths";
   import { app } from "$lib/app.svelte";
+  import { BONUS_ROOM } from "$lib/packs/data/bonusRoom";
+  import { bonusRoomActive } from "$lib/packs/bonusRoom";
   import RegionToggle from "$lib/components/RegionToggle.svelte";
   import FreshnessBanner from "$lib/components/FreshnessBanner.svelte";
   import HubBadge from "$lib/components/HubBadge.svelte";
@@ -12,16 +14,19 @@
 
   // Each tab is now a real route (deep-linkable, browser back/forward works, per-route code split).
   // This layout persists across navigations, so the region toggle, freshness banner, and the 60s
-  // poll below survive tab switches without re-fetching. Tab order mirrors TJW (Packs is home);
-  // our own Prices tab stays at the far right.
-  const tabs = [
+  // poll below survive tab switches without re-fetching. Tab order mirrors TJW (Packs is home, then
+  // Mari's Shop and the Bonus Room); our own Prices tab stays at the far right. The Bonus Room tab
+  // shows only while a room is running: it reads the ticking app.now, so it disappears at the
+  // room's end with no release (data/bonusRoom.ts; BONUS_ROOM = null hides it entirely).
+  const tabs = $derived([
     { label: "Packs", href: `${base}/` },
     { label: "Mari's Shop", href: `${base}/maris` },
+    ...(bonusRoomActive(BONUS_ROOM, app.now) ? [{ label: "Bonus Room", href: `${base}/bonus-room` }] : []),
     { label: "Ark Pass", href: `${base}/ark-pass` },
     { label: "Jump-Up Boost", href: `${base}/jump-up` },
     { label: "Hell Key math", href: `${base}/hell-key` },
     { label: "Prices", href: `${base}/prices` },
-  ];
+  ]);
 
   // Active tab = the nav link whose path matches the current URL. Trailing slashes are normalized so
   // the home link matches "/" (and the base-path root). The /pack/<slug> drill-down matches no tab,
