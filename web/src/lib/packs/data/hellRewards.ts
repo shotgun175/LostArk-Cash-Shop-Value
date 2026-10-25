@@ -1770,8 +1770,8 @@ export const PHEONS_PER_ABILITY_STONE = 9;
 // worth PHEONS_PER_ABILITY_STONE pheons each when the Hell Key tab's Include pheons setting is
 // on, else 0 (see ev.ts columnPrice). The "Juice" column is absent here on
 // purpose: it is priced by a special case in ev.ts chestVal (1 lavas-breath +
-// 3 glaciers-breath per unit) on EVERY tier — a deliberate divergence from TJW (user
-// 2026-07-30), whose engine leaves Juice unvalued.
+// 3 glaciers-breath per unit) on EVERY tier (user 2026-07-30). TJW left Juice unvalued until
+// his 2026-08-12 build and has priced it the same way since.
 export const COLUMN_VALUATION: Record<string, ColumnVal> = {
   Stones: { slug1730: "destiny-crystallized-destruction-stone", fallback1730: 31.3 },
   "Base red stones": { slug1730: "destiny-crystallized-destruction-stone", fallback1730: 31.3 },

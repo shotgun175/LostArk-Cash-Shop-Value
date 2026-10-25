@@ -5,10 +5,11 @@
 // floor counts as an offer in that pick, even at 0 gold (TJW 2026-10-21, adopted 2026-10-25).
 // Ability stones are 0 gold unless the opt-in Include pheons setting values them at 9 pheons
 // each (`opts.includePheons`, threaded through columnPrice / chestVal / the key functions).
-// The ALGORITHM was independently verified to reproduce his live /math values exactly;
-// since 2026-07-30 the VALUES deliberately diverge from his because Juice is live-priced
-// here. Zeroing juice no longer restores his pre-2026-10-21 captures (those predate the
-// zero-gold offer rule); see test/ev.test.ts for the history.
+// The ALGORITHM was independently verified to reproduce his live /math values exactly. The
+// VALUES deliberately diverge from his: live-priced Free taps (his are a flat 1000), Engravings
+// at 0 (his are a flat 1000) and the sekwahar datamine tables. Juice is priced the same way in
+// both engines since his 2026-08-12 build (1 lavas + 3 glaciers), so zeroing juice reproduces
+// only his pre-2026-08-12 captures; see test/ev.test.ts for the history.
 
 import {
   HELL_TIERS,
@@ -97,7 +98,8 @@ export function columnPrice(
 /**
  * Per-unit gold value of a Juice chest unit: 1 Lava's Breath + 3 Glacier's Breath (the 1:3
  * ratio holds on every floor of every tier; fallbacks match cubeEv's). Priced on ALL tiers
- * (user 2026-07-30) — this deliberately diverges from TJW, whose engine leaves Juice unvalued.
+ * (user 2026-07-30). TJW left Juice unvalued until his 2026-08-12 build and has priced it the
+ * same way since.
  */
 export function juiceUnitPrice(prices: Record<string, number>): number {
   return (prices["lavas-breath"] ?? 400) + 3 * (prices["glaciers-breath"] ?? 200);

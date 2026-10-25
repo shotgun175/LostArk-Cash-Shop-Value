@@ -27,7 +27,7 @@ import { withTapPrices, type TapOverrides } from "./tapPrices";
 
 // The Bonus Room's Stone of Soaring Engraving Setting Kit: untradable, so like the hell keys'
 // Ability stones it is worth PHEONS_PER_ABILITY_STONE pheons only while Include pheons is on.
-const SOARING_KIT = "stone-of-soaring-engraving-setting-kit";
+export const SOARING_KIT = "stone-of-soaring-engraving-setting-kit";
 
 // Slugs whose price buildPriceMap computes (layers 5 to 7 below), mapped to the read-only
 // tooltip the pack UIs show. Like F4_DERIVED_SLUGS, a click-to-edit override here would be

@@ -136,7 +136,7 @@
   </div>
 
   <TapValuePanel {ilvl} />
-  <PheonPanel />
+  <PheonPanel {prices} />
 
   {#each keys as k (k.b.slug)}
     {@const whatIf = rarityTag(k.b)}

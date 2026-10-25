@@ -166,9 +166,10 @@
   .noprice { color: var(--muted); font-style: italic; }
   .notice { color: var(--warn); font-size: 12px; margin: -4px 0 12px; }
   /* Bonus Room cards: the material table folds away under a "Contents" summary. */
-  .contents summary { color: var(--muted); font-size: 12.5px; cursor: pointer; padding: 2px 0; }
+  /* A phone-sized tap target (about 44 px tall); the negative margin keeps the visual spacing. */
+  .contents summary { color: var(--muted); font-size: 12.5px; cursor: pointer; padding: 12px 0; margin: -10px 0; }
   .contents summary:hover { color: var(--text); }
-  .contents[open] summary { margin-bottom: 6px; }
+  .contents[open] summary { margin-bottom: -4px; }
   /* Choose-N-of-M option block (custom packs): checkbox rows above the material table. */
   .cs { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; background: var(--panel-2); }
   .cs-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }

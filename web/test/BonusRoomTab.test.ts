@@ -120,6 +120,16 @@ describe("BonusRoom while the room runs", () => {
     expect(card(body, "Stone of Soaring Engraving Setting Kit Chest")).not.toContain("-100%");
   });
 
+  it("shows the soaring kit's computed price read-only, with no click-to-edit button", () => {
+    // The kit is a COMPUTED_PRICE_NOTES slug: an override would be out-layered, so no editor.
+    for (const on of [false, true]) {
+      hellSettings.setIncludePheons(on);
+      const kit = card(render(BonusRoom).body, "Stone of Soaring Engraving Setting Kit Chest");
+      expect(kit).toContain("price-ro");
+      expect(kit).not.toContain("price-btn");
+    }
+  });
+
   it("explains the soaring kit's 0 gold when pheons are included but have no price yet", () => {
     const saved = f4.value;
     try {

@@ -11,6 +11,7 @@
   import { hellSettings } from "$lib/packs/hellSettings.svelte";
   import { cashPerRc } from "$lib/packs/exchange";
   import { pheonGold } from "$lib/packs/ev";
+  import { SOARING_KIT } from "$lib/packs/priceMap";
   import { formatGold, formatSignedPct } from "$lib/format";
   import ItemIcon from "../ItemIcon.svelte";
   import PackCard from "./PackCard.svelte";
@@ -52,7 +53,7 @@
   // (never on load or render); an emptied box removes the override.
   const GEM_SLUG = "lv-3-gem";
   const POTION_SLUG = "basic-life-energy-potion";
-  const KIT_SLUG = "stone-of-soaring-engraving-setting-kit";
+  const KIT_SLUG = SOARING_KIT;
   const LV3_PER_LV7 = 81; // 3 gems fuse into 1 of the next level, four levels from Lv. 3 to Lv. 7
   const KIT_NOTE = "Counts as 0 gold while pheons are excluded (setting above).";
   const KIT_UNPRICED_NOTE = "Counts as 0 gold until an F4 exchange rate prices pheons (above).";
@@ -116,7 +117,7 @@
       <p class="note">
         {room.name} rotation. One purchase of each product per roster; buy {perGroup != null ? `all ${perGroup}` : "every product"} in a group to get its bonus.
       </p>
-      <p class="status"><b class="num">{timeLeft(Date.parse(room.endsAt) - app.now)} left</b> <span class="sep">·</span> <span>{room.endsLabel}</span></p>
+      <p class="status"><b class="num">{timeLeft(Date.parse(room.endsAt) - app.now)} left</b> <span class="sep" aria-hidden="true">·</span> <span>{room.endsLabel}</span></p>
     </div>
 
     <ExchangeInputs />
@@ -149,7 +150,7 @@
       </div>
     </div>
 
-    <PheonPanel context="bonus" />
+    <PheonPanel context="bonus" {prices} />
 
     <p class="note">Products use the same prices as the Packs tab, including your price edits. Items with no price are left out of gold totals.</p>
 
@@ -165,7 +166,7 @@
           {@const n = g.products.length}
           <section class="group" aria-labelledby="br-{g.slug}">
             <header class="ghead">
-              <span class="gnum num">{String(i + 1).padStart(2, "0")}</span>
+              <span class="gnum num" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
               <h3 id="br-{g.slug}">{g.name}</h3>
               <span class="gcount">{n} product{n === 1 ? "" : "s"}</span>
             </header>
@@ -296,9 +297,10 @@
   .reward h4 { margin: 0; font-size: 14px; font-weight: 600; flex: 1 1 180px; min-width: 0; }
   .rval { font-size: 14px; white-space: nowrap; }
   .contents { margin-top: 10px; }
-  .contents summary { color: var(--muted); font-size: 12.5px; cursor: pointer; padding: 2px 0; }
+  /* A phone-sized tap target (about 44 px tall); the negative margin keeps the visual spacing. */
+  .contents summary { color: var(--muted); font-size: 12.5px; cursor: pointer; padding: 12px 0; margin: -10px 0; }
   .contents summary:hover { color: var(--text); }
-  .contents[open] summary { margin-bottom: 6px; }
+  .contents[open] summary { margin-bottom: -4px; }
 
   .gtotal { margin-top: 12px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
     padding: 12px 16px; min-width: 0; }

@@ -12,11 +12,12 @@
   // untradable, so they count as 0 gold unless this is on, when each one is worth 9 pheons. The
   // setting is global (hellSettings.includePheons, persisted); the pheon price itself is per
   // region (the F4 exchange input, or a user pheon price). Mirrors TapValuePanel's layout.
-  let { context = "hell" }: { context?: "hell" | "bonus" } = $props();
+  // `prices`: the parent's layered map, so the tab builds it once; without it the panel builds its own.
+  let { context = "hell", prices }: { context?: "hell" | "bonus"; prices?: Record<string, number> } = $props();
 
   // The same layered map every valuation reads, so the price shown is the one the engine uses
   // (a user pheon price wins over 8.5 BC at the F4 rate).
-  const perPheon = $derived(pheonGold(layeredPrices()));
+  const perPheon = $derived(pheonGold(prices ?? layeredPrices()));
   const perStone = $derived(PHEONS_PER_ABILITY_STONE * perPheon);
   const on = $derived(hellSettings.includePheons);
   const hasOverride = $derived(overrides.has(app.region, "pheon"));
@@ -69,7 +70,7 @@
     padding: 9px 14px; font-size: 13px;
   }
   .line { display: inline-flex; align-items: center; gap: 6px; }
-  .line.off { opacity: .5; }
+  .line.off { opacity: .8; }
   .lbl { color: var(--muted); }
   .num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; }
   .accent { color: var(--accent); }
