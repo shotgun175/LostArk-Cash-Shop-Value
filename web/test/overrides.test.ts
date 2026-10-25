@@ -63,18 +63,41 @@ describe("overrides store load", () => {
     expect(s.forRegion("euc")).toEqual({ d: 0 });
   });
 
-  it("drops stale overrides on computed-price slugs (keys, cubes, relic recipe)", async () => {
+  it("drops stale overrides on computed-price slugs (keys, cubes, relic recipe, soaring kit)", async () => {
     mem.setItem(
       "csv.ov.nae",
       JSON.stringify({
         "hell-key-of-destiny-vi": 1,
         "ebony-cube-4th-unlock": 2,
         "relic-combat-engraving-recipe": 3,
+        "stone-of-soaring-engraving-setting-kit": 4,
         "abidos-fusion-material": 95,
       }),
     );
     const s = await freshStore();
     expect(s.forRegion("nae")).toEqual({ "abidos-fusion-material": 95 });
     expect(s.count("nae")).toBe(1);
+  });
+});
+
+describe("overrides.clear", () => {
+  it("removes one slug in one region and persists it", async () => {
+    const a = await freshStore();
+    a.set("nae", "lv-3-gem", 1500);
+    a.set("nae", "basic-life-energy-potion", 0);
+    a.set("euc", "lv-3-gem", 1600);
+    a.clear("nae", "lv-3-gem");
+    expect(a.forRegion("nae")).toEqual({ "basic-life-energy-potion": 0 });
+    expect(a.forRegion("euc")).toEqual({ "lv-3-gem": 1600 });
+    const b = await freshStore();
+    expect(b.forRegion("nae")).toEqual({ "basic-life-energy-potion": 0 });
+    expect(b.forRegion("euc")).toEqual({ "lv-3-gem": 1600 });
+  });
+
+  it("is a no-op for a slug with no override (writes nothing)", async () => {
+    const a = await freshStore();
+    a.clear("nae", "lv-3-gem");
+    expect(a.count("nae")).toBe(0);
+    expect(mem.getItem("csv.ov.nae")).toBeNull();
   });
 });

@@ -1,8 +1,15 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render } from "svelte/server";
 import PacksPanel from "../src/lib/components/packs/PacksPanel.svelte";
 import { app } from "../src/lib/app.svelte";
+import { hellSettings } from "../src/lib/packs/hellSettings.svelte";
+import { g2g } from "../src/lib/packs/g2g.svelte";
 import fixture from "./fixtures/tjw-nae-prices.json";
+
+// Include pheons is a shared singleton that moves every key valuation, so each case starts off.
+beforeEach(() => {
+  hellSettings.setIncludePheons(false);
+});
 
 // The checkbox-block guard below needs LIVE choose-N packs (retired cards render compact, with
 // no option rows). Both Summer Custom packs retired 2026-09-16 and nothing choose-N has replaced
@@ -87,6 +94,40 @@ describe("PacksPanel custom-pack checkbox block", () => {
   });
 });
 
+// The Hell Key tab's Include pheons setting moves every key value on this page, so the note says
+// so while it is on. Indicator only: the control itself lives on the Hell Key tab.
+describe("PacksPanel Include pheons indicator", () => {
+  const INDICATOR = "Key values include ability stones at 9 pheons each (Hell Key tab setting).";
+  function seed(): void {
+    app.region = "nae";
+    app.status = "ok";
+    app.payload = {
+      schema_version: 1,
+      generated_at: new Date().toISOString(),
+      regions: { nae: { prices: fixture.prices, source_valid_at: new Date().toISOString() } },
+      bundles: {},
+    } as unknown as typeof app.payload;
+  }
+
+  it("is absent while the setting is off", () => {
+    seed();
+    const { body } = render(PacksPanel);
+    expect(body).not.toContain(INDICATOR);
+    expect(body).not.toContain("Include pheons"); // no second control on this page
+  });
+
+  it("appears in the note while the setting is on", () => {
+    seed();
+    hellSettings.setIncludePheons(true);
+    const { body } = render(PacksPanel);
+    const note = (body.match(/<p class="note[^"]*">[\s\S]*?<\/p>/)?.[0] ?? "")
+      .replace(/<!--[^>]*-->/g, "")
+      .replace(/\s+/g, " ");
+    expect(note).toContain(`Click any market price to enter your own AH price. ${INDICATOR}`);
+    expect(body).not.toContain("Include pheons");
+  });
+});
+
 // A frozen G2G rate (pinned offer stopped matching, so usdFetchedAt stops advancing) must not
 // read as live: past 6 h the readout turns amber and says when the rate is from. A typed
 // override is the user's own number, so it never shows the cue.
@@ -128,18 +169,17 @@ describe("PacksPanel stale G2G rate", () => {
   });
 
   it("shows neither when the region has a stored override", () => {
-    vi.stubGlobal("localStorage", {
-      getItem: (k: string) => (k === "csv.g2g.override.nae" ? "0.06" : null),
-      setItem: () => {},
-      removeItem: () => {},
-    });
+    // The override lives in the shared g2g store (read from storage once, at import), so set it
+    // through the store's API and clear it afterwards for the other cases.
+    seedG2g(7 * 60);
+    g2g.setFromInput(0.06);
     try {
-      seedG2g(7 * 60);
       const { body } = render(PacksPanel);
       expect(body).not.toMatch(staleReadout);
       expect(body).not.toContain("rate from");
+      expect(body).toContain('value="0.06"');
     } finally {
-      vi.unstubAllGlobals();
+      g2g.setFromInput(Number.NaN);
     }
   });
 });

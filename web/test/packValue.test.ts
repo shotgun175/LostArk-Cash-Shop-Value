@@ -220,9 +220,12 @@ describe("paradise-special-pack-ii (EV pack: deterministic engine value)", () =>
     // sign-off) to the live special-hone tap engine (856,083). Re-baselined 2026-08-14
     // (user sign-off): the astrogem pipe-EV fix (epic 15k -> 43k) lifts the Epic keys to
     // 141,600 each and the Frost key to 113,539 (871,524). Re-baselined again 2026-08-19
-    // (user sign-off): the lv-3-gem re-anchor (1,543 -> 1,850) adds 50 x 307 = 15,350.
-    expect(r.total).toBe(886874);
-    expect(evFrost).toBe(113539);
+    // (user sign-off): the lv-3-gem re-anchor (1,543 -> 1,850) adds 50 x 307 = 15,350,
+    // to 886,874 with the Frost key at 113,539.
+    // (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule) The Epic
+    // keys drop to 129,313 each and the Frost key to 84,125.
+    expect(r.total).toBe(832886);
+    expect(evFrost).toBe(84125);
   });
 
   it("a user pick re-routes a selection chest and changes the pack total", () => {
@@ -300,11 +303,13 @@ describe("2026-08-12 rotation packs (self-goldens at the pinned fixture)", () =>
   const golden: [string, number][] = [
     // 6x3,750 + 33,000 + 43,000 + 25x1,850 (both processing tickets 0 without an exchange input)
     ["limited-astrogem-package", 144750],
-    // 3xVI-epic(174,425) + 2xVI(253,842) + frost-VI(143,155) + 3x3,000 + 10x18,427 + 120x1,850 + 50x13,700
-    ["paradise-special-pack", 2274384],
+    // 3xVI-epic(159,450) + 2xVI(231,145) + frost-VI(106,795) + 3x3,000 + 10x18,427 + 120x1,850 + 50x13,700
+    // (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule; was 2,274,384)
+    ["paradise-special-pack", 2147705],
     // default top-5 picks: CD Destruction Pouch / Epic HK S4 / Glacier's / Superior Abidos / T4 Gems
     // (T4 Gems at 120x1,850 since the 2026-08-19 lv-3 re-anchor)
-    ["summer-custom-pack-1", 2043175],
+    // (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule; was 2,043,175)
+    ["summer-custom-pack-1", 1998250],
     // default top-4 picks: Artisan Armor / Abidos (100) / DD Bundle / Relic Recipe Pouch
     ["summer-custom-pack-2", 496849],
     // 15x1000x29 + 15x1000x0.92 + 15x20x171
@@ -597,8 +602,9 @@ describe("2026-09-16 rotation packs (self-goldens at the pinned fixture)", () =>
     // + 3x25,080 (Armor chest -> 12 Artisan's Tailoring Lv 3 at 2,090)
     // + 3x21,588 (Weapons chest -> 12 Artisan's Metallurgy Lv 3 at 1,799)
     ["dimensionalist-welcome-growth-package", 964404],
-    // 2xVI-epic(174,425) + 1xVI(253,842) + 2x3,000 + 5x18,427 + 50x1,850 + 30x13,700
-    ["paradise-special-pack-ii-2", 1204327],
+    // 2xVI-epic(159,450) + 1xVI(231,145) + 2x3,000 + 5x18,427 + 50x1,850 + 30x13,700
+    // (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule; was 1,204,327)
+    ["paradise-special-pack-ii-2", 1151680],
   ];
   for (const [slug, total] of golden) {
     it(`${slug}: total ${total} on the fixture`, () => {
@@ -663,9 +669,10 @@ describe("2026-10-21 rotation packs (self-goldens at the pinned fixture)", () =>
   const map = buildPriceMap(NAE);
 
   const golden: [string, number][] = [
-    // 3xVI-epic(174,425) + 2xVI(253,842) + frost-VI(143,155) + 3x3,000 + 10x18,427 + 125x1,850
+    // 3xVI-epic(159,450) + 2xVI(231,145) + frost-VI(106,795) + 3x3,000 + 10x18,427 + 125x1,850
     // + 50x13,700 (the 5,400 RC Paradise Special Pack's lines with 5 more gem chests)
-    ["autumn-paradise-pack", 2283634],
+    // (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule; was 2,283,634)
+    ["autumn-paradise-pack", 2156955],
     // 30x1000x29 + 80x1000x0.92 + 20x20x47 + 50x20x171 + 200x3000x0.224
     ["vambraces-growth-package", 1267800],
     // 15x1000x29 + 15x20x171 + 20x1000x0.92

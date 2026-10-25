@@ -6,6 +6,7 @@ import HellKeyPage from "../src/routes/hell-key/+page.svelte";
 import JumpUpPage from "../src/routes/jump-up/+page.svelte";
 import MarisPage from "../src/routes/maris/+page.svelte";
 import PricesPage from "../src/routes/prices/+page.svelte";
+import BonusRoomPage from "../src/routes/bonus-room/+page.svelte";
 import PackPage from "../src/routes/pack/[slug]/+page.svelte";
 import { app } from "../src/lib/app.svelte";
 import { PACKS } from "../src/lib/packs/data/packs";
@@ -36,6 +37,23 @@ describe("tab routes render", () => {
     ["Prices", PricesPage],
   ])("%s", (_name, Page) => {
     expect(render(Page).body.trim()).not.toBe("");
+  });
+});
+
+// The Bonus Room is time-gated, so it renders under a pinned clock: inside the Autumn room and
+// after it ends (the notice that replaces the groups).
+describe("Bonus Room route renders", () => {
+  it.each([
+    ["while the room runs", "2026-10-25T12:00:00Z", "Bonus for buying all 3"],
+    ["after the room ends", "2026-11-19T00:00:00Z", "No Bonus Room is running right now."],
+  ])("%s", (_name, now, expected) => {
+    const saved = app.now;
+    try {
+      app.now = Date.parse(now);
+      expect(render(BonusRoomPage).body).toContain(expected);
+    } finally {
+      app.now = saved;
+    }
   });
 });
 

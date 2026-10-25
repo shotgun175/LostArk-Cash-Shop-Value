@@ -17,6 +17,31 @@ interface PackRowOpts {
 }
 
 /**
+ * Layer the two comparison columns onto one valued pack: "% vs exchange" (gold/RC against the
+ * F4 input / 238, or gold/BC against the F4 input / 95 for BC-priced packs) and "% vs G2G"
+ * (gold per real-money unit against buying gold on G2G). Shared by the Packs grid and the
+ * Bonus Room so both compare by one rule.
+ */
+export function withComparisons(v: PackResult, opts: { f4Input: number; g2gInput: number }): PackRow {
+  const baseline = f4Baseline(opts.f4Input);
+  const g2gGpd = g2gGoldPerDollar(opts.g2gInput);
+
+  // BC-priced packs compare their gold/BC to the same F4 input at the BC denominator.
+  const bcBaseline = opts.f4Input / BC_PER_BUNDLE;
+
+  return {
+    ...v,
+    vsExchange:
+      v.goldPerRc != null
+        ? vsExchangePct(v.goldPerRc, baseline)
+        : v.goldPerBc != null
+          ? vsExchangePct(v.goldPerBc, bcBaseline)
+          : null,
+    vsG2G: v.goldPerDollar == null ? null : vsG2GPct(v.goldPerDollar, g2gGpd),
+  };
+}
+
+/**
  * Value every pack against the fully layered price map (buildPriceMap output, built once by the
  * caller so the same map can feed other views) and layer on the two comparison columns. Active
  * packs sort before retired; within each group, highest gold-per-RC first (choose-N packs
@@ -26,25 +51,9 @@ export function buildPackRows(
   prices: Record<string, number>,
   opts: PackRowOpts,
 ): PackRow[] {
-  const baseline = f4Baseline(opts.f4Input);
-  const g2gGpd = g2gGoldPerDollar(opts.g2gInput);
-
-  // BC-priced packs compare their gold/BC to the same F4 input at the BC denominator.
-  const bcBaseline = opts.f4Input / BC_PER_BUNDLE;
-
-  const rows: PackRow[] = PACKS.map((p) => {
-    const v = packValue(p, prices, opts.picks, opts.cashPerRc, true, opts.customPicks);
-    return {
-      ...v,
-      vsExchange:
-        v.goldPerRc != null
-          ? vsExchangePct(v.goldPerRc, baseline)
-          : v.goldPerBc != null
-            ? vsExchangePct(v.goldPerBc, bcBaseline)
-            : null,
-      vsG2G: v.goldPerDollar == null ? null : vsG2GPct(v.goldPerDollar, g2gGpd),
-    };
-  });
+  const rows: PackRow[] = PACKS.map((p) =>
+    withComparisons(packValue(p, prices, opts.picks, opts.cashPerRc, true, opts.customPicks), opts),
+  );
 
   // One F4 listing trades the same gold for 238 RC or 95 BC, so a BC pack's gold/BC converts
   // to a gold-per-RC-equivalent at x(95/238) — this keeps one sort scale across both currencies.

@@ -134,6 +134,10 @@ describe("constants", () => {
   it("bakes the lv-3 gem value (1,850 since the 2026-08-19 re-anchor)", () => {
     expect(BAKED["lv-3-gem"]).toBe(1850);
   });
+  it("bakes TJW's Autumn Bonus Room Ancient chest seeds (adopted 2026-10-25)", () => {
+    expect(BAKED["ancient-astrogem-selection-chest"]).toBe(500000);
+    expect(BAKED["ancient-core-random-selection-chest"]).toBe(100000);
+  });
   it("tracks 23 relic engraving slugs", () => {
     expect(RELIC_ENGRAVING_SLUGS.length).toBe(23);
   });

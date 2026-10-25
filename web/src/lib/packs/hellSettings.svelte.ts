@@ -23,26 +23,31 @@ export const RARITY_OPTIONS: readonly string[] = [
 ];
 
 /**
- * Hell Key tab settings. Three independent knobs:
- *   rarity      what-if rarity to weight every key's floors by; "Actual" = each key's own.
- *               SESSION-ONLY on purpose: a what-if is a lens, not a preference, so every
- *               page load starts back at "Actual" (user 2026-08-03)
- *   wealth      whether the Wealth +1 buff is active. A floor-picker display setting ONLY:
- *               headline EVs and the per-floor table never move with it, by design
- *   tapOverride per-region manual override of the special-hone tap prices (see tapPrices.ts)
- * Storage keys: csv.hellWealth ("1" when on, "0" when off, a single flag that needs no parse
- * guard), csv.tap.<region> (JSON TapOverrides).
+ * Hell Key tab settings. Four independent knobs:
+ *   rarity        what-if rarity to weight every key's floors by; "Actual" = each key's own.
+ *                 SESSION-ONLY on purpose: a what-if is a lens, not a preference, so every
+ *                 page load starts back at "Actual" (user 2026-08-03)
+ *   wealth        whether the Wealth +1 buff is active. A floor-picker display setting ONLY:
+ *                 headline EVs and the per-floor table never move with it, by design
+ *   tapOverride   per-region manual override of the special-hone tap prices (see tapPrices.ts)
+ *   includePheons value Ability stones at 9 pheons each (else 0) in every key EV, here and in
+ *                 pack values (TJW 2026-10-21, adopted 2026-10-25). Global, not per region (the
+ *                 pheon PRICE stays per region); default off
+ * Storage keys: csv.hellWealth and csv.hellPheons ("1" when on, "0" when off, single flags that
+ * need no parse guard), csv.tap.<region> (JSON TapOverrides).
  */
 class HellSettings {
   rarity = $state<string>("Actual");
   wealth = $state<boolean>(false);
   tapOverride = $state<Record<Region, TapOverrides>>({ nae: {}, euc: {} });
+  includePheons = $state<boolean>(false);
 
   constructor() {
     // Drop the key an earlier build persisted so old what-if picks cannot linger.
     save("csv.hellRarity", null);
     this.wealth = load("csv.hellWealth") === "1";
     this.tapOverride = { nae: this.loadTap("nae"), euc: this.loadTap("euc") };
+    this.includePheons = load("csv.hellPheons") === "1";
   }
 
   private loadTap(r: Region): TapOverrides {
@@ -74,6 +79,11 @@ class HellSettings {
   setWealth(on: boolean): void {
     this.wealth = on;
     save("csv.hellWealth", on ? "1" : "0");
+  }
+
+  setIncludePheons(on: boolean): void {
+    this.includePheons = on;
+    save("csv.hellPheons", on ? "1" : "0");
   }
 
   setTapOverride(region: Region, o: TapOverrides): void {

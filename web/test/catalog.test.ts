@@ -82,3 +82,52 @@ describe("Jump-Up Boost items (2026-09-16)", () => {
     expect(displayName("ancient-bracelet-chest")).toBe("Ancient Bracelet");
   });
 });
+
+describe("Autumn Bonus Room items (2026-10-21)", () => {
+  it("maps the two Ancient chest crops 1:1", () => {
+    expect(hasIcon("ancient-astrogem-selection-chest")).toBe(true);
+    expect(hasIcon("ancient-core-random-selection-chest")).toBe(true);
+    expect(iconUrl("ancient-astrogem-selection-chest")).toBe("/icons/ancient-astrogem-selection-chest.png");
+    expect(iconUrl("ancient-core-random-selection-chest")).toBe("/icons/ancient-core-random-selection-chest.png");
+  });
+  it("maps the Superior Abidos chest tooltip crop 1:1", () => {
+    expect(hasIcon("superior-abidos-fusion-material-chest")).toBe(true);
+    expect(iconUrl("superior-abidos-fusion-material-chest")).toBe("/icons/superior-abidos-fusion-material-chest.png");
+    expect(displayName("superior-abidos-fusion-material-chest")).toBe("Superior Abidos Fusion Material Chest");
+  });
+  it("maps the three Astrogem Pack tile crops 1:1 and names them with Roman numerals", () => {
+    for (const n of ["i", "ii", "iii"]) {
+      expect(hasIcon(`autumn-astrogem-pack-${n}`)).toBe(true);
+      expect(iconUrl(`autumn-astrogem-pack-${n}`)).toBe(`/icons/autumn-astrogem-pack-${n}.png`);
+    }
+    expect(displayName("autumn-astrogem-pack-ii")).toBe("Autumn Astrogem Pack II");
+    expect(displayName("autumn-astrogem-pack-iii")).toBe("Autumn Astrogem Pack III");
+  });
+  it("shares the existing kit and card pack art", () => {
+    expect(iconUrl("stone-of-soaring-engraving-setting-kit")).toBe("/icons/stone-of-soaring-kit.png");
+    expect(iconUrl("joyful-legendary-card-pack")).toBe("/icons/legendary-card-pack.png");
+  });
+  it("names the new slugs the way the game does", () => {
+    expect(displayName("stone-of-soaring-engraving-setting-kit")).toBe("Stone of Soaring Engraving Setting Kit");
+    expect(displayName("ancient-astrogem-selection-chest")).toBe("Ancient Astrogem Selection Chest");
+    expect(displayName("ancient-core-random-selection-chest")).toBe("Ancient Core Random Selection Chest");
+    expect(displayName("joyful-legendary-card-pack")).toBe("Joyful Legendary Card Pack");
+    expect(displayName("basic-life-energy-potion")).toBe("Basic Life Energy Potion");
+  });
+});
+
+describe("logging mats (2026-10-25, the Life Energy Potion default)", () => {
+  it("maps the four timber icons 1:1 and names them the way the game does", () => {
+    const names: Record<string, string> = {
+      timber: "Timber",
+      "tender-timber": "Tender Timber",
+      "sturdy-timber": "Sturdy Timber",
+      "abidos-timber": "Abidos Timber",
+    };
+    for (const [slug, name] of Object.entries(names)) {
+      expect(hasIcon(slug)).toBe(true);
+      expect(iconUrl(slug)).toBe(`/icons/${slug}.png`);
+      expect(displayName(slug)).toBe(name);
+    }
+  });
+});

@@ -6,15 +6,21 @@ import { app } from "../src/lib/app.svelte";
 import { PACKS } from "../src/lib/packs/data/packs";
 import { HELL_KEY_MAP } from "../src/lib/packs/data/hellRewards";
 import { CUBE_MAP } from "../src/lib/packs/data/cube";
-import { buildPriceMap, COMPUTED_PRICE_NOTES } from "../src/lib/packs/priceMap";
+import { buildPriceMap, COMPUTED_PRICE_NOTES, F4_DERIVED_SLUGS } from "../src/lib/packs/priceMap";
 import { displayName } from "../src/lib/catalog";
 import fixture from "./fixtures/tjw-nae-prices.json";
 
-// Hell/netherworld keys, ebony cubes and the relic recipe are priced by buildPriceMap itself
-// (EV / max engraving), which overwrites any region or override value. Offering click-to-edit on
-// them showed "edited" while the value never moved, so the pack UIs render them read-only.
+// Hell/netherworld keys, ebony cubes, the relic recipe and the Bonus Room's soaring kit are
+// priced by buildPriceMap itself (EV / max engraving / 9 pheons), which overwrites any region or
+// override value. Offering click-to-edit on them showed "edited" while the value never moved, so
+// the pack UIs render them read-only.
 const prices = fixture.prices as Record<string, number>;
-const COMPUTED = [...Object.keys(HELL_KEY_MAP), ...Object.keys(CUBE_MAP), "relic-combat-engraving-recipe"];
+const COMPUTED = [
+  ...Object.keys(HELL_KEY_MAP),
+  ...Object.keys(CUBE_MAP),
+  "relic-combat-engraving-recipe",
+  "stone-of-soaring-engraving-setting-kit",
+];
 
 beforeAll(() => {
   app.region = "nae";
@@ -35,7 +41,7 @@ function computedRows(body: string): string[] {
 }
 
 describe("computed-price slugs", () => {
-  it("covers every key, cube and the relic recipe", () => {
+  it("covers every key, cube, the relic recipe and the soaring kit", () => {
     expect([...COMPUTED_PRICE_NOTES.keys()].sort()).toEqual([...COMPUTED].sort());
   });
 
@@ -43,6 +49,12 @@ describe("computed-price slugs", () => {
     const base = buildPriceMap(prices);
     const edited = buildPriceMap({ ...prices, ...Object.fromEntries(COMPUTED.map((s) => [s, 123456789])) });
     for (const s of COMPUTED) expect(edited[s]).toBe(base[s]);
+    // Also with an exchange rate and Include pheons on, where the kit is worth 9 pheons, not 0.
+    const opts = { blueCrystalGold: 30000 / 95, includePheons: true };
+    const baseOn = buildPriceMap(prices, opts);
+    const editedOn = buildPriceMap({ ...prices, ...Object.fromEntries(COMPUTED.map((s) => [s, 123456789])) }, opts);
+    expect(baseOn["stone-of-soaring-engraving-setting-kit"]).toBeGreaterThan(0);
+    for (const s of COMPUTED) expect(editedOn[s]).toBe(baseOn[s]);
   });
 
   it("renders them read-only on pack cards", () => {
@@ -64,6 +76,44 @@ describe("computed-price slugs", () => {
         expect(r).toContain("price-ro");
         expect(r).not.toContain("price-btn");
       }
+    }
+  });
+});
+
+describe("Life Energy Potion default layer", () => {
+  const POTION = "basic-life-energy-potion";
+  const TIMBER = { timber: 0.85, "tender-timber": 1.78, "sturdy-timber": 8.2, "abidos-timber": 9.26 }; // NA live per unit
+  const OPTS = [{}, { blueCrystalGold: 30000 / 95 }, { blueCrystalGold: 30000 / 95, includePheons: true }];
+
+  it("defaults the potion from logging when all four timber prices are present", () => {
+    for (const opts of OPTS) {
+      expect(buildPriceMap({ ...prices, ...TIMBER }, opts)[POTION]).toBeCloseTo(2264.7732063544, 9);
+    }
+  });
+
+  it("leaves the potion unpriced without timber prices", () => {
+    for (const opts of OPTS) expect(POTION in buildPriceMap(prices, opts)).toBe(false);
+    const { "abidos-timber": _dropped, ...three } = TIMBER;
+    expect(POTION in buildPriceMap({ ...prices, ...three })).toBe(false);
+  });
+
+  it("passes a user potion value through unchanged, 0 included", () => {
+    for (const v of [50, 0]) {
+      expect(buildPriceMap({ ...prices, ...TIMBER, [POTION]: v })[POTION]).toBe(v);
+      expect(buildPriceMap({ ...prices, ...TIMBER, [POTION]: v }, OPTS[1])[POTION]).toBe(v);
+    }
+  });
+
+  it("stays editable (not a computed read-only slug)", () => {
+    expect(COMPUTED_PRICE_NOTES.has(POTION)).toBe(false);
+    expect(F4_DERIVED_SLUGS.has(POTION)).toBe(false);
+  });
+
+  it("moves no other slug when the timber prices arrive", () => {
+    const skip = new Set([POTION, ...Object.keys(TIMBER)]);
+    const strip = (m: Record<string, number>) => Object.fromEntries(Object.entries(m).filter(([k]) => !skip.has(k)));
+    for (const opts of OPTS) {
+      expect(strip(buildPriceMap({ ...prices, ...TIMBER }, opts))).toEqual(strip(buildPriceMap(prices, opts)));
     }
   });
 });

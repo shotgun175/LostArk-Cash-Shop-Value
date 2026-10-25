@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { HELL_KEY_MAP, HELL_TIERS } from "$lib/packs/data/hellRewards";
+  import { HELL_KEY_MAP, HELL_TIERS, PHEONS_PER_ABILITY_STONE } from "$lib/packs/data/hellRewards";
+  import { BAKED } from "$lib/packs/data/constants";
   import { hellKeyBreakdown, hellKeyColumnPrices, type HellKeyBreakdown, type ColumnPrice } from "$lib/packs/ev";
-  import { effectivePrices } from "$lib/packs/prices.svelte";
-  import { withTapPrices, TAP_SLUGS } from "$lib/packs/tapPrices";
+  import { effectivePrices, layeredPrices } from "$lib/packs/prices.svelte";
+  import { TAP_SLUGS } from "$lib/packs/tapPrices";
   import { hellSettings, RARITY_OPTIONS, REWARD_DATA_VINTAGE } from "$lib/packs/hellSettings.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
   import { app } from "$lib/app.svelte";
@@ -11,6 +12,7 @@
   import ItemIcon from "../ItemIcon.svelte";
   import HellFloorChests from "./HellFloorChests.svelte";
   import TapValuePanel from "./TapValuePanel.svelte";
+  import PheonPanel from "./PheonPanel.svelte";
   import { base } from "$app/paths";
   import { load, save } from "$lib/storage";
 
@@ -22,19 +24,33 @@
     save("csv.hellTier", String(ilvl));
   });
 
-  // Same map the pack engine values keys against (priceMap.ts layers withTapPrices too), so a
-  // card's EV here and the same key's line on the Packs page price their free taps identically.
-  const prices = $derived(withTapPrices(effectivePrices(), hellSettings.tapOverride[app.region]));
-  // "Actual" passes no opts at all, so the default view is byte-identical to the key's own rarity.
-  const rarityOpts = $derived(hellSettings.rarity === "Actual" ? undefined : { rarity: hellSettings.rarity });
+  // The exact map the pack engine values against (layeredPrices: taps, the F4-priced blue crystal
+  // and BC items, key EVs), so a card's EV here and the same key's line on the Packs page match,
+  // and Include pheons has a pheon price to read.
+  const prices = $derived(layeredPrices());
+  // The unlayered prices (live feed + this region's overrides), to tell a baked seed from a market price.
+  const marketPrices = $derived(effectivePrices());
+  // "Actual" passes no rarity, so the default view is byte-identical to the key's own rarity.
+  const keyOpts = $derived({
+    includePheons: hellSettings.includePheons,
+    ...(hellSettings.rarity === "Actual" ? {} : { rarity: hellSettings.rarity }),
+  });
   // hellKeyColumnPrices only sees the merged map, so a user's own number would read as "live".
-  // Re-tag a column priced by this region's tap override or a Packs-page price override.
+  // Re-tag a column priced by this region's tap override or a Packs-page price override. An
+  // excluded column (pheons off) stays excluded: no price is in play, overridden or not.
   const tagOverride = (c: ColumnPrice): ColumnPrice => {
+    if (c.source === "excluded") return c;
     const tapOv = hellSettings.tapOverride[app.region] ?? {};
     const tapOverridden = (["transferred", "circulated"] as const).some(
       (kind) => c.slug === TAP_SLUGS[kind] && Number.isFinite(tapOv[kind]),
     );
-    return tapOverridden || (c.slug !== null && overrides.has(app.region, c.slug)) ? { ...c, source: "override" } : c;
+    if (tapOverridden || (c.slug !== null && overrides.has(app.region, c.slug))) return { ...c, source: "override" };
+    // layeredPrices() seeds BAKED constants, so a slug only BAKED supplies (the 1640-1700
+    // Astrogem chests box) would read "live"; it is a fixed seed, not a market price.
+    if (c.source === "live" && c.slug !== null && c.slug in BAKED && !(c.slug in marketPrices)) {
+      return { ...c, source: "flat" };
+    }
+    return c;
   };
   const keys = $derived(
     Object.keys(HELL_KEY_MAP)
@@ -43,7 +59,10 @@
       // which makes the Epic-variant card an exact duplicate of its Legendary sibling; show
       // the family once and bring the Epic card back on "Actual" (user 2026-08-03).
       .filter((slug) => hellSettings.rarity === "Actual" || !slug.endsWith("-epic"))
-      .map((slug) => ({ b: hellKeyBreakdown(slug, prices, rarityOpts), cols: hellKeyColumnPrices(slug, prices).map(tagOverride) }))
+      .map((slug) => ({
+        b: hellKeyBreakdown(slug, prices, keyOpts),
+        cols: hellKeyColumnPrices(slug, prices, { includePheons: hellSettings.includePheons }).map(tagOverride),
+      }))
       .filter((k): k is { b: HellKeyBreakdown; cols: ColumnPrice[] } => k.b !== null)
       // Same rule for cards the picked rarity cannot apply to at all: a clamped Netherworld
       // card would just repeat its Actual numbers, so it hides instead (user 2026-08-03).
@@ -80,13 +99,15 @@
   const SLUG_LABEL: Record<string, string> = {
     [TAP_SLUGS.transferred]: "special hone tap (transferred)",
     [TAP_SLUGS.circulated]: "special hone tap (circulated)",
+    pheon: `pheon x ${PHEONS_PER_ABILITY_STONE}`,
   };
 </script>
 
 <div class="math">
   <h2>Hell Key math</h2>
   <p class="note">
-    Each key opens one chest per floor and you keep the best of 3 (with a small best-of-4 blend).
+    Each floor offers 3 chests (with a 5% chance of a 4th) and you keep the best one. Any chest on
+    the floor can be offered, even one worth no gold, so a worthless chest can take a slot.
     Each card's value is the expected gold per key at current prices: the per-floor best pick plus
     base rewards, weighted by how likely you are to draw that floor, summed across floors. Prices
     and trade-ups you set on the <a href="{base}/">Packs</a> page flow through here.
@@ -115,6 +136,7 @@
   </div>
 
   <TapValuePanel {ilvl} />
+  <PheonPanel {prices} />
 
   {#each keys as k (k.b.slug)}
     {@const whatIf = rarityTag(k.b)}
@@ -277,4 +299,7 @@
   .src-fallback, .src-flat { color: var(--accent); border-color: var(--accent); }
   /* Accent, like an edited price on the Packs page: the user's own number, not the market. */
   .src-override { color: var(--accent); border-color: var(--accent); }
+  /* Include pheons: priced off the exchange rate (accent, like a flat value) or switched off. */
+  .src-exchange { color: var(--accent); border-color: var(--accent); }
+  .src-excluded { color: var(--muted); border-color: var(--border); }
 </style>

@@ -1,17 +1,13 @@
 <script lang="ts">
   import type { PackRow } from "$lib/packs/packRows";
-  import type { PackLine } from "$lib/packs/packValue";
   import { formatGold, formatSignedPct } from "$lib/format";
-  import { displayName } from "$lib/catalog";
   import { currencySymbol } from "$lib/packs/exchange";
   import { app } from "$lib/app.svelte";
-  import { overrides } from "$lib/packs/overrides.svelte";
-  import { tradeUp } from "$lib/packs/tradeup.svelte";
   import { customSel } from "$lib/packs/customSel.svelte";
-  import { F4_DERIVED_SLUGS, COMPUTED_PRICE_NOTES } from "$lib/packs/priceMap";
   import type { DetailOption } from "$lib/packs/packDetail";
-  import ItemIcon from "../ItemIcon.svelte";
   import GoldRate from "./GoldRate.svelte";
+  import PackLinesTable from "./PackLinesTable.svelte";
+  import ItemIcon from "../ItemIcon.svelte";
   import { base } from "$app/paths";
 
   interface CustomBlock {
@@ -19,15 +15,25 @@
     options: { chest: string; qty: number; gold: number; counted: boolean }[];
   }
 
-  let { row, tradeUpInfo = {}, alts = {}, custom = null, compact = false }: {
+  // The optional link / collapsible / unpriced / notice / icon / badge props serve the Bonus Room's
+  // product cards; their defaults render the Packs tab's card unchanged.
+  let {
+    row, tradeUpInfo = {}, alts = {}, custom = null, compact = false,
+    link = true, collapsible = false, unpriced = false, notice = null, icon = null, badge = null,
+  }: {
     row: PackRow;
     tradeUpInfo?: Record<string, { ratio: number; deltaPct: number }>;
     alts?: Record<string, DetailOption[]>;
     custom?: CustomBlock | null; // choose-N-of-M packs: the checkbox option rows
     compact?: boolean; // retired cards: stats + drill-down link only, no material table
+    link?: boolean; // false: the title is plain text (no /pack/<slug> drill-down exists)
+    collapsible?: boolean; // true: the material table sits in a closed-by-default <details>
+    unpriced?: boolean; // true: no content line has a price, so the gold total reads "no price"
+    notice?: string | null; // a small warning line under the comparison chips
+    icon?: string | null; // a catalog slug: a 40 px item icon before the title
+    badge?: string | null; // a short tag right after the title (e.g. "×6")
   } = $props();
 
-  let expanded = $state<string | null>(null); // material slug whose selection alts are shown
   const sym = $derived(currencySymbol(app.region)); // $ for NA, € for EU — RC priced per region
   const countedChests = $derived(custom ? custom.options.filter((o) => o.counted).map((o) => o.chest) : []);
 
@@ -38,37 +44,17 @@
     if (!m) return "retired";
     return `retired ${Number(m[2])}/${Number(m[3])}/${m[1].slice(2)}`;
   }
-  function perUnit(gold: number, qty: number): string {
-    return gold > 0 && qty > 0 ? formatGold(gold / qty) : "—";
-  }
-
-  // Click-to-edit market price → a per-unit override for that slug (applies everywhere it appears).
-  let editing = $state<string | null>(null);
-  let draft = $state("");
-  let original = $state(""); // value shown when the editor opened; used to ignore no-op edits
-
-  function startEdit(line: PackLine): void {
-    editing = line.slug;
-    draft = line.gold > 0 && line.qty > 0 ? String(Number((line.gold / line.qty).toFixed(4))) : "";
-    original = draft;
-  }
-  function commit(slug: string): void {
-    const v = parseFloat(draft);
-    editing = null;
-    if (!Number.isFinite(v) || v < 0) return;
-    // Opening a price and clicking away without changing it must not create a "custom" override.
-    if (v === parseFloat(original)) return;
-    overrides.set(app.region, slug, v);
-  }
-  function focusSelect(el: HTMLInputElement): void {
-    el.focus();
-    el.select();
-  }
 </script>
 
 <div class="card" class:retired={row.retired}>
   <div class="head">
-    <a class="title" href="{base}/pack/{row.slug}">{row.name}</a>
+    {#snippet title()}
+      {#if link}<a class="title" href="{base}/pack/{row.slug}">{row.name}</a>{:else}<span class="title">{row.name}</span>{/if}
+    {/snippet}
+    <!-- The icon and title share one flex item, so a long title wraps beside the icon instead of
+         dropping below it. -->
+    {#if icon}<span class="lead"><ItemIcon slug={icon} size={40} />{@render title()}</span>{:else}{@render title()}{/if}
+    {#if badge}<span class="tag">{badge}</span>{/if}
     {#if row.retired}<span class="tag retired-tag">{retiredLabel(row.retiredOn)}</span>{/if}
     {#if row.recurrence}<span class="tag">{row.recurrence}</span>{/if}
     {#if row.limited}<span class="tag">limited</span>{/if}
@@ -82,19 +68,19 @@
            figures share the RC cards' scale. -->
       <span><b class="num accent">{row.blueCrystalCost.toLocaleString("en-US")}</b><img class="ic" src="{base}/icons/blue-crystal.png" alt="BC" /></span>
       <span class="sep">·</span>
-      <span><b class="num">{formatGold(row.total)}</b><img class="ic" src="{base}/icons/gold.png" alt="g" /></span>
+      <span>{#if unpriced}<span class="noprice">no price</span>{:else}<b class="num">{formatGold(row.total)}</b><img class="ic" src="{base}/icons/gold.png" alt="g" />{/if}</span>
       <span class="sep">·</span>
-      <span><GoldRate value={row.goldPerBc} unit="bc" /></span>
+      <span><GoldRate value={unpriced ? null : row.goldPerBc} unit="bc" /></span>
       <span class="sep">·</span>
-      <span title="Shop-money equivalent: 95 BC = 238 RC"><GoldRate value={row.goldPerDollar} unit="cash" {sym} /></span>
+      <span title="Shop-money equivalent: 95 BC = 238 RC"><GoldRate value={unpriced ? null : row.goldPerDollar} unit="cash" {sym} /></span>
     {:else}
       <span><b class="num accent">{(row.royalCrystalCost ?? 0).toLocaleString("en-US")}</b><img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" /></span>
       <span class="sep">·</span>
-      <span><b class="num">{formatGold(row.total)}</b><img class="ic" src="{base}/icons/gold.png" alt="g" /></span>
+      <span>{#if unpriced}<span class="noprice">no price</span>{:else}<b class="num">{formatGold(row.total)}</b><img class="ic" src="{base}/icons/gold.png" alt="g" />{/if}</span>
       <span class="sep">·</span>
-      <span><GoldRate value={row.goldPerRc} unit="rc" /></span>
+      <span><GoldRate value={unpriced ? null : row.goldPerRc} unit="rc" /></span>
       <span class="sep">·</span>
-      <span><GoldRate value={row.goldPerDollar} unit="cash" {sym} /></span>
+      <span><GoldRate value={unpriced ? null : row.goldPerDollar} unit="cash" {sym} /></span>
     {/if}
   </div>
 
@@ -109,6 +95,7 @@
       <b class="num">{formatSignedPct(row.vsG2G)}</b> <span class="lbl">vs</span><img class="ic g2g" src="{base}/icons/g2g.png" alt="G2G" />
     </span>
   </div>
+  {#if notice}<p class="notice">{notice}</p>{/if}
 
   {#if custom}
     <div class="cs">
@@ -135,61 +122,20 @@
     </div>
   {/if}
 
-  <div class="tscroll">
-  <table>
-    <thead>
-      <tr><th class="ic-col" aria-label="icon"></th><th>Material</th><th class="right">Total qty</th><th class="right">Market price</th><th class="right">Gold</th></tr>
-    </thead>
-    <tbody>
-      {#each row.lines as line (line.slug)}
-        <tr>
-          <td class="ic-col"><ItemIcon slug={line.slug} /></td>
-          <td>{displayName(line.slug)}{#if line.isBound}<span class="bound"> (Bound)</span>{/if}{#if tradeUpInfo[line.slug]} <button class="tradeup" class:on={tradeUp.has(line.slug)} title="Value as a {tradeUpInfo[line.slug].ratio}:1 trade-up to the next tier" onclick={() => tradeUp.toggle(line.slug)}>{tradeUpInfo[line.slug].ratio}:1 → <span class:good={tradeUpInfo[line.slug].deltaPct >= 0} class:bad={tradeUpInfo[line.slug].deltaPct < 0}>{formatSignedPct(tradeUpInfo[line.slug].deltaPct)}</span></button>{/if}{#if alts[line.slug]} <button class="alts-btn" onclick={() => (expanded = expanded === line.slug ? null : line.slug)}>{expanded === line.slug ? "hide alts" : "show alts"}</button>{/if}</td>
-          <td class="right num">{line.qty.toLocaleString("en-US")}</td>
-          <td class="right price">
-            {#if F4_DERIVED_SLUGS.has(line.slug)}
-              <!-- F4-derived currency: the exchange input is the single source of truth, so no
-                   edit affordance (an override would be silently out-layered anyway). -->
-              <span class="num price-ro" title="Priced from the F4 exchange input (gold / 95). Change the exchange input to change it.">{perUnit(line.gold, line.qty)}</span>
-            {:else if COMPUTED_PRICE_NOTES.has(line.slug)}
-              <!-- Computed by buildPriceMap (key / cube EV, relic recipe): read-only for the same reason. -->
-              <span class="num price-ro" title={COMPUTED_PRICE_NOTES.get(line.slug)}>{perUnit(line.gold, line.qty)}</span>
-            {:else if editing === line.slug}
-              <input
-                class="edit num" type="number" min="0" step="0.01" bind:value={draft}
-                use:focusSelect
-                onblur={() => commit(line.slug)}
-                onkeydown={(e) => { if (e.key === "Enter") commit(line.slug); else if (e.key === "Escape") editing = null; }}
-                aria-label="Edit market price for {displayName(line.slug)}" />
-            {:else}
-              <button class="price-btn num" class:edited={overrides.has(app.region, line.slug)}
-                title="Click to enter your own AH price" onclick={() => startEdit(line)}>
-                {perUnit(line.gold, line.qty)}
-              </button>
-            {/if}
-          </td>
-          <td class="right num accent">{line.gold > 0 ? formatGold(line.gold) : "—"}</td>
-        </tr>
-        {#if expanded === line.slug && alts[line.slug]}
-          {#each alts[line.slug].filter((o) => !o.chosen) as alt (alt.slug)}
-            <tr class="alt">
-              <td class="ic-col"><ItemIcon slug={alt.slug} /></td>
-              <td class="altname">↳ {displayName(alt.slug)}{#if alt.isBound}<span class="bound"> (Bound)</span>{/if}</td>
-              <td class="right num">{alt.totalQty.toLocaleString("en-US")}</td>
-              <td class="right num muted">{alt.perUnit > 0 ? formatGold(alt.perUnit) : "—"}</td>
-              <td class="right num">{alt.lineGold > 0 ? formatGold(alt.lineGold) : "—"}</td>
-            </tr>
-          {/each}
-        {/if}
-      {/each}
-    </tbody>
-  </table>
-  </div>
+  {#if collapsible}
+    <details class="contents">
+      <!-- One line needs no count (the product's quantity is in its name or badge). -->
+      <summary>Contents{row.lines.length === 1 ? "" : ` · ${row.lines.length} materials`}</summary>
+      <PackLinesTable lines={row.lines} {tradeUpInfo} {alts} />
+    </details>
+  {:else}
+    <PackLinesTable lines={row.lines} {tradeUpInfo} {alts} />
+  {/if}
   {/if}
 </div>
 
 <style>
-  /* Content palette (--panel/--border/--accent/...) is provided by PacksPanel, matching TJW. */
+  /* Content palette (--panel/--border/--accent/...) is provided by PacksPanel (and BonusRoom), matching TJW. */
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; min-width: 0; }
   .card.retired { opacity: .72;
     transition: opacity .15s ease, border-color .15s ease, box-shadow .2s ease, transform .15s ease; }
@@ -211,7 +157,9 @@
   .ref-link:hover { text-decoration: underline; text-underline-offset: 3px; }
   .head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
   .title { font-weight: 600; color: var(--text); text-decoration: none; }
-  .title:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+  .lead { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+  .lead .title { min-width: 0; }
+  a.title:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
   .tag { padding: 2px 8px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border);
     font-size: 12px; color: var(--muted); }
   .stats { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 7px; font-size: 13px; color: var(--text); margin-bottom: 8px; }
@@ -227,22 +175,13 @@
   .lbl { color: var(--muted); }
   .ic { width: 14px; height: 14px; vertical-align: -2px; margin-left: 2px; }
   .ic.g2g { border-radius: 3px; opacity: .9; margin: 0 0 0 1px; }
-  .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; min-width: 0; }
-  table { width: 100%; min-width: 360px; border-collapse: collapse; }
-  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
-  th { color: var(--muted); font-weight: 600; }
-  th.right, td.right { text-align: right; }
-  td.accent { color: var(--accent); }
-  tr:hover td { background: var(--panel-2); }
-  .ic-col { width: 30px; }
-  .bound { color: var(--muted); font-size: 12px; }
-  .tradeup { display: inline-flex; align-items: center; background: var(--panel-2); border: 1px solid var(--border);
-    color: var(--muted); border-radius: 999px; padding: 1px 7px; font-size: 11px; cursor: pointer;
-    margin-left: 5px; vertical-align: middle; white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .tradeup:hover { color: var(--text); border-color: var(--muted); }
-  .tradeup.on { background: rgba(255, 209, 102, 0.15); border-color: var(--accent); color: var(--accent); }
-  /* Flex collapses the literal space, so the arrow and the % touch — add explicit room. */
-  .tradeup span { margin-left: 4px; }
+  .noprice { color: var(--muted); font-style: italic; }
+  .notice { color: var(--warn); font-size: 12px; margin: -4px 0 12px; }
+  /* Bonus Room cards: the material table folds away under a "Contents" summary. */
+  /* A phone-sized tap target (about 44 px tall); the negative margin keeps the visual spacing. */
+  .contents summary { color: var(--muted); font-size: 12.5px; cursor: pointer; padding: 12px 0; margin: -10px 0; }
+  .contents summary:hover { color: var(--text); }
+  .contents[open] summary { margin-bottom: -4px; }
   /* Choose-N-of-M option block (custom packs): checkbox rows above the material table. */
   .cs { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; background: var(--panel-2); }
   .cs-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
@@ -259,16 +198,4 @@
   .cs-name { min-width: 0; }
   .cs-gold { margin-left: auto; white-space: nowrap; }
   .cs-opt:not(.off) .cs-gold { color: var(--accent); }
-  .alts-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 999px;
-    padding: 1px 8px; font-size: 11px; cursor: pointer; margin-left: 5px; vertical-align: middle; white-space: nowrap; }
-  .alts-btn:hover { color: var(--accent); border-color: var(--accent); }
-  tr.alt td { background: rgba(255, 255, 255, .02); padding-top: 4px; padding-bottom: 4px; }
-  .altname { color: var(--muted); font-size: 12.5px; }
-  td.price { white-space: nowrap; }
-  .price-ro { color: var(--muted); font-size: 14px; cursor: help; }
-  .price-btn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--muted); font-size: 14px; }
-  .price-btn:hover { color: var(--text); text-decoration: underline dotted; text-underline-offset: 3px; }
-  .price-btn.edited { color: var(--accent); }
-  .edit { width: 78px; padding: 2px 6px; text-align: right; background: var(--panel-2); color: var(--text);
-    border: 1px solid var(--accent); border-radius: 4px; font-size: 13px; }
 </style>

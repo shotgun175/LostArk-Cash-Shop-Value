@@ -4,7 +4,7 @@ import type { Chest } from "./types";
 // transcribed verbatim from source B (resolverFull), plus manual additions noted inline (gold
 // bars; the 2026-07-15 summer-rotation Season 4 tickets and astrogem chests; the 2026-08-12
 // rotation chests; the 2026-09-16 rotation chests and Jump-Up Boost rewards; the Tenebrous
-// Judge Ark Pass chests).
+// Judge Ark Pass chests; the 2026-10-21 Autumn Bonus Room chests).
 // Selection chests: use defaultPickSlug if set, else auto-pick the highest line-gold option.
 export const RESOLVER: Record<string, Chest> = {
   "Crystallized Destiny Destruction Stone Pouch": {
@@ -409,5 +409,35 @@ export const RESOLVER: Record<string, Chest> = {
     name: "Fixed Epic Astrogem Selection Chest",
     type: "fixed",
     outputs: [{ slug: "fixed-epic-astrogem-selection", qtyPerChest: 1, isBound: true }],
+  },
+  // Autumn Bonus Room (2026-10-21, see data/bonusRoom.ts; slugs follow TJW's registry). The two
+  // Ancient chests (Ark Grid bonus) are pick-one chests with no market, valued at TJW's flat
+  // BAKED seeds. The Soaring kit is computed by buildPriceMap (9 pheons with Include pheons on,
+  // else 0). Cards have no market, so the Joyful card pack renders as a "no price" row. The
+  // potion has no market either: it is unpriced until the user enters a value for it.
+  "Ancient Astrogem Selection Chest": {
+    name: "Ancient Astrogem Selection Chest",
+    type: "fixed",
+    outputs: [{ slug: "ancient-astrogem-selection-chest", qtyPerChest: 1, isBound: true }],
+  },
+  "Ancient Core Random Selection Chest": {
+    name: "Ancient Core Random Selection Chest",
+    type: "fixed",
+    outputs: [{ slug: "ancient-core-random-selection-chest", qtyPerChest: 1, isBound: true }],
+  },
+  "Stone of Soaring Engraving Setting Kit Chest": {
+    name: "Stone of Soaring Engraving Setting Kit Chest",
+    type: "fixed",
+    outputs: [{ slug: "stone-of-soaring-engraving-setting-kit", qtyPerChest: 1, isBound: true }],
+  },
+  "Joyful Legendary Card Pack": {
+    name: "Joyful Legendary Card Pack",
+    type: "fixed",
+    outputs: [{ slug: "joyful-legendary-card-pack", qtyPerChest: 1, isBound: true }],
+  },
+  "Basic Life Energy Potion": {
+    name: "Basic Life Energy Potion",
+    type: "fixed",
+    outputs: [{ slug: "basic-life-energy-potion", qtyPerChest: 1 }],
   },
 };

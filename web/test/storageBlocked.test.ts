@@ -47,6 +47,18 @@ describe("every route renders with site storage blocked", () => {
     expect(render(Page).body.trim()).not.toBe("");
   });
 
+  it.each([
+    ["Bonus Room while it runs", "2026-10-25T12:00:00Z", "Bonus for buying all 3"],
+    ["Bonus Room after it ends", "2026-11-19T00:00:00Z", "No Bonus Room is running right now."],
+  ])("%s", async (_name, now, expected) => {
+    vi.resetModules();
+    const app = await seededApp();
+    app.now = Date.parse(now); // the tab is time-gated, so pin the clock either side of its end
+    const Page = (await import("../src/routes/bonus-room/+page.svelte")).default;
+    const { render } = await import("svelte/server");
+    expect(render(Page).body).toContain(expected);
+  });
+
   it("pack drill-down", async () => {
     vi.resetModules();
     await seededApp();
@@ -62,7 +74,7 @@ describe("stores with site storage unavailable", () => {
     blockStorage();
     vi.resetModules();
     const { f4 } = await import("../src/lib/packs/f4.svelte");
-    expect(f4.value).toBe(30000);
+    expect(f4.value).toBe(35000);
   });
 
   it("the app imports cleanly and opens in NA when storage is blocked", async () => {

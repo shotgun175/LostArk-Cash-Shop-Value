@@ -18,6 +18,7 @@ beforeEach(() => {
     bundles: {},
   } as unknown as typeof app.payload;
   hellSettings.setTapOverride("nae", {});
+  hellSettings.setIncludePheons(false);
 });
 
 const superseded = /class="line[^"]*\bsuperseded\b/;

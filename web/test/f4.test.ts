@@ -38,8 +38,8 @@ beforeEach(() => {
 });
 
 describe("f4 exchange input load", () => {
-  it("seeds 30000 when nothing is stored", async () => {
-    expect((await freshF4()).value).toBe(30000);
+  it("seeds 35000 when nothing is stored", async () => {
+    expect((await freshF4()).value).toBe(35000);
   });
 
   it("round-trips a typed value", async () => {
@@ -54,8 +54,8 @@ describe("f4 exchange input load", () => {
 
   it("falls back to the seed for a negative or non-numeric stored value", async () => {
     mem.setItem("csv.f4.nae", "-5");
-    expect((await freshF4()).value).toBe(30000);
+    expect((await freshF4()).value).toBe(35000);
     mem.setItem("csv.f4.nae", "abc");
-    expect((await freshF4()).value).toBe(30000);
+    expect((await freshF4()).value).toBe(35000);
   });
 });

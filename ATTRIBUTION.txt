@@ -17,3 +17,19 @@ lv-8-gem.png and ancient-bracelet-chest.png (Jump-Up Boost rewards) come from
 the same TJW build, upscaled the same way.
 crystalline-aura-plus-14d.png and azenas-blessing-28d.png were cropped from
 in-game item tooltips (Jump-Up Boost rewards), not sourced from TJW.
+
+2026-10-25: ancient-astrogem-selection-chest.png and
+ancient-core-random-selection-chest.png were cropped from in-game item
+tooltips (Autumn Bonus Room bonus pack), not sourced from TJW.
+
+2026-10-25: autumn-astrogem-pack-i.png, autumn-astrogem-pack-ii.png and
+autumn-astrogem-pack-iii.png were cropped from the user's in-game Bonus Room
+tile captures, not sourced from TJW.
+
+2026-10-25: superior-abidos-fusion-material-chest.png was cropped from an
+in-game item tooltip (Autumn Bonus Room product), not sourced from TJW.
+
+2026-10-25: timber.png, tender-timber.png, sturdy-timber.png and
+abidos-timber.png use the item art embedded in the user's copy of Lulu's
+Logging Guide spreadsheet, composited onto rarity backgrounds rebuilt from
+our existing icons; not sourced from TJW.

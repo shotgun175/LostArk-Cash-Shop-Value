@@ -5,6 +5,14 @@ prices for the materials sold in cash-shop packs and computes each pack's gold v
 Royal Crystal, and how that compares to the in-game F4 currency exchange and to buying gold for
 real money.
 
+Beyond the Packs tab it values Mari's Shop, the Ark Pass and Jump-Up Boost tracks, and hell and
+netherworld keys (Hell Key math), and lists the tracked prices. A Bonus Room tab appears only
+while an in-game Bonus Room is running: it values each product and each group's full purchase
+(the products plus the group's free bonus pack) against the F4 exchange and against G2G real
+money, and hides itself again when the room ends. The untradable Life Energy Potion gets a
+default value from logging at live timber prices (Lv. 70 Logging, Relic charm, no tool bonuses),
+shown next to what a best-in-slot logging tool would earn, and you can override it per region.
+
 Live site: https://shotgun175.github.io/LostArk-Cash-Shop-Value/
 
 ## How it works
@@ -78,7 +86,10 @@ Run both suites when a change touches the wire format (`src/normalize.ts` types,
   types), then `npm run deploy`.
 - The pack dataset (`web/src/lib/packs/data/`) is hand-transcribed and locked by golden tests
   (originally anchored to TheJungleWalrus's compiled cash-shop app, the reference this tool set
-  out to match; hell-key values are now this project's own baseline). The hell-key reward tables
+  out to match; hell-key values are now this project's own baseline). Key values count every
+  chest a floor can offer in the best-of-3 pick, even one worth no gold, and untradable ability
+  stones count as 0 unless the Hell Key tab's opt-in Include pheons setting (off by default)
+  values them at 9 pheons each. The hell-key reward tables
   are the one generated part: `scripts/gen-hell-rewards.mjs` regenerates them from a community
   datamine whose source file lives in the gitignored `docs/`, so regeneration is a
   maintainer-machine operation and the generated tables are committed.

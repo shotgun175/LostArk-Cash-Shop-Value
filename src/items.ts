@@ -1,10 +1,10 @@
 export const REGIONS = ["nae", "euc"] as const;
 export type Region = (typeof REGIONS)[number];
 
-// The full tracked slug universe (95). Source: design doc Appendix B.
-// 76 carry live prices in both regions; 19 are bundle-only pack-content slugs.
+// The full tracked slug universe (99). Source: design doc Appendix B.
+// 80 carry live prices in both regions; 19 are bundle-only pack-content slugs.
 export const ALL_SLUGS: readonly string[] = [
-  "abidos-fusion-material", "adrenaline", "all-out-attack", "ambush-master",
+  "abidos-fusion-material", "abidos-timber", "adrenaline", "all-out-attack", "ambush-master",
   "artisans-metallurgy-level-1", "artisans-metallurgy-level-2", "artisans-metallurgy-level-3", "artisans-metallurgy-level-4",
   "artisans-tailoring-level-1", "artisans-tailoring-level-2", "artisans-tailoring-level-3", "artisans-tailoring-level-4",
   "atropine-potion-bound", "awakening", "barricade", "crystallized-destruction-stone", "crystallized-guardian-stone", "cursed-doll",
@@ -21,8 +21,8 @@ export const ALL_SLUGS: readonly string[] = [
   "raid-captain", "refined-obliteration-stone", "refined-protection-stone", "sidereal-energy", "solar-blessing", "solar-grace", "solar-protection",
   "spirit-absorption", "splendid-dark-grenade-bound", "splendid-elemental-hp-potion-bound", "splendid-hell-key-of-destiny-v",
   "splendid-hell-key-of-destiny-v-epic", "splendid-netherworld-flame-key", "splendid-netherworld-frost-key", "splendid-sacred-bomb-bound",
-  "splendid-sacred-charm-bound", "stabilized-status", "stimulant-bound", "super-charge", "superior-abidos-fusion-material",
-  "tailoring-hellfire-11-14", "tailoring-hellfire-15-18", "tailoring-hellfire-19-20", "vital-point-hit",
+  "splendid-sacred-charm-bound", "stabilized-status", "stimulant-bound", "sturdy-timber", "super-charge", "superior-abidos-fusion-material",
+  "tailoring-hellfire-11-14", "tailoring-hellfire-15-18", "tailoring-hellfire-19-20", "tender-timber", "timber", "vital-point-hit",
 ] as const;
 
 // The 6 bound battle-item pack consumables are never listed on the AH, so the feed returns
@@ -42,5 +42,5 @@ export const BOUND_FROM_UNBOUND: Readonly<Record<string, string>> = {
 // Extra slugs we POST to the feed purely as price sources (stripped from the served payload).
 export const PRICE_SOURCE_SLUGS: readonly string[] = Object.keys(BOUND_FROM_UNBOUND);
 
-// What the cron actually requests: the 95-slug display universe + the price-source slugs.
+// What the cron actually requests: the 99-slug display universe + the price-source slugs.
 export const FETCH_SLUGS: readonly string[] = [...ALL_SLUGS, ...PRICE_SOURCE_SLUGS];

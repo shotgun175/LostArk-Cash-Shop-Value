@@ -57,6 +57,8 @@ export interface ColumnVal {
   flat?: number;
   currency?: boolean;
   untradable?: boolean;
+  // Opt-in: worth this many pheons each when the Include pheons setting is on, else 0.
+  pheons?: number;
   // Per-unit values for a two-part "a|b" pick-one cell (1750 "Karma/Quality"): the player
   // takes one side, so the cell is worth max(a x maxPair[0], b x maxPair[1]).
   maxPair?: readonly [number, number];

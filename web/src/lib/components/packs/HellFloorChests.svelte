@@ -3,9 +3,11 @@
   import { WEALTH_BASE_MULT } from "$lib/packs/data/hellRewards";
   import { formatGold } from "$lib/format";
 
-  // The in-game picker for one floor: every chest worth positive gold, best first. The card's
-  // EV uses a best-of-3 average over all draws; this table answers the question you actually
-  // face when the three chests are already on screen, which one do you take.
+  // The in-game picker for one floor: every chest on the floor, best first, including ones worth
+  // 0 gold (they still take an offer slot, so they are listed, dimmed, with a note on why they
+  // are worth nothing). The card's EV uses a best-of-3 average over all draws; this table answers
+  // the question you actually face when the three chests are already on screen, which one do
+  // you take.
   // Palette vars (--panel-2/--border/--muted/--accent) are inherited from the Hell Key panel.
   let { floor, wealth }: { floor: FloorBreakdown; wealth: boolean } = $props();
 
@@ -28,10 +30,11 @@
     </thead>
     <tbody>
       {#each floor.candidates as c, i (c.column)}
-        <tr class:best={i === 0}>
+        <!-- A 0-gold row is never crowned or highlighted, even when every offer is worth 0. -->
+        <tr class:best={i === 0 && c.gold > 0} class:zero={c.gold === 0}>
           <td>
             <span class="name">
-              {#if i === 0}<span class="crown" title="Best pick">👑</span>{/if}{c.column}
+              {#if i === 0 && c.gold > 0}<span class="crown" title="Best pick">👑</span>{/if}{c.column}
             </span>
             {#if c.note}<span class="cnote">{c.note}</span>{/if}
           </td>
@@ -44,7 +47,7 @@
           <td class="right num accent">{formatGold(Math.round(c.gold + shownBase))}</td>
         </tr>
       {:else}
-        <tr><td class="muted" colspan="5">No tradable chest on this floor.</td></tr>
+        <tr><td class="muted" colspan="5">No chests on this floor.</td></tr>
       {/each}
     </tbody>
   </table>
@@ -65,6 +68,7 @@
   .cnote { display: block; color: var(--muted); font-size: 11px; margin-top: 1px; }
   tr.best td { background: rgba(255, 209, 102, .07); }
   tr.best td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
+  tr.zero td { opacity: .45; }
   .basecell { white-space: nowrap; }
   .chip {
     margin-left: 6px; padding: 1px 6px; border-radius: 999px; font-size: 10px;

@@ -16,10 +16,22 @@ function loadFixture(): void {
   } as unknown as typeof app.payload;
 }
 
+// TJW's Jump-Up parity golden (2,225,158) is defined at a 30,000 exchange input, which was the
+// app's seed until 2026-10-25; the seed is now 35,000, so the parity cases set 30,000 explicitly.
+function withExchange<T>(gold: number, fn: () => T): T {
+  const saved = f4.value;
+  f4.value = gold;
+  try {
+    return fn();
+  } finally {
+    f4.value = saved;
+  }
+}
+
 describe("JumpUpBoost", () => {
-  it("renders the five milestones with TJW-parity totals at the default 30,000 seed", () => {
+  it("renders the five milestones with TJW-parity totals at a 30,000 exchange input", () => {
     loadFixture();
-    const { body } = render(JumpUpBoost);
+    const body = withExchange(30000, () => render(JumpUpBoost).body); // body renders lazily: read it inside
     expect(body).toContain("Jump-Up Boost");
     for (const ilvl of ["1,700", "1,705", "1,710", "1,715", "1,720"]) {
       expect(body).toContain(`Reach Item Lv. ${ilvl}`);
@@ -54,7 +66,16 @@ describe("JumpUpBoost", () => {
     app.region = "nae";
     app.status = "ok";
     app.payload = { schema_version: 1, generated_at: new Date().toISOString(), regions: {}, bundles: {} };
-    const { body } = render(JumpUpBoost);
+    const body = withExchange(30000, () => render(JumpUpBoost).body); // body renders lazily: read it inside
     expect(body).toContain("2,225,158");
+  });
+
+  it("prices the aura off the default 35,000 exchange seed when the user has typed nothing", () => {
+    loadFixture();
+    const { body } = render(JumpUpBoost);
+    // Aura: 238 BC x 35,000 / 95 = 87,684 (per-chest rounding); Lv 1 = 200,000 + 87,684, and the
+    // track totals 2,237,684 (the 30,000 parity total plus 12,526 more aura).
+    expect(body).toContain("287,684");
+    expect(body).toContain("2,237,684");
   });
 });

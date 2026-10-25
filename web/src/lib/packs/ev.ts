@@ -1,10 +1,15 @@
 // Expected-value (EV) engine for hell/netherworld keys and ebony cubes.
 // Faithful reimplementation of TheJungleWalrus's verified math: per-floor best-of-3
 // chest pick (with a small epic-rarity blend onto best-of-4), weighted by
-// P(floor | rarity) and summed across floors, then renormalized. The ALGORITHM was
-// independently verified to reproduce his live /math values exactly; since 2026-07-30
-// the VALUES deliberately diverge from his because Juice is live-priced here (zeroing
-// juice restores his numbers — see test/ev.test.ts).
+// P(floor | rarity) and summed across floors, then renormalized. Every chest present on a
+// floor counts as an offer in that pick, even at 0 gold (TJW 2026-10-21, adopted 2026-10-25).
+// Ability stones are 0 gold unless the opt-in Include pheons setting values them at 9 pheons
+// each (`opts.includePheons`, threaded through columnPrice / chestVal / the key functions).
+// The ALGORITHM was independently verified to reproduce his live /math values exactly. The
+// VALUES deliberately diverge from his: live-priced Free taps (his are a flat 1000), Engravings
+// at 0 (his are a flat 1000) and the sekwahar datamine tables. Juice is priced the same way in
+// both engines since his 2026-08-12 build (1 lavas + 3 glaciers), so zeroing juice reproduces
+// only his pre-2026-08-12 captures; see test/ev.test.ts for the history.
 
 import {
   HELL_TIERS,
@@ -16,7 +21,7 @@ import {
   WEALTH_BASE_MULT,
 } from "./data/hellRewards";
 import { CUBE_REWARDS, CUBE_MAP } from "./data/cube";
-import { RELIC_ENGRAVING_SLUGS } from "./data/constants";
+import { RELIC_ENGRAVING_SLUGS, BC_COSTS } from "./data/constants";
 import type { HellTier, ColumnVal } from "./data/types";
 
 const { h, topK, astrogem } = EV_CONSTANTS;
@@ -57,15 +62,32 @@ export function G(arr: number[], k: number): number {
   return sum;
 }
 
+/** Valuation options shared by the column, chest and key functions. */
+export interface ColumnOpts {
+  /** Value pheon-denominated columns (Ability stones) instead of counting them as 0. */
+  includePheons?: boolean;
+}
+
+/**
+ * Gold per pheon: the pheon price in the map (a user override, or the BC-store injection in
+ * buildPriceMap), else 8.5 Blue Crystals at the blue-crystal price. 0 unless finite and > 0.
+ */
+export function pheonGold(prices: Record<string, number>): number {
+  const x = prices["pheon"] ?? BC_COSTS.pheon * (prices["blue-crystal"] ?? 0);
+  return Number.isFinite(x) && x > 0 ? x : 0;
+}
+
 /** Per-unit gold value of a tradable column at the given prices (tier-scoped when given). */
 export function columnPrice(
   column: string,
   prices: Record<string, number>,
   tier?: HellTier,
+  opts?: ColumnOpts,
 ): number {
   const c = colVal(column, tier);
   if (!c) return 0;
   if (c.flat !== undefined) return c.flat;
+  if (c.pheons !== undefined) return opts?.includePheons ? c.pheons * pheonGold(prices) : 0;
   if (c.untradable) return 0;
   const slug = c.slug ?? c.slug1730;
   const fb = c.fallback ?? c.fallback1730 ?? 0;
@@ -76,7 +98,8 @@ export function columnPrice(
 /**
  * Per-unit gold value of a Juice chest unit: 1 Lava's Breath + 3 Glacier's Breath (the 1:3
  * ratio holds on every floor of every tier; fallbacks match cubeEv's). Priced on ALL tiers
- * (user 2026-07-30) — this deliberately diverges from TJW, whose engine leaves Juice unvalued.
+ * (user 2026-07-30). TJW left Juice unvalued until his 2026-08-12 build and has priced it the
+ * same way since.
  */
 export function juiceUnitPrice(prices: Record<string, number>): number {
   return (prices["lavas-breath"] ?? 400) + 3 * (prices["glaciers-breath"] ?? 200);
@@ -109,6 +132,7 @@ export function chestVal(
   cellValue: number | string,
   prices: Record<string, number>,
   tier?: HellTier,
+  opts?: ColumnOpts,
 ): number {
   const mp = colVal(column, tier)?.maxPair;
   if (mp && typeof cellValue === "string" && cellValue.includes("|")) {
@@ -129,7 +153,7 @@ export function chestVal(
     const x = stonesPick(qty, prices, tier).gold;
     return Number.isFinite(x) ? x : 0;
   }
-  const x = qty * columnPrice(column, prices, tier);
+  const x = qty * columnPrice(column, prices, tier, opts);
   return Number.isFinite(x) ? x : 0;
 }
 
@@ -162,6 +186,11 @@ function chestLabel(
   return { qty, note: null };
 }
 
+/** Why a chest offer is worth 0 gold, for the floor picker: pheons switched off, or no value. */
+function zeroNote(column: string, tier?: HellTier, opts?: ColumnOpts): string {
+  return colVal(column, tier)?.pheons !== undefined && !opts?.includePheons ? "Pheons excluded" : "No gold value";
+}
+
 /** Gold value of the four base-reward columns for one floor (tier-scoped when given). */
 export function baseGold(
   floorRewards: Record<string, number | string>,
@@ -180,7 +209,7 @@ export interface ChestCandidate {
   column: string; // reward column (the chest's name in the tables)
   qty: number; // items taken from the cell
   gold: number; // the cell's gold value, exactly as fed to G()
-  note: string | null; // how the gold was reached, when it is not "qty x one item"
+  note: string | null; // how the gold was reached when it is not "qty x one item", or why it is 0
 }
 
 export interface FloorBreakdown {
@@ -191,7 +220,7 @@ export interface FloorBreakdown {
   baseWealth: number; // base gold at Wealth +1 (base x WEALTH_BASE_MULT); 0 on Netherworld tiers
   floorTotal: number; // bestPick + base (per-floor value before weighting)
   contribution: number; // floorTotal * p, before renormalization
-  candidates: ChestCandidate[]; // the positive-gold chests, DESC by gold
+  candidates: ChestCandidate[]; // every chest present on the floor, 0-gold included, DESC by gold
 }
 
 export interface ColumnPrice {
@@ -199,10 +228,11 @@ export interface ColumnPrice {
   slug: string | null;
   perUnit: number;
   // "override" is never produced here: the Hell Key tab tags user-overridden slugs itself.
-  source: "live" | "fallback" | "flat" | "untradable" | "override" | "—";
+  // "exchange" / "excluded": a pheon-valued column with Include pheons on / off.
+  source: "live" | "fallback" | "flat" | "untradable" | "override" | "exchange" | "excluded" | "—";
 }
 
-export interface HellKeyBreakdownOpts {
+export interface HellKeyBreakdownOpts extends ColumnOpts {
   /** Weight the floors by this rarity column instead of the key's own rarity (what-if view). */
   rarity?: string;
 }
@@ -222,7 +252,8 @@ export interface HellKeyBreakdown {
  * Full per-floor breakdown of a hell/netherworld key's EV (drives the "Hell Key math" view).
  * Each floor's best-of-3 (blended with best-of-4 at weight h) chest pick plus base rewards,
  * weighted by P(floor | rarity); the EV is the renormalized sum. `opts.rarity` re-weights the
- * floors for the rarity what-if; without opts every number matches the key's own rarity.
+ * floors for the rarity what-if; without it every number matches the key's own rarity.
+ * `opts.includePheons` values Ability stones at 9 pheons each (else 0).
  */
 export function hellKeyBreakdown(
   slug: string,
@@ -255,12 +286,17 @@ export function hellKeyBreakdown(
     const candidates: ChestCandidate[] = [];
     for (const column of tier.columns) {
       if (SKIP_COLUMNS.has(column)) continue;
-      if (!rewards[column]) continue;
-      const v = chestVal(column, rewards[column], prices, tier);
-      // Only chests with positive gold value count toward the best-of-k pick;
-      // zero-value (untradable / unpriced) chests are not candidates. This is
-      // load-bearing: including them dilutes G and underprices every floor.
-      if (v > 0) candidates.push({ column, ...chestLabel(column, rewards[column], prices, tier), gold: v });
+      // Every chest PRESENT on the floor is an offer in the best-of-k pick, even one worth
+      // 0 gold (untradable, unpriced, or Ability stones with pheons excluded): it still takes
+      // one of the offered slots, which dilutes G. Only an absent cell is skipped. TJW's rule
+      // since 2026-10-21 (his guard `== null || === ""`, so an explicit 0 cell counts too),
+      // adopted 2026-10-25; it replaces the earlier positive-gold-only pool.
+      const cell = rewards[column];
+      if (cell === undefined || cell === null || cell === "") continue;
+      const v = chestVal(column, cell, prices, tier, opts);
+      const label = chestLabel(column, cell, prices, tier);
+      const note = v === 0 && label.note === null ? zeroNote(column, tier, opts) : label.note;
+      candidates.push({ column, qty: label.qty, note, gold: v });
     }
     candidates.sort((x, y) => y.gold - x.gold);
     const golds = candidates.map((c) => c.gold);
@@ -284,7 +320,11 @@ export function hellKeyBreakdown(
 }
 
 /** The per-unit price (and its source) used for each priced reward column — the "prices used" table. */
-export function hellKeyColumnPrices(slug: string, prices: Record<string, number>): ColumnPrice[] {
+export function hellKeyColumnPrices(
+  slug: string,
+  prices: Record<string, number>,
+  opts?: ColumnOpts,
+): ColumnPrice[] {
   const m = HELL_KEY_MAP[slug];
   if (!m) return [];
   const tier = HELL_TIERS[m.tierLabel];
@@ -308,6 +348,15 @@ export function hellKeyColumnPrices(slug: string, prices: Record<string, number>
     } else if (c.maxPair) {
       // Pick-one pair: show the winning side's per-unit (quality side is valued 0).
       out.push({ column, slug: null, perUnit: Math.max(c.maxPair[0], c.maxPair[1]), source: "flat" });
+    } else if (c.pheons !== undefined) {
+      // Opt-in pheon column (Ability stones): excluded when off; when on, priced off the pheon
+      // price, or the existing no-data source when there is no exchange rate or pheon price.
+      const perPheon = pheonGold(prices);
+      out.push(
+        !opts?.includePheons
+          ? { column, slug: "pheon", perUnit: 0, source: "excluded" }
+          : { column, slug: "pheon", perUnit: c.pheons * perPheon, source: perPheon > 0 ? "exchange" : "—" },
+      );
     } else if (c.untradable) {
       out.push({ column, slug: null, perUnit: 0, source: "untradable" });
     } else {
@@ -324,8 +373,8 @@ export function hellKeyColumnPrices(slug: string, prices: Record<string, number>
  * EV of one of the 4 hell/netherworld keys, in gold. Not rounded; callers round for display.
  * Delegates to hellKeyBreakdown so the math has a single source of truth.
  */
-export function hellKeyEv(slug: string, prices: Record<string, number>): number {
-  return hellKeyBreakdown(slug, prices)?.ev ?? 0;
+export function hellKeyEv(slug: string, prices: Record<string, number>, opts?: ColumnOpts): number {
+  return hellKeyBreakdown(slug, prices, opts)?.ev ?? 0;
 }
 
 /** EV of an ebony-cube unlock, in gold. Rounded. */
