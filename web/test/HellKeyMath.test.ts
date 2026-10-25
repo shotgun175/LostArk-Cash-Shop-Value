@@ -14,8 +14,8 @@ import fixture from "./fixtures/tjw-nae-prices.json";
 // The singletons persist across cases within this file, so every case starts from the same
 // fresh NA snapshot with no tap or price overrides and Include pheons off. The default tier is
 // the newest (1750), whose "Prices used" table carries the Transferred tap and superior fusions.
-// No localStorage in node, so the F4 input sits at its 30,000 seed: 30,000 / 95 gold per BC x
-// 8.5 BC per pheon x 9 pheons = 24,158 gold per Ability stone (rounded).
+// No localStorage in node, so the F4 input sits at its 35,000 seed (2026-10-25; it was 30,000):
+// 35,000 / 95 gold per BC x 8.5 BC per pheon x 9 pheons = 28,184 gold per Ability stone (rounded).
 beforeEach(() => {
   app.region = "nae";
   app.status = "ok";
@@ -105,7 +105,7 @@ describe("HellKeyMath Include pheons", () => {
     expect(body).toContain("Include pheons");
     expect(body.match(box)?.[0]).not.toContain("checked");
     // The panel still shows what a stone would be worth, dimmed while the box is off.
-    expect(panel(body)).toContain("24,158");
+    expect(panel(body)).toContain("28,184");
     expect(panel(body)).toMatch(/class="line[^"]*\boff\b/);
     expect(panel(body)).not.toContain("no exchange rate");
     // The intro states the zero-gold offer rule.
@@ -123,7 +123,7 @@ describe("HellKeyMath Include pheons", () => {
     expect(rows.length).toBeGreaterThan(0);
     for (const r of rows) {
       expect(r).toContain(">exchange</span>");
-      expect(r).toContain("24,158");
+      expect(r).toContain("28,184");
     }
   });
 

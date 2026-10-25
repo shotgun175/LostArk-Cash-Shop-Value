@@ -74,7 +74,7 @@ describe("stores with site storage unavailable", () => {
     blockStorage();
     vi.resetModules();
     const { f4 } = await import("../src/lib/packs/f4.svelte");
-    expect(f4.value).toBe(30000);
+    expect(f4.value).toBe(35000);
   });
 
   it("the app imports cleanly and opens in NA when storage is blocked", async () => {

@@ -86,7 +86,7 @@ describe("layeredPrices", () => {
   });
 
   it("raises every key EV when the Hell Key tab's Include pheons is on", async () => {
-    // The F4 input sits at its 30,000 seed in node (no storage), so pheons have a price.
+    // The F4 input sits at its 35,000 seed in node (no storage), so pheons have a price.
     const { layeredPrices } = await fresh(fixture.prices as Record<string, number>);
     const { hellSettings } = await import("../src/lib/packs/hellSettings.svelte");
     expect(hellSettings.includePheons).toBe(false);

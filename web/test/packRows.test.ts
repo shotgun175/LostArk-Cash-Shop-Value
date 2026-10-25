@@ -1,13 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { buildPackRows } from "../src/lib/packs/packRows";
-import { F4_DEFAULT_INPUT } from "../src/lib/packs/exchange";
 import { buildPriceMap } from "../src/lib/packs/priceMap";
 import { BC_PER_BUNDLE } from "../src/lib/packs/data/marisShop";
 import fixture from "./fixtures/tjw-nae-prices.json";
 
+// A fixed exchange input for these pinned numbers (it was the app's seed until 2026-10-25, when
+// the seed became 35,000; the seed itself is tested in f4.test.ts and exchange.test.ts).
+const F4 = 30000;
 // buildPackRows takes the fully layered map, built the way the Packs tab builds it.
-const prices = buildPriceMap(fixture.prices as Record<string, number>, { blueCrystalGold: F4_DEFAULT_INPUT / BC_PER_BUNDLE });
-const opts = { f4Input: F4_DEFAULT_INPUT, g2gInput: 0.03268824 }; // arbitrary g2g input (the old spec seed)
+const prices = buildPriceMap(fixture.prices as Record<string, number>, { blueCrystalGold: F4 / BC_PER_BUNDLE });
+const opts = { f4Input: F4, g2gInput: 0.03268824 }; // arbitrary g2g input (the old spec seed)
 
 describe("buildPackRows", () => {
   const rows = buildPackRows(prices, opts);

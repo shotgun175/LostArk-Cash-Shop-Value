@@ -6,6 +6,7 @@ import { app } from "../src/lib/app.svelte";
 import { overrides } from "../src/lib/packs/overrides.svelte";
 import { hellSettings } from "../src/lib/packs/hellSettings.svelte";
 import { f4 } from "../src/lib/packs/f4.svelte";
+import { F4_DEFAULT_INPUT } from "../src/lib/packs/exchange";
 import fixture from "./fixtures/tjw-nae-prices.json";
 
 // The Bonus Room tab, rendered on the server against the shared NA fixture (the valuation rows
@@ -42,12 +43,16 @@ beforeEach(() => {
   hellSettings.setIncludePheons(false);
   overrides.clearAll("nae");
   overrides.clearAll("euc");
+  // The pins below are at a 30,000 exchange input (bonusRoom.test.ts uses the same), not the
+  // app's 35,000 seed, so set it per region and restore the seed afterwards.
+  f4.map = { nae: 30000, euc: 30000 };
   loadFixture();
 });
 
 afterEach(() => {
   overrides.clearAll("nae");
   overrides.clearAll("euc");
+  f4.map = { nae: F4_DEFAULT_INPUT, euc: F4_DEFAULT_INPUT };
 });
 
 describe("BonusRoom while the room runs", () => {
