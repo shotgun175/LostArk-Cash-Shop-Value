@@ -16,6 +16,7 @@ import fixture from "./fixtures/tjw-nae-prices.json";
 const INSIDE = Date.parse("2026-10-25T12:00:00Z");
 const AFTER = Date.parse("2026-11-19T00:00:00Z");
 const KIT_NOTE = "Counts as 0 gold while pheons are excluded (setting above).";
+const KIT_UNPRICED_NOTE = "Counts as 0 gold until an F4 exchange rate prices pheons (above).";
 
 function loadFixture(now = INSIDE): void {
   app.region = "nae";
@@ -117,6 +118,20 @@ describe("BonusRoom while the room runs", () => {
     body = render(BonusRoom).body;
     expect(body).not.toContain(KIT_NOTE);
     expect(card(body, "Stone of Soaring Engraving Setting Kit Chest")).not.toContain("-100%");
+  });
+
+  it("explains the soaring kit's 0 gold when pheons are included but have no price yet", () => {
+    const saved = f4.value;
+    try {
+      // Pheons on, but no F4 rate and no user pheon price: the kit is still 0 gold.
+      hellSettings.setIncludePheons(true);
+      f4.value = 0;
+      const kit = card(render(BonusRoom).body, "Stone of Soaring Engraving Setting Kit Chest");
+      expect(kit).toContain(KIT_UNPRICED_NOTE);
+      expect(kit).not.toContain(KIT_NOTE);
+    } finally {
+      f4.value = saved;
+    }
   });
 
   it("flags a valued product that has an unpriced line", () => {

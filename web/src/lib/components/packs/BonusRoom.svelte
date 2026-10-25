@@ -10,6 +10,7 @@
   import { selection } from "$lib/packs/selection.svelte";
   import { hellSettings } from "$lib/packs/hellSettings.svelte";
   import { cashPerRc } from "$lib/packs/exchange";
+  import { pheonGold } from "$lib/packs/ev";
   import { formatGold, formatSignedPct } from "$lib/format";
   import ItemIcon from "../ItemIcon.svelte";
   import PackCard from "./PackCard.svelte";
@@ -54,6 +55,7 @@
   const KIT_SLUG = "stone-of-soaring-engraving-setting-kit";
   const LV3_PER_LV7 = 81; // 3 gems fuse into 1 of the next level, four levels from Lv. 3 to Lv. 7
   const KIT_NOTE = "Counts as 0 gold while pheons are excluded (setting above).";
+  const KIT_UNPRICED_NOTE = "Counts as 0 gold until an F4 exchange rate prices pheons (above).";
 
   const regionOv = $derived(overrides.forRegion(app.region));
   const gemOv = $derived(regionOv[GEM_SLUG]);
@@ -61,6 +63,21 @@
   const lv3 = $derived(prices[GEM_SLUG] ?? 0);
   // Rounded like a pack card's price editor so 150,000 / 81 x 81 reads back as 150000.
   const gemShown = $derived(gemOv != null ? Number((gemOv * LV3_PER_LV7).toFixed(4)) : "");
+
+  // While a value box has focus its shown value is frozen, so the override it just wrote (read
+  // back normalized, e.g. "1e5" -> 100000) never rewrites the text mid-typing; blur shows the
+  // stored value again, which also clears an entry that was never saved (a negative number).
+  let typing = $state<string | null>(null); // id of the focused value box
+  let frozen = "";
+  const shownValue = (id: string, stored: string | number): string | number => (typing === id ? frozen : stored);
+  function startTyping(id: string, stored: string | number): void {
+    frozen = String(stored);
+    typing = id;
+  }
+  function stopTyping(el: HTMLInputElement, stored: string | number): void {
+    typing = null;
+    el.value = String(stored);
+  }
 
   function onPriceInput(slug: string, perUnitDivisor: number, el: HTMLInputElement): void {
     if (el.validity?.badInput) return; // half-typed ("1e"): keep the last value until it parses
@@ -73,10 +90,14 @@
     if (Number.isFinite(v) && v >= 0) overrides.set(app.region, slug, v / perUnitDivisor);
   }
 
-  // The soaring kit is computed (9 pheons with Include pheons on, else 0), so with pheons off its
-  // product reads 0 gold and -100%: say why on that card instead of the generic unpriced notice.
+  // The soaring kit is computed (9 pheons with Include pheons on, else 0), so when it is 0 (pheons
+  // off, or on with no pheon price yet) its product reads 0 gold and -100%: say why on that card
+  // instead of the generic unpriced notice.
   function noticeFor(p: BonusProductRow): string | null {
-    if (!hellSettings.includePheons && p.lines.some((l) => l.slug === KIT_SLUG)) return KIT_NOTE;
+    if (p.lines.some((l) => l.slug === KIT_SLUG)) {
+      if (!hellSettings.includePheons) return KIT_NOTE;
+      if (pheonGold(prices) === 0) return KIT_UNPRICED_NOTE;
+    }
     return p.hasUnpriced && p.valueSet ? "Some contents have no price" : null;
   }
 </script>
@@ -105,7 +126,9 @@
         <label class="ctl-label" for="br-gem">Your Lv. 7 gem price</label>
         <div class="ctl-row">
           <input id="br-gem" type="number" min="0" step="any" placeholder={String(Math.round(lv3 * LV3_PER_LV7))}
-            aria-describedby="br-gem-hint br-gem-note" value={gemShown} oninput={(e) => onPriceInput(GEM_SLUG, LV3_PER_LV7, e.currentTarget)} />
+            aria-describedby="br-gem-hint br-gem-note" value={shownValue("gem", gemShown)}
+            onfocus={() => startTyping("gem", gemShown)} onblur={(e) => stopTyping(e.currentTarget, gemShown)}
+            oninput={(e) => onPriceInput(GEM_SLUG, LV3_PER_LV7, e.currentTarget)} />
           <img class="ic" src="{base}/icons/gold.png" alt="gold" />
         </div>
         <p class="hint" id="br-gem-hint">
@@ -117,7 +140,9 @@
         <label class="ctl-label" for="br-potion">Life Energy Potion value</label>
         <div class="ctl-row">
           <input id="br-potion" type="number" min="0" step="any" placeholder="Your value"
-            aria-describedby="br-potion-note" value={potionOv ?? ""} oninput={(e) => onPriceInput(POTION_SLUG, 1, e.currentTarget)} />
+            aria-describedby="br-potion-note" value={shownValue("potion", potionOv ?? "")}
+            onfocus={() => startTyping("potion", potionOv ?? "")} onblur={(e) => stopTyping(e.currentTarget, potionOv ?? "")}
+            oninput={(e) => onPriceInput(POTION_SLUG, 1, e.currentTarget)} />
           <img class="ic" src="{base}/icons/gold.png" alt="gold" />
         </div>
         <p class="fine" id="br-potion-note">Gold per potion, saved for this region. Leave empty for no price; 0 counts as zero.</p>
