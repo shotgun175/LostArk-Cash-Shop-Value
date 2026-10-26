@@ -3,6 +3,7 @@
   import { packDetail, type DetailOption } from "$lib/packs/packDetail";
   import { F4_DERIVED_SLUGS, COMPUTED_PRICE_NOTES } from "$lib/packs/priceMap";
   import { layeredPrices } from "$lib/packs/prices.svelte";
+  import { BAR_OVERRIDES } from "$lib/valuesBar";
   import { f4 } from "$lib/packs/f4.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
   import { tradeUp } from "$lib/packs/tradeup.svelte";
@@ -46,7 +47,8 @@
       : `${pack.blueCrystalCost!.toLocaleString("en-US")} BC = ${Math.round(bcRcEquiv).toLocaleString("en-US")} RC = ${formatMoney(bcRcEquiv * cashPerRc(app.region), sym)}`,
   );
 
-  const customCount = $derived(overrides.count(app.region));
+  // The Your values gem and potion are settings, not price edits: not counted, and kept by reset all.
+  const customCount = $derived(overrides.count(app.region, BAR_OVERRIDES));
   const tuCount = $derived(tradeUp.count());
   // Selection-chest picks and choose-N-of-M pack picks share the "picks" chip.
   const pickCount = $derived(selection.count() + customSel.count());
@@ -126,7 +128,7 @@
         {#if customCount > 0 || tuCount > 0 || pickCount > 0}
           <div class="custom">
             <span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && (tuCount > 0 || pickCount > 0)} · {/if}{#if pickCount > 0}<b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"}{/if}{#if pickCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span>
-            <button class="reset-all" onclick={() => { overrides.clearAll(app.region); tradeUp.clear(); selection.clearAll(); customSel.clearAll(); }}>reset all</button>
+            <button class="reset-all" onclick={() => { overrides.clearAll(app.region, BAR_OVERRIDES); tradeUp.clear(); selection.clearAll(); customSel.clearAll(); }}>reset all</button>
           </div>
         {/if}
       {/if}
@@ -157,7 +159,7 @@
           </div>
           <div class="srow">
             <span class="slabel">gold to buy {pack.blueCrystalCost.toLocaleString("en-US")} <img class="ic" src="{base}/icons/blue-crystal.png" alt="BC" /> <span class="rate">(F4 exchange)</span></span>
-            <span class="sval">{#if f4.perBc > 0}<b class="num">{formatGold(pack.blueCrystalCost * f4.perBc)}</b><img class="ic" src="{base}/icons/gold.png" alt="g" />{:else}<span class="num muted" title="Set the exchange input on the Packs tab">—</span>{/if}</span>
+            <span class="sval">{#if f4.perBc > 0}<b class="num">{formatGold(pack.blueCrystalCost * f4.perBc)}</b><img class="ic" src="{base}/icons/gold.png" alt="g" />{:else}<span class="num muted" title="Set the F4 exchange in Your values">—</span>{/if}</span>
           </div>
           <div class="srow">
             <span class="slabel">per {cashName} <span class="rate">({bcCashRate})</span></span>

@@ -12,14 +12,14 @@
   import { hellSettings } from "$lib/packs/hellSettings.svelte";
   import { TRADE_UP } from "$lib/packs/data/constants";
   import { layeredPrices } from "$lib/packs/prices.svelte";
+  import { BAR_OVERRIDES } from "$lib/valuesBar";
   import { packDetail, type DetailOption } from "$lib/packs/packDetail";
   import { PACKS } from "$lib/packs/data/packs";
   import PackCard from "./PackCard.svelte";
-  import ExchangeInputs from "./ExchangeInputs.svelte";
   import { base } from "$app/paths";
 
-  // The F4 + G2G exchange inputs (and the G2G rate's freshness cue) live in ExchangeInputs, over
-  // the shared f4 and g2g stores, so the Bonus Room shows the same row and the same values.
+  // The F4 + G2G exchange inputs live in the shared "Your values" bar (ValuesBar.svelte, under
+  // the header), over the same f4 and g2g stores this panel values against.
   const sym = $derived(currencySymbol(app.region));
   const rcCash = $derived(RC_CASH_PER_12K[app.region]); // 100 (NA) / 94.99 (EU) per 12,000 RC
   const rcPerUnit = $derived(cashPerRc(app.region));
@@ -78,12 +78,13 @@
     return out;
   });
 
-  const customCount = $derived(overrides.count(app.region));
+  // The Your values gem and potion are settings, not price edits: not counted, and kept by reset all.
+  const customCount = $derived(overrides.count(app.region, BAR_OVERRIDES));
   const tuCount = $derived(tradeUp.count());
   // Selection-chest picks and choose-N-of-M pack picks share the "picks" chip.
   const pickCount = $derived(selection.count() + customSel.count());
   function resetAll(): void {
-    overrides.clearAll(app.region);
+    overrides.clearAll(app.region, BAR_OVERRIDES);
     tradeUp.clear();
     selection.clearAll();
     customSel.clearAll();
@@ -91,12 +92,10 @@
 </script>
 
 <div class="packs">
-  <ExchangeInputs />
-
   <p class="note">
     Sorted by g/RC (Blue-Crystal-priced packs slot in at their exchange equivalent, 95 BC = 238 RC). Selection chests use their highest-value option. Choose-N packs rank by their default picks, so toggling options won't move the card. Drill into a pack for all options + screenshot. Conversion:
     <b class="num">12,000</b> <img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" /> = {sym}{rcCash.toLocaleString("en-US")} ({sym}{rcPerUnit.toFixed(4)}/RC).
-    Click any market price to enter your own AH price.{#if hellSettings.includePheons}{" "}Key values include ability stones at 9 pheons each (Hell Key tab setting).{/if}{#if customCount > 0 || tuCount > 0 || pickCount > 0} <span class="custom"><span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && (tuCount > 0 || pickCount > 0)} · {/if}{#if pickCount > 0}<b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"}{/if}{#if pickCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span> <button class="reset-all" onclick={resetAll}>reset all</button></span>{/if}
+    Click any market price to enter your own AH price.{#if hellSettings.includePheons}{" "}Key values include ability stones at 9 pheons each (set in Your values).{/if}{#if customCount > 0 || tuCount > 0 || pickCount > 0} <span class="custom"><span>{#if customCount > 0}<b class="num">{customCount}</b> custom price{customCount === 1 ? "" : "s"}{/if}{#if customCount > 0 && (tuCount > 0 || pickCount > 0)} · {/if}{#if pickCount > 0}<b class="num">{pickCount}</b> pick{pickCount === 1 ? "" : "s"}{/if}{#if pickCount > 0 && tuCount > 0} · {/if}{#if tuCount > 0}<b class="num">{tuCount}</b> trade-up{tuCount === 1 ? "" : "s"}{/if}</span> <button class="reset-all" onclick={resetAll}>reset all</button></span>{/if}
   </p>
 
   {#if app.status === "loading"}

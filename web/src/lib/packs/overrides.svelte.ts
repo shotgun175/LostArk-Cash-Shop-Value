@@ -42,12 +42,17 @@ class Overrides {
     return slug in this.map[r];
   }
 
-  count(r: Region): number {
-    return Object.keys(this.map[r]).length;
+  /** How many overrides the region has, leaving out the slugs in `except`. */
+  count(r: Region, except?: ReadonlySet<string>): number {
+    const slugs = Object.keys(this.map[r]);
+    return except ? slugs.filter((s) => !except.has(s)).length : slugs.length;
   }
 
-  clearAll(r: Region): void {
-    this.map[r] = {};
+  /** Removes every override for the region except the slugs in `except`. */
+  clearAll(r: Region, except?: ReadonlySet<string>): void {
+    const kept: Record<string, number> = {};
+    if (except) for (const [s, v] of Object.entries(this.map[r])) if (except.has(s)) kept[s] = v;
+    this.map[r] = kept;
     this.persist(r);
   }
 

@@ -24,13 +24,14 @@ describe("ArkPass", () => {
     // Match "<qty> <gold>" cell pairs in the rendered text: a bare "99,000" is ambiguous, since a
     // Support row (300 breaths) totals the same at the fixture prices.
     const text = body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
-    // Lv 16/17: Ebony Cube ticket chests at the cube EV (no live price for the ticket slug).
-    expect(text.match(/ 2 36,854 /g)?.length).toBe(2);
+    // Lv 16/17: Ebony Cube ticket chests at the cube EV (no live price for the ticket slug), which
+    // reads the NA default Lv. 2 gem (348,000 / 729, 2026-10-25; it was 36,854 at the baked 514).
+    expect(text.match(/ 2 35,242 /g)?.length).toBe(2);
     // Lv 18/19: 3 Epic Astrogem Chests at BAKED 33,000; Lv 20: fixed epic astrogem at 75,000.
     expect(text.match(/ 3 99,000 /g)?.length).toBe(2);
     expect(text).toContain(" 1 75,000 ");
     // The raw effectivePrices() map would leave Lv 16-20 at 0 and total 3,035,255.
-    expect(body).toContain("3,381,963");
+    expect(body).toContain("3,378,739");
     expect(body).not.toContain("3,035,255");
   });
 });

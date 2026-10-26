@@ -89,6 +89,9 @@ const ONE_TO_ONE: readonly string[] = [
   // Logging mats (2026-10-25, the Life Energy Potion default): the item art embedded in the
   // user's copy of Lulu's Logging Guide sheet, on rarity backgrounds rebuilt from our icons.
   "timber", "tender-timber", "sturdy-timber", "abidos-timber",
+  // The "Your values" bar's F4 exchange chip (2026-10-25): cropped from the user's in-game F4
+  // shop button capture.
+  "f4-shop",
 ];
 
 const ICON_FILES: Readonly<Record<string, string>> = {

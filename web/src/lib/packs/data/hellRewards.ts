@@ -1767,7 +1767,7 @@ export const PHEONS_PER_ABILITY_STONE = 9;
 // Column -> slug/fallback/flat valuation (source B columnToSlug). The 1730 and 1750 tiers
 // share mats; the 1640-1700 tiers override the mat-bearing entries per tier (HellTier
 // valuation field). Untradable columns value to 0. "Ability stones" is the one opt-in column:
-// worth PHEONS_PER_ABILITY_STONE pheons each when the Hell Key tab's Include pheons setting is
+// worth PHEONS_PER_ABILITY_STONE pheons each when the Include pheons setting (Your values) is
 // on, else 0 (see ev.ts columnPrice). The "Juice" column is absent here on
 // purpose: it is priced by a special case in ev.ts chestVal (1 lavas-breath +
 // 3 glaciers-breath per unit) on EVERY tier (user 2026-07-30). TJW left Juice unvalued until

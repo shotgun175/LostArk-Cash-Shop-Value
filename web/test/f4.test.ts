@@ -59,3 +59,58 @@ describe("f4 exchange input load", () => {
     expect((await freshF4()).value).toBe(35000);
   });
 });
+
+describe("f4 seed fallback", () => {
+  it("is the default with nothing stored, and offers the seed as the box's watermark", async () => {
+    const f = await freshF4();
+    expect(f.isDefault).toBe(true);
+    expect(f.seed).toBe(35000);
+    expect(f.value).toBe(35000);
+  });
+
+  it("a typed value, 0 included, is not the default, and a reload agrees", async () => {
+    const f = await freshF4();
+    f.value = 21500;
+    expect(f.isDefault).toBe(false);
+    expect(mem.getItem("csv.f4.nae")).toBe("21500");
+    f.value = 0;
+    expect(f.isDefault).toBe(false);
+    const again = await freshF4();
+    expect(again.value).toBe(0);
+    expect(again.isDefault).toBe(false);
+  });
+
+  it("typing the seed's own number still saves it as yours", async () => {
+    (await freshF4()).value = 35000;
+    expect(mem.getItem("csv.f4.nae")).toBe("35000");
+    expect((await freshF4()).isDefault).toBe(false);
+  });
+
+  it("reset returns the region to the seed and removes the stored key, and a reload agrees", async () => {
+    mem.setItem("csv.f4.euc", "30000");
+    const f = await freshF4();
+    f.value = 21500;
+    f.reset();
+    expect(f.value).toBe(35000);
+    expect(f.isDefault).toBe(true);
+    expect(mem.getItem("csv.f4.nae")).toBeNull();
+    expect(mem.getItem("csv.f4.euc")).toBe("30000"); // the other region keeps its own value
+    const again = await freshF4();
+    expect(again.value).toBe(35000);
+    expect(again.isDefault).toBe(true);
+    expect(again.map.euc).toBe(30000);
+  });
+
+  it("a NaN never saves and never counts as your own value", async () => {
+    const f = await freshF4();
+    f.value = Number.NaN;
+    expect(mem.getItem("csv.f4.nae")).toBeNull();
+    expect(f.isDefault).toBe(true);
+  });
+
+  it("an invalid stored value reads as the default and is left alone until you type", async () => {
+    mem.setItem("csv.f4.nae", "-5");
+    expect((await freshF4()).isDefault).toBe(true);
+    expect(mem.getItem("csv.f4.nae")).toBe("-5");
+  });
+});

@@ -583,10 +583,10 @@ describe("buildPriceMap", () => {
   it("sets relic-combat-engraving-recipe to the max engraving", () => {
     expect(map["relic-combat-engraving-recipe"]).toBe(relicRecipe({ ...BAKED, ...NAE }));
   });
-  it("keeps baked gem values when the region does not override them", () => {
-    // NAE prices carry no lv-3-gem, so the baked 1850 (2026-08-19 re-anchor) survives.
+  it("prices gems off the region's default Lv. 8 baseline when the region does not override them", () => {
+    // NAE prices carry no gem slugs, so Lv. 3 = the NA default 348,000 / 3^5 (2026-10-25).
     expect(NAE["lv-3-gem"]).toBeUndefined();
-    expect(map["lv-3-gem"]).toBe(1850);
+    expect(map["lv-3-gem"]).toBe(348000 / 243);
   });
   it("lets region prices override baked values", () => {
     const overridden = buildPriceMap({ "lv-3-gem": 9999 });

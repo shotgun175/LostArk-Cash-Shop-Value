@@ -6,19 +6,15 @@
   import { layeredPrices } from "$lib/packs/prices.svelte";
   import { f4 } from "$lib/packs/f4.svelte";
   import { g2g } from "$lib/packs/g2g.svelte";
-  import { overrides } from "$lib/packs/overrides.svelte";
   import { selection } from "$lib/packs/selection.svelte";
   import { hellSettings } from "$lib/packs/hellSettings.svelte";
   import { cashPerRc } from "$lib/packs/exchange";
   import { pheonGold } from "$lib/packs/ev";
   import { SOARING_KIT } from "$lib/packs/priceMap";
-  import { LE_PER_BASIC_POTION, bestToolGoldPerLe, loggingGoldPerLe } from "$lib/packs/lifeEnergy";
   import { formatGold, formatSignedPct } from "$lib/format";
   import ItemIcon from "../ItemIcon.svelte";
   import PackCard from "./PackCard.svelte";
   import PackLinesTable from "./PackLinesTable.svelte";
-  import ExchangeInputs from "./ExchangeInputs.svelte";
-  import PheonPanel from "./PheonPanel.svelte";
 
   // The Bonus Room tab (TJW's 2026-10-21 logic and data, our design): each group's products as
   // Packs-style cards, the group's free bonus pack, and the whole group's value vs its cost. All
@@ -49,62 +45,11 @@
       : null,
   );
 
-  // The two value inputs write this region's price overrides, the same store a pack card's
-  // click-to-edit price writes, so they apply on every tab. They write ONLY from an input event
-  // (never on load or render); an emptied box removes the override.
-  const GEM_SLUG = "lv-3-gem";
-  const POTION_SLUG = "basic-life-energy-potion";
+  // The exchange rates, the Lv. 8 gem price, the potion value and the pheons setting are edited
+  // in the shared "Your values" bar under the header (ValuesBar.svelte).
   const KIT_SLUG = SOARING_KIT;
-  const LV3_PER_LV7 = 81; // 3 gems fuse into 1 of the next level, four levels from Lv. 3 to Lv. 7
-  const KIT_NOTE = "Counts as 0 gold while pheons are excluded (setting above).";
-  const KIT_UNPRICED_NOTE = "Counts as 0 gold until an F4 exchange rate prices pheons (above).";
-
-  const regionOv = $derived(overrides.forRegion(app.region));
-  const gemOv = $derived(regionOv[GEM_SLUG]);
-  const potionOv = $derived(regionOv[POTION_SLUG]);
-  const lv3 = $derived(prices[GEM_SLUG] ?? 0);
-  // The potion's logging default (lifeEnergy.ts), from the same layered map: it reads only the
-  // timber and blue-crystal prices, which the potion's own override never touches.
-  // The best-in-slot tool figure sits beside it for reference; it never becomes the value.
-  const leDefault = $derived.by(() => {
-    const perLe = loggingGoldPerLe(prices);
-    const best = bestToolGoldPerLe(prices);
-    if (perLe === null || best === null) return null;
-    const lines = `${best.lines.slice(0, -1).join(", ")} and ${best.lines[best.lines.length - 1]}`;
-    return {
-      potion: LE_PER_BASIC_POTION * perLe,
-      bestPotion: LE_PER_BASIC_POTION * best.goldPerLe,
-      tip: `Logging at live timber prices: 3,000 LE × ${perLe.toFixed(3)} gold per LE with no tool bonuses, or × ${best.goldPerLe.toFixed(3)} with a best-in-slot all-in-one tool (${lines} at max rolls).`,
-    };
-  });
-  // Rounded like a pack card's price editor so 150,000 / 81 x 81 reads back as 150000.
-  const gemShown = $derived(gemOv != null ? Number((gemOv * LV3_PER_LV7).toFixed(4)) : "");
-
-  // While a value box has focus its shown value is frozen, so the override it just wrote (read
-  // back normalized, e.g. "1e5" -> 100000) never rewrites the text mid-typing; blur shows the
-  // stored value again, which also clears an entry that was never saved (a negative number).
-  let typing = $state<string | null>(null); // id of the focused value box
-  let frozen = "";
-  const shownValue = (id: string, stored: string | number): string | number => (typing === id ? frozen : stored);
-  function startTyping(id: string, stored: string | number): void {
-    frozen = String(stored);
-    typing = id;
-  }
-  function stopTyping(el: HTMLInputElement, stored: string | number): void {
-    typing = null;
-    el.value = String(stored);
-  }
-
-  function onPriceInput(slug: string, perUnitDivisor: number, el: HTMLInputElement): void {
-    if (el.validity?.badInput) return; // half-typed ("1e"): keep the last value until it parses
-    const raw = el.value.trim();
-    if (raw === "") {
-      overrides.clear(app.region, slug);
-      return;
-    }
-    const v = Number(raw);
-    if (Number.isFinite(v) && v >= 0) overrides.set(app.region, slug, v / perUnitDivisor);
-  }
+  const KIT_NOTE = "Counts as 0 gold while pheons are excluded (Your values).";
+  const KIT_UNPRICED_NOTE = "Counts as 0 gold until an F4 exchange rate prices pheons (Your values).";
 
   // The soaring kit is computed (9 pheons with Include pheons on, else 0), so when it is 0 (pheons
   // off, or on with no pheon price yet) its product reads 0 gold and -100%: say why on that card
@@ -136,7 +81,7 @@
       .map((x) => (x.valueSet ? `${x.name} (part)` : x.name));
     if (names.length === 0) return null;
     const potion = g.products.some((p) => p.hasUnpriced && p.calculator === "life-energy");
-    return `Not counted (no price yet): ${names.join(", ")}.${potion ? " Enter a Life Energy Potion value above to count it." : ""}`;
+    return `Not counted (no price yet): ${names.join(", ")}.${potion ? " Enter a Life Energy Potion value in Your values to count it." : ""}`;
   }
 </script>
 
@@ -156,47 +101,6 @@
       </p>
       <p class="status"><b class="num">{timeLeft(Date.parse(room.endsAt) - app.now)} left</b> <span class="sep" aria-hidden="true">·</span> <span>{room.endsLabel}</span></p>
     </div>
-
-    <ExchangeInputs />
-
-    <div class="controls">
-      <div class="ctl">
-        <label class="ctl-label" for="br-gem">Your Lv. 7 gem price</label>
-        <div class="ctl-row">
-          <input id="br-gem" type="number" min="0" step="any" placeholder={String(Math.round(lv3 * LV3_PER_LV7))}
-            aria-describedby="br-gem-hint br-gem-note" value={shownValue("gem", gemShown)}
-            onfocus={() => startTyping("gem", gemShown)} onblur={(e) => stopTyping(e.currentTarget, gemShown)}
-            oninput={(e) => onPriceInput(GEM_SLUG, LV3_PER_LV7, e.currentTarget)} />
-          <img class="ic" src="{base}/icons/gold.png" alt="gold" />
-        </div>
-        <p class="hint" id="br-gem-hint">
-          {#if gemOv != null}Lv. 7 / 81 = <b class="num accent">{formatGold(lv3)}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" /> per Lv. 3 gem{:else}Default Lv. 3 gem value: <b class="num accent">{formatGold(lv3)}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" />{/if}
-        </p>
-        <p class="fine" id="br-gem-note">Sets the Lv. 3 gem price on every tab, the same as editing it on a pack card. Clear the box to go back to the default.</p>
-      </div>
-      <div class="ctl">
-        <label class="ctl-label" for="br-potion">Life Energy Potion value</label>
-        <div class="ctl-row">
-          <input id="br-potion" type="number" min="0" step="any"
-            placeholder={leDefault ? String(Math.round(leDefault.potion)) : "Your value"}
-            aria-describedby={leDefault ? "br-potion-hint br-potion-note" : "br-potion-note"} value={shownValue("potion", potionOv ?? "")}
-            onfocus={() => startTyping("potion", potionOv ?? "")} onblur={(e) => stopTyping(e.currentTarget, potionOv ?? "")}
-            oninput={(e) => onPriceInput(POTION_SLUG, 1, e.currentTarget)} />
-          <img class="ic" src="{base}/icons/gold.png" alt="gold" />
-        </div>
-        {#if leDefault}
-          <p class="hint" id="br-potion-hint" title={leDefault.tip}>
-            No tool bonuses (default): <b class="num accent">{formatGold(leDefault.potion)}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" /> per potion<br />
-            Best-in-slot tool: <b class="num">{formatGold(leDefault.bestPotion)}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" /> per potion
-          </p>
-          <p class="fine" id="br-potion-note">Gold per potion, saved for this region. The default is what 3,000 Life Energy earns logging at live timber prices (Lv. 70 Logging, Relic charm, no tool bonuses). Clear the box to go back to it.</p>
-        {:else}
-          <p class="fine" id="br-potion-note">Gold per potion, saved for this region. Leave empty for no price; 0 counts as zero.</p>
-        {/if}
-      </div>
-    </div>
-
-    <PheonPanel context="bonus" {prices} />
 
     <p class="note">Products use the same prices as the Packs tab, including your price edits. Items with no price are left out of gold totals.</p>
 
@@ -272,8 +176,8 @@
 </div>
 
 <style>
-  /* The Packs tab's content tokens (PacksPanel .packs), so PackCard, PackLinesTable,
-     ExchangeInputs and PheonPanel render exactly as they do there. */
+  /* The Packs tab's content tokens (PacksPanel .packs), so PackCard and PackLinesTable render
+     exactly as they do there. */
   .br {
     --bg: #0e1116; --panel: #161b22; --panel-2: #1f242c; --border: #30363d;
     --text: #e6edf3; --muted: #9aa4b2; --accent: #ffd166; --good: #6ed47a; --bad: #ef6f6c; --warn: #f0b341;
@@ -305,23 +209,6 @@
     color: var(--muted); margin: 0 0 14px; }
   .status b { color: var(--accent); }
   .sep { opacity: .5; }
-
-  /* The two value inputs: one column on phones, side by side from 700px. */
-  .controls { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
-  @media (min-width: 700px) { .controls { grid-template-columns: 1fr 1fr; } }
-  .ctl { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px;
-    font-size: 13px; min-width: 0; }
-  .ctl-label { display: block; font-weight: 600; margin-bottom: 6px; }
-  .ctl-row { display: flex; align-items: center; gap: 5px; }
-  .ctl input { width: 130px; background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
-    padding: 6px 10px; border-radius: 6px; font-size: 13px;
-    font-family: "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; }
-  .ctl input:focus { outline: none; border-color: var(--accent); }
-  .ctl input::placeholder { color: var(--muted); opacity: .7; }
-  .ctl input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
-  .ctl input[type="number"]::-webkit-outer-spin-button,
-  .ctl input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  .hint { color: var(--muted); margin: 8px 0 0; }
 
   .state { color: var(--muted); text-align: center; padding: 40px 0; }
   .state.bad { color: var(--bad); }

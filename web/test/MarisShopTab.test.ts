@@ -33,15 +33,15 @@ const MARKER = /<sup class="fn[^"]*" aria-hidden="true">\*<\/sup>/;
 const KIT_MARKER = /<sup class="fn[^"]*" aria-hidden="true">†<\/sup>/;
 // The kit footnote's four wordings (text() of the paragraph).
 const KIT_ON = (perKit: string): string =>
-  `† Stone of Soaring kits are untradable, so each counts as 9 pheons: ${perKit} gold per kit at 8.5 BC per pheon and your exchange rate (or your own pheon price). This follows the Include pheons setting on the Hell Key tab.`;
+  `† Stone of Soaring kits are untradable, so each counts as 9 pheons: ${perKit} gold per kit at 8.5 BC per pheon and your exchange rate (or your own pheon price). This follows the Pheons setting in Your values.`;
 const KIT_OFF = (perKit: string): string =>
-  `† Stone of Soaring kits are untradable and count as 0 while Include pheons (Hell Key tab) is off. With it on, each kit counts as 9 pheons: ${perKit} gold at your exchange rate (or your own pheon price).`;
+  `† Stone of Soaring kits are untradable and count as 0 while pheons are excluded (Your values). With pheons included, each kit counts as 9 pheons: ${perKit} gold at your exchange rate (or your own pheon price).`;
 const KIT_OFF_NO_PRICE =
-  "† Stone of Soaring kits are untradable and count as 0 while Include pheons (Hell Key tab) is off. With it on and an exchange rate set, each kit counts as 9 pheons.";
+  "† Stone of Soaring kits are untradable and count as 0 while pheons are excluded (Your values). With pheons included and an exchange rate set, each kit counts as 9 pheons.";
 const KIT_ON_NO_PRICE =
-  "† Stone of Soaring kits are untradable and count as 9 pheons each, but pheons have no price until you set an exchange rate (above) or your own pheon price.";
-const DEFAULT_NOTE = /Life Energy Potions aren(?:'|&#39;)t on the Auction House, so they(?:'|&#39;)re valued at what 3,000 Life Energy\s+earns logging at live timber prices: <b class="num[^"]*">([\d,]+)<\/b> gold per potion\s+with no tool bonuses \(<b class="num[^"]*">([\d,]+)<\/b> with a best-in-slot tool\)\. A potion\s+value you set on the Bonus Room tab replaces it\./;
-const USER_NOTE = /Life Energy Potions aren(?:'|&#39;)t on the Auction House, so they(?:'|&#39;)re valued at your potion value from\s+the Bonus Room tab\./;
+  "† Stone of Soaring kits are untradable and count as 9 pheons each, but pheons have no price until you set an exchange rate (Your values) or your own pheon price.";
+const DEFAULT_NOTE = /Life Energy Potions aren(?:'|&#39;)t on the Auction House, so they(?:'|&#39;)re valued at what 3,000 Life Energy\s+earns logging at live timber prices: <b class="num[^"]*">([\d,]+)<\/b> gold per potion\s+with no tool bonuses \(<b class="num[^"]*">([\d,]+)<\/b> with a best-in-slot tool\)\. A potion\s+value you set in Your values replaces it\./;
+const USER_NOTE = /Life Energy Potions aren(?:'|&#39;)t on the Auction House, so they(?:'|&#39;)re valued at your potion value from\s+Your values\./;
 
 // NA live logging mat prices per unit (2026-10-25), as in BonusRoomTab.test.ts. The fixture has none.
 const TIMBER = { timber: 0.85, "tender-timber": 1.78, "sturdy-timber": 8.2, "abidos-timber": 9.26 };
@@ -169,6 +169,8 @@ describe("MarisShop", () => {
     }
     expect(body).not.toContain(NOTE_ID);
     expect(body).not.toContain("Life Energy Potions aren");
+    // The F4 input is in the shared "Your values" bar now, not on this tab.
+    expect(body).not.toContain("<input");
 
     const prices = effectivePrices();
     let valued = 0;

@@ -9,6 +9,8 @@
   import RegionToggle from "$lib/components/RegionToggle.svelte";
   import FreshnessBanner from "$lib/components/FreshnessBanner.svelte";
   import HubBadge from "$lib/components/HubBadge.svelte";
+  import ValuesBar from "$lib/components/ValuesBar.svelte";
+  import { valuesBar } from "$lib/valuesBarState.svelte";
 
   let { children } = $props();
 
@@ -34,6 +36,10 @@
   const stripSlash = (p: string): string => (p.length > 1 ? p.replace(/\/$/, "") : p);
   const currentPath = $derived(stripSlash(page.url.pathname));
   const isActive = (href: string): boolean => stripSlash(href) === currentPath;
+  // The "Your values" bar reads the route path without the base path ("/", "/maris", "/pack/x").
+  const barPath = $derived(base && currentPath.startsWith(base) ? currentPath.slice(base.length) || "/" : currentPath);
+  // A value's popover closes on a route or region change (valuesBarState.svelte.ts).
+  $effect(() => valuesBar.sync(barPath, app.region));
 
   onMount(() => {
     app.load();
@@ -70,6 +76,8 @@
     </nav>
     <FreshnessBanner />
   </header>
+
+  <ValuesBar path={barPath} />
 
   <main>{@render children()}</main>
 

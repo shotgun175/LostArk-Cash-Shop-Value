@@ -137,34 +137,37 @@ describe("bonusRoomRows at the fixture prices, F4 30,000", () => {
     // Pinned through the engine and hand-checked (per-chest rounding, gold/BC = 30,000 / 95):
     // Crystal 600 x round(315.79) = 189,600; Rare - Epic 25 x 3,750 = 93,750; Fixed Epic
     // 2 x 75,000 = 150,000; Reset Ticket 10 x round(100 x 315.79) = 315,790; T4 Lv. 3 gems
-    // 30 x 1,850 = 55,500; Ebony Cube II 5 x 18,427 (Cube 1720 = round(22 x 514 + 41 x 47 +
-    // 8 x 319 + 8 x 330)) = 92,135. Total 896,775.
+    // 30 x round(348,000 / 243) = 30 x 1,432 = 42,960; Ebony Cube II 5 x 17,621 (Cube 1720 =
+    // round(22 x 348,000 / 729 + 41 x 47 + 8 x 319 + 8 x 330)) = 88,105. Total 880,205.
+    // (Re-pinned 2026-10-25 for the NA Lv. 8 gem baseline of 348,000; was 896,775 at the baked
+    // Lv. 3 1,850 and Lv. 2 514.)
     const r = product(rows, "autumn-astrogem-i");
-    expect(r.total).toBe(896775);
+    expect(r.total).toBe(880205);
     expect(r.valueSet).toBe(true);
     expect(r.hasUnpriced).toBe(false);
     expect(r.icon).toBe("autumn-astrogem-pack-i");
     expect(r.costGold!).toBeCloseTo((4000 * F4) / 238, 6); // 504,201.68
-    expect(r.goldPerRc!).toBeCloseTo(224.19375, 9);
-    expect(r.vsExchange!).toBeCloseTo(77.860375, 6);
-    expect(r.goldPerDollar!).toBeCloseTo(26903.25, 6); // 896,775 / (4,000 x $100 / 12,000)
-    expect(r.vsG2G!).toBeCloseTo(-12.058, 3);
-    expect(product(rows, "autumn-astrogem-ii").total).toBe(896775);
-    expect(product(rows, "autumn-astrogem-iii").total).toBe(896775);
+    expect(r.goldPerRc!).toBeCloseTo(220.05125, 9);
+    expect(r.vsExchange!).toBeCloseTo(74.573992, 6);
+    expect(r.goldPerDollar!).toBeCloseTo(26406.15, 6); // 880,205 / (4,000 x $100 / 12,000)
+    expect(r.vsG2G!).toBeCloseTo(-13.683, 3);
+    expect(product(rows, "autumn-astrogem-ii").total).toBe(880205);
+    expect(product(rows, "autumn-astrogem-iii").total).toBe(880205);
   });
 
   it("values a BC product (T4 Gem Chest x125) against the BC baseline and G2G via 95 BC = 238 RC", () => {
-    // 125 x 1,850 (BAKED lv-3-gem) = 231,250 for 600 BC.
+    // 125 x 1,432 (Lv. 3 = round(348,000 / 243), the NA Lv. 8 gem baseline since 2026-10-25;
+    // was 125 x 1,850 = 231,250 at the baked lv-3-gem) = 179,000 for 600 BC.
     const r = product(rows, "t4-gem-chest-125");
-    expect(r.total).toBe(231250);
+    expect(r.total).toBe(179000);
     expect(r.goldPerRc).toBeNull();
-    expect(r.goldPerBc!).toBeCloseTo(231250 / 600, 9);
+    expect(r.goldPerBc!).toBeCloseTo(179000 / 600, 9);
     expect(r.costGold!).toBeCloseTo((600 * F4) / 95, 6); // 189,473.68
-    expect(r.vsExchange!).toBeCloseTo(22.048611, 5);
+    expect(r.vsExchange!).toBeCloseTo(-5.527778, 5);
     // Shop-money cost: 600 BC = 600 x 238 / 95 RC at $100 / 12,000 RC.
-    expect(r.goldPerDollar!).toBeCloseTo(231250 / (((600 * 238) / 95) * CASH), 6);
+    expect(r.goldPerDollar!).toBeCloseTo(179000 / (((600 * 238) / 95) * CASH), 6);
     expect(r.vsG2G!).toBeCloseTo((r.goldPerDollar! / (1000 / G2G) - 1) * 100, 9);
-    expect(r.vsG2G!).toBeCloseTo(-39.6538, 3);
+    expect(r.vsG2G!).toBeCloseTo(-53.2888, 3);
   });
 
   it("values the Superior Abidos product at 20 mats per chest", () => {
@@ -188,26 +191,26 @@ describe("bonusRoomRows at the fixture prices, F4 30,000", () => {
     const g = group(rows, "autumn-ark-grid");
     expect(g.bonus.total).toBe(600000); // BAKED seeds 500,000 + 100,000
     expect(g.bonus.valueSet).toBe(true);
-    expect(g.total).toBe(3 * 896775 + 600000); // 3,290,325
+    expect(g.total).toBe(3 * 880205 + 600000); // 3,240,615
     expect(g.rcCost).toBe(12000);
     expect(g.bcCost).toBe(0);
     expect(g.rcEquiv).toBe(12000);
     expect(g.costGold!).toBeCloseTo((12000 * F4) / 238, 6); // 1,512,605.04
-    expect(g.vsExchange!).toBeCloseTo(117.527042, 5);
-    expect(g.goldPerDollar!).toBeCloseTo(32903.25, 6); // 3,290,325 / $100
-    expect(g.vsG2G!).toBeCloseTo(7.5549, 3);
+    expect(g.vsExchange!).toBeCloseTo(114.240658, 5);
+    expect(g.goldPerDollar!).toBeCloseTo(32406.15, 6); // 3,240,615 / $100
+    expect(g.vsG2G!).toBeCloseTo(5.93, 3);
     expect(g.hasUnpriced).toBe(false);
   });
 
   it("totals Gems & Cards from its priced contents only (the card packs have no price)", () => {
-    // 231,250 (gems) + 0 (soaring kit, Include pheons off) + nothing for the cards.
+    // 179,000 (gems) + 0 (soaring kit, Include pheons off) + nothing for the cards.
     const g = group(rows, "gems-and-cards");
-    expect(g.total).toBe(231250);
+    expect(g.total).toBe(179000);
     expect(g.bcCost).toBe(1200);
     expect(g.rcEquiv).toBeCloseTo((1200 * 238) / 95, 9);
     expect(g.costGold!).toBeCloseTo((1200 * F4) / 95, 6); // 378,947.37
-    expect(g.vsExchange!).toBeCloseTo(-38.975694, 5);
-    expect(g.goldPerDollar!).toBeCloseTo(231250 / (((1200 * 238) / 95) * CASH), 6);
+    expect(g.vsExchange!).toBeCloseTo(-52.763889, 5);
+    expect(g.goldPerDollar!).toBeCloseTo(179000 / (((1200 * 238) / 95) * CASH), 6);
     expect(g.vsG2G!).toBeCloseTo((g.goldPerDollar! / (1000 / G2G) - 1) * 100, 9);
     expect(g.hasUnpriced).toBe(true);
     expect(g.bonus.valueSet).toBe(false);
@@ -215,16 +218,17 @@ describe("bonusRoomRows at the fixture prices, F4 30,000", () => {
   });
 
   it("totals Growth & Life Skills without the unpriced potions", () => {
-    // 6 x 18,427 (ebony cube selection chests) + 119,700 (abidos) + 9,000 bonus (3 x 3,000
-    // Elysian) = 239,262. Re-pinned 2026-10-25: the user's in-game count is 6 cube chests per
-    // product (TJW's data, and the first pin of 147,127, had 1).
+    // 6 x 17,621 (ebony cube selection chests) + 119,700 (abidos) + 9,000 bonus (3 x 3,000
+    // Elysian) = 234,426. Re-pinned 2026-10-25: the user's in-game count is 6 cube chests per
+    // product (TJW's data, and the first pin of 147,127, had 1); re-pinned again the same day
+    // when the cube EV moved to the NA Lv. 8 gem baseline (Lv. 2 = 348,000 / 729; was 239,262).
     const g = group(rows, "growth-and-life-skills");
-    expect(product(rows, "ebony-cube-selection").total).toBe(6 * 18427);
+    expect(product(rows, "ebony-cube-selection").total).toBe(6 * 17621);
     expect(g.bonus.total).toBe(9000);
-    expect(g.total).toBe(239262);
+    expect(g.total).toBe(234426);
     expect(g.bcCost).toBe(850);
     expect(g.costGold!).toBeCloseTo((850 * F4) / 95, 6); // 268,421.05
-    expect(g.vsExchange!).toBeCloseTo(-10.863176, 4);
+    expect(g.vsExchange!).toBeCloseTo(-12.664824, 4);
     expect(g.hasUnpriced).toBe(true);
   });
 
@@ -250,7 +254,7 @@ describe("bonusRoomRows at the fixture prices, F4 30,000", () => {
     expect(zero.vsExchange).toBe(-100);
     const fifty = bonusRoomRows(ROOM, layered({ "basic-life-energy-potion": 50 }), OPTS);
     expect(product(fifty, "basic-life-energy-potion-20").total).toBe(1000); // 20 x 50
-    expect(group(fifty, "growth-and-life-skills").total).toBe(239262 + 1000);
+    expect(group(fifty, "growth-and-life-skills").total).toBe(234426 + 1000);
     expect(group(fifty, "growth-and-life-skills").hasUnpriced).toBe(false);
   });
 });
@@ -271,7 +275,7 @@ describe("bonusRoomRows edge cases", () => {
       const astro = product(rows, "autumn-astrogem-i");
       expect(astro.valueSet).toBe(true);
       expect(astro.hasUnpriced).toBe(true);
-      expect(astro.total).toBe(896775 - 189600 - 315790);
+      expect(astro.total).toBe(880205 - 189600 - 315790);
       expect(astro.vsG2G).not.toBeNull();
       expect(group(rows, "autumn-ark-grid").vsG2G).not.toBeNull();
     }
@@ -302,8 +306,8 @@ describe("bonusRoomRows edge cases", () => {
     const rows = bonusRoomRows(ROOM, on, OPTS);
     // 10 kits per product (the user's in-game count, re-pinned 2026-10-25; TJW's data has 1).
     expect(product(rows, "soaring-engraving-kit").total).toBe(10 * 24158);
-    expect(group(rows, "gems-and-cards").total).toBe(231250 + 241580);
-    expect(group(rows, "gems-and-cards").vsExchange!).toBeCloseTo(24.774583, 4);
+    expect(group(rows, "gems-and-cards").total).toBe(179000 + 241580);
+    expect(group(rows, "gems-and-cards").vsExchange!).toBeCloseTo(10.986389, 4);
     // A user pheon price moves the kit too.
     expect(layered({ pheon: 2000 }, true)[KIT]).toBe(18000);
   });

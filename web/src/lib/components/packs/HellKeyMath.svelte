@@ -12,7 +12,6 @@
   import ItemIcon from "../ItemIcon.svelte";
   import HellFloorChests from "./HellFloorChests.svelte";
   import TapValuePanel from "./TapValuePanel.svelte";
-  import PheonPanel from "./PheonPanel.svelte";
   import { base } from "$app/paths";
   import { load, save } from "$lib/storage";
 
@@ -136,7 +135,6 @@
   </div>
 
   <TapValuePanel {ilvl} />
-  <PheonPanel {prices} />
 
   {#each keys as k (k.b.slug)}
     {@const whatIf = rarityTag(k.b)}

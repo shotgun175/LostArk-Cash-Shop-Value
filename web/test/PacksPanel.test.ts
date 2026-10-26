@@ -1,9 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { readFileSync } from "node:fs";
 import { render } from "svelte/server";
 import PacksPanel from "../src/lib/components/packs/PacksPanel.svelte";
 import { app } from "../src/lib/app.svelte";
 import { hellSettings } from "../src/lib/packs/hellSettings.svelte";
-import { g2g } from "../src/lib/packs/g2g.svelte";
+import { overrides } from "../src/lib/packs/overrides.svelte";
+import { BAR_OVERRIDES } from "../src/lib/valuesBar";
 import fixture from "./fixtures/tjw-nae-prices.json";
 
 // Include pheons is a shared singleton that moves every key valuation, so each case starts off.
@@ -94,10 +96,10 @@ describe("PacksPanel custom-pack checkbox block", () => {
   });
 });
 
-// The Hell Key tab's Include pheons setting moves every key value on this page, so the note says
-// so while it is on. Indicator only: the control itself lives on the Hell Key tab.
+// The Include pheons setting moves every key value on this page, so the note says so while it is
+// on. Indicator only: the control itself lives in the shared "Your values" bar.
 describe("PacksPanel Include pheons indicator", () => {
-  const INDICATOR = "Key values include ability stones at 9 pheons each (Hell Key tab setting).";
+  const INDICATOR = "Key values include ability stones at 9 pheons each (set in Your values).";
   function seed(): void {
     app.region = "nae";
     app.status = "ok";
@@ -128,58 +130,40 @@ describe("PacksPanel Include pheons indicator", () => {
   });
 });
 
-// A frozen G2G rate (pinned offer stopped matching, so usdFetchedAt stops advancing) must not
-// read as live: past 6 h the readout turns amber and says when the rate is from. A typed
-// override is the user's own number, so it never shows the cue.
-describe("PacksPanel stale G2G rate", () => {
-  function seedG2g(ageMinutes: number): void {
+// The Your values Lv. 8 gem and potion are stored as price overrides but are settings: the note's
+// custom-price count leaves them out and "reset all" keeps them (user 2026-10-25). Clearing the
+// bar's box is how they go back to the baseline.
+describe("PacksPanel custom prices and Your values", () => {
+  afterEach(() => overrides.clearAll("nae"));
+
+  it("counts only price edits, not the bar's gem and potion values", () => {
     app.region = "nae";
-    app.now = Date.now();
     app.status = "ok";
     app.payload = {
       schema_version: 1,
       generated_at: new Date().toISOString(),
       regions: { nae: { prices: fixture.prices, source_valid_at: new Date().toISOString() } },
       bundles: {},
-      g2g: { usdPer1kGold: 0.05, usdFetchedAt: new Date(Date.now() - ageMinutes * 60_000).toISOString() },
     } as unknown as typeof app.payload;
-  }
-  const staleReadout = /<b class="num accent[^"]*\bstale\b/;
-
-  it("marks a 7 h old rate stale and says when it is from", () => {
-    seedG2g(7 * 60);
-    const { body } = render(PacksPanel);
-    expect(body).toMatch(staleReadout);
-    expect(body).toContain("rate from");
+    const note = (): string =>
+      (render(PacksPanel).body.match(/<p class="note[^"]*">[\s\S]*?<\/p>/)?.[0] ?? "")
+        .replace(/<!--[^>]*-->/g, "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ");
+    overrides.set("nae", "lv-8-gem", 300000);
+    overrides.set("nae", "basic-life-energy-potion", 1500);
+    expect(note()).not.toContain("custom price");
+    overrides.set("nae", "abidos-fusion-material", 95);
+    expect(note()).toContain("1 custom price");
   });
 
-  it("turns stale as time passes with no newer payload (our API unreachable)", () => {
-    seedG2g(10);
-    app.now = Date.now() + 7 * 3_600_000;
-    const { body } = render(PacksPanel);
-    expect(body).toMatch(staleReadout);
-    expect(body).toContain("rate from");
-  });
-
-  it("shows neither for a 10 minute old rate", () => {
-    seedG2g(10);
-    const { body } = render(PacksPanel);
-    expect(body).not.toMatch(staleReadout);
-    expect(body).not.toContain("rate from");
-  });
-
-  it("shows neither when the region has a stored override", () => {
-    // The override lives in the shared g2g store (read from storage once, at import), so set it
-    // through the store's API and clear it afterwards for the other cases.
-    seedG2g(7 * 60);
-    g2g.setFromInput(0.06);
-    try {
-      const { body } = render(PacksPanel);
-      expect(body).not.toMatch(staleReadout);
-      expect(body).not.toContain("rate from");
-      expect(body).toContain('value="0.06"');
-    } finally {
-      g2g.setFromInput(Number.NaN);
+  it("keeps the bar's values on reset all, on Packs and on a pack's page", () => {
+    expect([...BAR_OVERRIDES].sort()).toEqual(["basic-life-energy-potion", "lv-8-gem"]);
+    for (const f of ["../src/lib/components/packs/PacksPanel.svelte", "../src/routes/pack/[slug]/+page.svelte"]) {
+      const src = readFileSync(new URL(f, import.meta.url), "utf-8");
+      expect(src, f).toContain("overrides.count(app.region, BAR_OVERRIDES)");
+      expect(src, f).toContain("overrides.clearAll(app.region, BAR_OVERRIDES)");
+      expect(src, f).not.toContain("overrides.clearAll(app.region)");
     }
   });
 });
