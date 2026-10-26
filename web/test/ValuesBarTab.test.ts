@@ -110,7 +110,7 @@ describe("ValuesBar per route (collapsed)", () => {
   it("Packs: exchange, G2G, gem and pheons chips, and no potion", () => {
     const body = bar("/");
     expect(body).toContain('<section class="vb bar');
-    expect(text(body)).toBe("Your values 35,000 default = 238 no rate Lv. 8 348,000 default Pheons excluded");
+    expect(text(body)).toBe("Your values 35,000 = 238 no rate Lv. 8 348,000 Pheons excluded");
     expect(chips(body)).toHaveLength(4);
     expect(body).toContain("/icons/f4-shop.png");
     expect(body).toContain("/icons/lv-8-gem.png");
@@ -151,16 +151,27 @@ describe("ValuesBar per route (collapsed)", () => {
       // Not in the text, and not in an attribute either (alt, title, aria-label).
       expect(body).not.toContain("G2G");
     }
-    expect(text(chip(bar("/"), "/icons/g2g.png"))).toBe("$2.05 / 100k default");
+    expect(text(chip(bar("/"), "/icons/g2g.png"))).toBe("$2.05 / 100k");
     // Screen readers still hear what the number is (the icon's alt is empty).
     expect(chip(bar("/"), "/icons/g2g.png")).toMatch(/<span class="vh[^"]*">Real-money gold price<\/span>/);
   });
 
-  it("tags the live G2G rate as the default, like the exchange and gem chips, and drops it for a typed rate", () => {
+  it("never labels a chip 'default' (the popover's watermark shows a default instead)", () => {
+    loadFixture(TIMBER, { usdPer1kGold: 0.0205, usdFetchedAt: new Date(INSIDE - 10 * 60_000).toISOString() });
+    for (const p of ["/", "/maris", "/bonus-room", "/ark-pass", "/jump-up", "/hell-key"]) {
+      const all = chips(bar(p));
+      expect(all.length, p).toBeGreaterThan(0);
+      for (const c of all) expect(text(c), p).not.toMatch(/default/i);
+    }
+  });
+
+  it("shows the live G2G rate until one is typed, and the live rate again once the box is cleared", () => {
     loadFixture({}, { usdPer1kGold: 0.0205, usdFetchedAt: new Date(INSIDE - 10 * 60_000).toISOString() });
-    expect(text(chip(bar("/"), "/icons/g2g.png"))).toBe("$2.05 / 100k default");
+    expect(text(chip(bar("/"), "/icons/g2g.png"))).toBe("$2.05 / 100k");
     valuesBar.writeG2g("0.03");
-    expect(text(chip(bar("/"), "/icons/g2g.png"))).not.toContain("default");
+    expect(text(chip(bar("/"), "/icons/g2g.png"))).toBe("$3.00 / 100k");
+    valuesBar.writeG2g("");
+    expect(text(chip(bar("/"), "/icons/g2g.png"))).toBe("$2.05 / 100k");
   });
 
   it("reads 'Pheons included', highlighted, once the setting is on", () => {
@@ -175,47 +186,51 @@ describe("ValuesBar per route (collapsed)", () => {
     expect(chip(bar("/"), "/icons/pheon.png")).toMatch(/^[^>]*\boff\b/);
   });
 
-  it("drops the gem's default tag for the region's own Lv. 8 price, and uses the EU default in EU", () => {
-    overrides.set("nae", "lv-8-gem", 400000);
+  it("shows the region's own Lv. 8 price, the EU baseline in EU, and the baseline again once cleared", () => {
+    valuesBar.writeOverride("lv-8-gem", "400000");
     expect(text(chip(bar("/"), "/icons/lv-8-gem.png"))).toBe("Lv. 8 400,000");
     app.region = "euc";
-    expect(text(chip(bar("/"), "/icons/lv-8-gem.png"))).toBe("Lv. 8 398,000 default");
+    expect(text(chip(bar("/"), "/icons/lv-8-gem.png"))).toBe("Lv. 8 398,000");
+    app.region = "nae";
+    valuesBar.writeOverride("lv-8-gem", "");
+    expect(text(chip(bar("/"), "/icons/lv-8-gem.png"))).toBe("Lv. 8 348,000");
   });
 
-  it("Mari's Shop: exchange, potion and pheons", () => {
-    expect(text(bar("/maris"))).toBe("Your values 35,000 default = 238 no value Pheons excluded");
+  it("Mari's Shop: exchange, potion and pheons; a cleared potion box goes back to the logging value", () => {
+    expect(text(bar("/maris"))).toBe("Your values 35,000 = 238 no value Pheons excluded");
     loadFixture(TIMBER);
-    expect(text(chip(bar("/maris"), "/icons/basic-life-energy-potion.png"))).toBe("2,265 default");
+    expect(text(chip(bar("/maris"), "/icons/basic-life-energy-potion.png"))).toBe("2,265");
     overrides.set("nae", "basic-life-energy-potion", 50);
     expect(text(chip(bar("/maris"), "/icons/basic-life-energy-potion.png"))).toBe("50");
+    valuesBar.writeOverride("basic-life-energy-potion", "");
+    expect(text(chip(bar("/maris"), "/icons/basic-life-energy-potion.png"))).toBe("2,265");
   });
 
   it("Bonus Room: all five while the room runs, nothing after it", () => {
-    expect(text(bar("/bonus-room"))).toBe("Your values 35,000 default = 238 no rate Lv. 8 348,000 default no value Pheons excluded");
+    expect(text(bar("/bonus-room"))).toBe("Your values 35,000 = 238 no rate Lv. 8 348,000 no value Pheons excluded");
     app.now = Date.parse("2026-11-19T00:00:00Z");
     expect(bar("/bonus-room")).not.toContain("Your values");
   });
 
   it("Ark Pass, Jump-Up Boost and Hell Key math show only their own values", () => {
-    expect(text(bar("/ark-pass"))).toBe("Your values Lv. 8 348,000 default");
-    expect(text(bar("/jump-up"))).toBe("Your values 35,000 default = 238 Lv. 8 348,000 default");
-    expect(text(bar("/hell-key"))).toBe("Your values 35,000 default = 238 Pheons excluded");
+    expect(text(bar("/ark-pass"))).toBe("Your values Lv. 8 348,000");
+    expect(text(bar("/jump-up"))).toBe("Your values 35,000 = 238 Lv. 8 348,000");
+    expect(text(bar("/hell-key"))).toBe("Your values 35,000 = 238 Pheons excluded");
   });
 
-  it("tags the exchange 'default' only while the region uses the seed", () => {
+  it("shows the exchange seed until a value is typed, and the seed again once the box is cleared", () => {
     const ex = (): string => text(chip(bar("/hell-key"), "/icons/f4-shop.png"));
-    expect(ex()).toBe("35,000 default = 238");
+    expect(ex()).toBe("35,000 = 238");
     f4.value = 21500;
     expect(ex()).toBe("21,500 = 238");
-    f4.value = 35000; // typing the seed's number is still your own value
-    expect(ex()).toBe("35,000 = 238");
     f4.value = 0;
     expect(ex()).toBe("0 = 238");
     app.region = "euc";
-    expect(ex()).toBe("35,000 default = 238");
+    expect(ex()).toBe("35,000 = 238");
     app.region = "nae";
     valuesBar.writeF4("");
-    expect(ex()).toBe("35,000 default = 238");
+    expect(ex()).toBe("35,000 = 238");
+    expect(f4.isDefault).toBe(true);
   });
 
   it("says 'not set' for a NaN exchange value", () => {

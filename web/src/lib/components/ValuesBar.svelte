@@ -209,26 +209,26 @@
     {#if has("exchange")}
       <button type="button" class="chip" id="vb-chip-exchange" data-vb-chip aria-haspopup="dialog" aria-expanded={openKey === "exchange"} aria-controls={openKey === "exchange" ? "vb-pop" : undefined} title="F4 currency exchange" onclick={() => valuesBar.toggle("exchange", path)}>
         <ItemIcon slug="f4-shop" size={22} />
-        <b class="num">{f4Text}</b>{#if f4Set}{@render gold()}{#if f4.isDefault}<span class="tag">default</span>{/if}<span class="mut">=</span><b class="num">{F4_DIVISOR}</b>{@render rc()}{/if}
+        <b class="num">{f4Text}</b>{#if f4Set}{@render gold()}<span class="mut">=</span><b class="num">{F4_DIVISOR}</b>{@render rc()}{/if}
       </button>
     {/if}
     {#if has("g2g")}
       <button type="button" class="chip" id="vb-chip-g2g" data-vb-chip aria-haspopup="dialog" aria-expanded={openKey === "g2g"} aria-controls={openKey === "g2g" ? "vb-pop" : undefined} onclick={() => valuesBar.toggle("g2g", path)}>
         <span class="vh">Real-money gold price</span>
         {@render g2gIcon("flat")}
-        {#if g2gOut}<b class="num" class:stale={g2g.stale}>{g2gOut}</b><span class="mut">/ 100k</span>{@render gold()}{#if g2g.override == null}<span class="tag">default</span>{/if}{:else}<span class="mut">no rate</span>{/if}
+        {#if g2gOut}<b class="num" class:stale={g2g.stale}>{g2gOut}</b><span class="mut">/ 100k</span>{@render gold()}{:else}<span class="mut">no rate</span>{/if}
       </button>
     {/if}
     {#if has("gem")}
       <button type="button" class="chip" id="vb-chip-gem" data-vb-chip aria-haspopup="dialog" aria-expanded={openKey === "gem"} aria-controls={openKey === "gem" ? "vb-pop" : undefined} onclick={() => valuesBar.toggle("gem", path)}>
         <ItemIcon slug="lv-8-gem" size={22} />
-        <span>Lv. 8</span><b class="num">{formatGold(gem.lv8)}</b>{@render gold()}{#if gem.isDefault}<span class="tag">default</span>{/if}
+        <span>Lv. 8</span><b class="num">{formatGold(gem.lv8)}</b>{@render gold()}
       </button>
     {/if}
     {#if has("potion")}
       <button type="button" class="chip" id="vb-chip-potion" data-vb-chip aria-haspopup="dialog" aria-expanded={openKey === "potion"} aria-controls={openKey === "potion" ? "vb-pop" : undefined} onclick={() => valuesBar.toggle("potion", path)}>
         <ItemIcon slug={LIFE_ENERGY_POTION} size={22} />
-        {#if potionValue != null}<b class="num">{formatGold(potionValue)}</b>{@render gold()}{#if potionOv == null}<span class="tag">default</span>{/if}{:else}<span class="mut">no value</span>{/if}
+        {#if potionValue != null}<b class="num">{formatGold(potionValue)}</b>{@render gold()}{:else}<span class="mut">no value</span>{/if}
       </button>
     {/if}
     {#if has("pheons")}
@@ -376,7 +376,6 @@
   .chip[aria-expanded="true"]::after { transform: rotate(-135deg); margin-bottom: -2px; }
   .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   .chip b { color: var(--text); font-weight: 600; }
-  .chip .tag { color: var(--muted); font-size: 11px; }
   .chip.off { color: var(--muted); }
   .chip.off :global(.icon) { filter: grayscale(.85) brightness(.75); }
   .chip.on { color: var(--accent); border-color: rgba(255, 209, 102, .55); background: rgba(255, 209, 102, .07); }
