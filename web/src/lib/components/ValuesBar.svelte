@@ -1,5 +1,6 @@
 <script lang="ts">
   import { base } from "$app/paths";
+  import type { Attachment } from "svelte/attachments";
   import { app } from "$lib/app.svelte";
   import { valuesForPath, type ValueKey } from "$lib/valuesBar";
   import { valuesBar } from "$lib/valuesBarState.svelte";
@@ -21,22 +22,38 @@
   // "Your values": the shared inputs every tab values against (the F4 exchange, the real-money
   // gold rate, the Lv. 8 gem price, the Life Energy Potion value and the pheons setting), shown
   // under the header on every page, limited to the ones the page actually uses (valuesBar.ts
-  // decides from the page's data). Collapsed it is one line of chips; Edit opens one card with a
-  // field per value. Every value is written to its existing store, so an edit here moves every
-  // tab at once. `path`: the route path without the base path ("/", "/maris", "/pack/<slug>").
+  // decides from the page's data). It is one line of chips; each chip is a button that opens a
+  // popover (a bottom sheet on phones) holding only that value's field. Every value is written to
+  // its existing store, so an edit here moves every tab at once. `path`: the route path without
+  // the base path ("/", "/maris", "/pack/<slug>").
   let { path }: { path: string } = $props();
 
   const use = $derived(valuesForPath(path, { now: app.now }));
   const has = (k: ValueKey): boolean => use.keys.includes(k);
+  // The open popover (one at a time, valuesBarState.svelte.ts), only for a value this page shows.
+  const openKey = $derived.by(() => {
+    const k = valuesBar.openFor(path);
+    return k !== null && has(k) ? k : null;
+  });
+  // Each popover is named by its field's title.
+  const TITLE_ID: Record<ValueKey, string> = {
+    exchange: "vb-f4-title",
+    g2g: "vb-g2g-title",
+    gem: "vb-gem-title",
+    potion: "vb-potion-title",
+    pheons: "vb-pheons-label",
+  };
 
   const region = $derived(app.region);
   const sym = $derived(currencySymbol(region));
   const prices = $derived(layeredPrices());
   const regionOv = $derived(overrides.forRegion(region));
 
-  // Exchange: the shared F4 input (gold for one 238 RC listing). A cleared box is a transient NaN.
+  // Exchange: the shared F4 input (gold for one 238 RC listing). The box is empty while the
+  // region uses the seed (shown as the placeholder); clearing it returns the region to the seed.
   const f4Set = $derived(Number.isFinite(f4.value) && f4.value >= 0);
   const f4Text = $derived(f4Set ? f4.value.toLocaleString("en-US") : "not set");
+  const f4Box = $derived(f4.isDefault || !f4Set ? "" : f4.value);
 
   // Real-money rate: the typed override, else the live feed (g2g.svelte.ts), with its freshness.
   const g2gOut = $derived(g2g.value ? g2gReadout(g2g.value, sym) : null);
@@ -85,7 +102,7 @@
     use.stones && use.kit ? "Ability stones and Stone of Soaring kits" : use.kit ? "Stone of Soaring kits" : "Ability stones",
   );
 
-  // While a price box has focus its shown value is frozen, so the override it just wrote (read
+  // While a price box has focus its shown value is frozen, so the value it just wrote (read
   // back normalized, e.g. "1e5" -> 100000) never rewrites the text mid-typing; blur shows the
   // stored value again, which also clears an entry that was never saved (a negative number).
   let typing = $state<string | null>(null);
@@ -100,14 +117,83 @@
     el.value = String(stored);
   }
 
-  // Highlight the whole value for quick re-entry, and on phones nudge the field above the
-  // on-screen keyboard once it settles.
+  // Phones (600 px or narrower) show the popover as a bottom sheet; the CSS uses the same width.
+  const isSheet = (): boolean => typeof window !== "undefined" && window.matchMedia("(max-width: 600px)").matches;
+
+  // Highlight the whole value for quick re-entry, and on narrow screens nudge the field above the
+  // on-screen keyboard once it settles (the bottom sheet holds its own fields, so not there).
   function focusSelect(e: FocusEvent & { currentTarget: HTMLInputElement }): void {
     const el = e.currentTarget;
     el.select();
-    if (typeof window !== "undefined" && window.innerWidth < 700) {
+    if (typeof window !== "undefined" && window.innerWidth < 700 && !isSheet()) {
       setTimeout(() => el.scrollIntoView({ block: "center", behavior: "smooth" }), 250);
     }
+  }
+
+  /** Closes the popover; `focusChip` returns focus to the chip that opened it. */
+  function dismiss(key: ValueKey, focusChip: boolean): void {
+    valuesBar.close();
+    if (focusChip) document.getElementById(`vb-chip-${key}`)?.focus({ preventScroll: true });
+  }
+
+  // The open popover's behavior, attached when it renders (after a chip click, never on page
+  // load): it sits just below its chip, left-aligned and clamped inside the viewport (the phone
+  // sheet is placed by CSS, which ignores that position), focuses its field, and closes on
+  // Escape or on a click outside both the popover and the chips (a chip click switches to that
+  // chip's popover, or closes its own, through valuesBar.toggle).
+  function popover(key: ValueKey): Attachment<HTMLElement> {
+    return (pop) => {
+      const bar = pop.closest<HTMLElement>(".vb");
+      const place = (): void => {
+        const chip = document.getElementById(`vb-chip-${key}`);
+        if (!bar || !chip) return;
+        const b = bar.getBoundingClientRect();
+        const c = chip.getBoundingClientRect();
+        const left = Math.max(8, Math.min(c.left, document.documentElement.clientWidth - pop.offsetWidth - 8));
+        // Offsets are from the bar's padding box, inside its border.
+        pop.style.setProperty("--x", `${left - b.left - bar.clientLeft}px`);
+        pop.style.setProperty("--y", `${c.bottom - b.top - bar.clientTop + 6}px`);
+      };
+      const inside = (t: EventTarget | null): boolean =>
+        t instanceof Element && (pop.contains(t) || t.closest("[data-vb-chip]") !== null);
+      // A press that starts inside (selecting the text in a box, say) and ends outside is not a
+      // click outside.
+      let downInside = false;
+      const onDown = (e: PointerEvent): void => {
+        downInside = inside(e.target);
+      };
+      const onClick = (e: MouseEvent): void => {
+        const wasInside = downInside || inside(e.target);
+        downInside = false;
+        if (wasInside) return;
+        // A click on something focusable keeps that focus; anywhere else returns it to the chip.
+        const t = e.target;
+        dismiss(key, !(t instanceof Element && t.closest("a, button, input, select, textarea, label, [tabindex]")));
+      };
+      const onKey = (e: KeyboardEvent): void => {
+        if (e.key !== "Escape") return;
+        e.preventDefault();
+        dismiss(key, true);
+      };
+      place();
+      pop.querySelector<HTMLElement>("input, .seg .sel")?.focus({ preventScroll: true });
+      document.addEventListener("pointerdown", onDown, true);
+      document.addEventListener("click", onClick, true);
+      document.addEventListener("keydown", onKey);
+      window.addEventListener("resize", place);
+      // Chips rewrap as their values change width; keep the popover under its chip.
+      const ro = bar && typeof ResizeObserver !== "undefined" ? new ResizeObserver(place) : null;
+      if (bar) ro?.observe(bar);
+      return () => {
+        // Not every browser fires blur on a focused box that is removed, so unfreeze here too.
+        typing = null;
+        document.removeEventListener("pointerdown", onDown, true);
+        document.removeEventListener("click", onClick, true);
+        document.removeEventListener("keydown", onKey);
+        window.removeEventListener("resize", place);
+        ro?.disconnect();
+      };
+    };
   }
 </script>
 
@@ -116,53 +202,52 @@
 {#snippet g2gIcon(cls: string)}<img class="g2g {cls}" src="{base}/icons/g2g.png" alt="" title={g2g.tooltip} />{/snippet}
 
 {#if use.keys.length > 0}
-  {#if !valuesBar.open}
-    <section class="vb bar" aria-label="Your values">
-      <span class="title">Your values</span>
-      {#if has("exchange")}
-        <span class="chip" title="F4 currency exchange">
-          <ItemIcon slug="f4-shop" size={22} />
-          <b class="num">{f4Text}</b>{#if f4Set}{@render gold()}<span class="mut">=</span><b class="num">{F4_DIVISOR}</b>{@render rc()}{/if}
-        </span>
-      {/if}
-      {#if has("g2g")}
-        <span class="chip">
-          {@render g2gIcon("flat")}
-          {#if g2gOut}<b class="num" class:stale={g2g.stale}>{g2gOut}</b><span class="mut">/ 100k</span>{@render gold()}{:else}<span class="mut">no rate</span>{/if}
-        </span>
-      {/if}
-      {#if has("gem")}
-        <span class="chip">
-          <ItemIcon slug="lv-8-gem" size={22} />
-          <span>Lv. 8</span><b class="num">{formatGold(gem.lv8)}</b>{@render gold()}{#if gem.isDefault}<span class="tag">default</span>{/if}
-        </span>
-      {/if}
-      {#if has("potion")}
-        <span class="chip">
-          <ItemIcon slug={LIFE_ENERGY_POTION} size={22} />
-          {#if potionValue != null}<b class="num">{formatGold(potionValue)}</b>{@render gold()}{#if potionOv == null}<span class="tag">default</span>{/if}{:else}<span class="mut">no value</span>{/if}
-        </span>
-      {/if}
-      {#if has("pheons")}
-        <span class="chip" class:on={pheonsOn} class:off={!pheonsOn}>
-          <ItemIcon slug="pheon" size={22} />
-          <span>{pheonsOn ? "Pheons included" : "Pheons excluded"}</span>
-        </span>
-      {/if}
-      <button type="button" class="btn primary" aria-expanded="false" onclick={() => valuesBar.setOpen(true)}>Edit <span aria-hidden="true">▾</span></button>
-    </section>
-  {:else}
-    <section class="vb card" aria-label="Your values">
-      <div class="head">
-        <span class="title">Your values</span>
-        <button type="button" class="btn" aria-expanded="true" onclick={() => valuesBar.setOpen(false)}>Done <span aria-hidden="true">▴</span></button>
-      </div>
-      <div class="grid">
-        {#if has("exchange")}
+  <section class="vb bar" aria-label="Your values">
+    <span class="title">Your values</span>
+    {#if has("exchange")}
+      <button type="button" class="chip" id="vb-chip-exchange" data-vb-chip aria-haspopup="dialog" aria-expanded={openKey === "exchange"} aria-controls="vb-pop" title="F4 currency exchange" onclick={() => valuesBar.toggle("exchange", path)}>
+        <ItemIcon slug="f4-shop" size={22} />
+        <b class="num">{f4Text}</b>{#if f4Set}{@render gold()}{#if f4.isDefault}<span class="tag">default</span>{/if}<span class="mut">=</span><b class="num">{F4_DIVISOR}</b>{@render rc()}{/if}
+      </button>
+    {/if}
+    {#if has("g2g")}
+      <button type="button" class="chip" id="vb-chip-g2g" data-vb-chip aria-haspopup="dialog" aria-expanded={openKey === "g2g"} aria-controls="vb-pop" onclick={() => valuesBar.toggle("g2g", path)}>
+        {@render g2gIcon("flat")}
+        {#if g2gOut}<b class="num" class:stale={g2g.stale}>{g2gOut}</b><span class="mut">/ 100k</span>{@render gold()}{:else}<span class="mut">no rate</span>{/if}
+      </button>
+    {/if}
+    {#if has("gem")}
+      <button type="button" class="chip" id="vb-chip-gem" data-vb-chip aria-haspopup="dialog" aria-expanded={openKey === "gem"} aria-controls="vb-pop" onclick={() => valuesBar.toggle("gem", path)}>
+        <ItemIcon slug="lv-8-gem" size={22} />
+        <span>Lv. 8</span><b class="num">{formatGold(gem.lv8)}</b>{@render gold()}{#if gem.isDefault}<span class="tag">default</span>{/if}
+      </button>
+    {/if}
+    {#if has("potion")}
+      <button type="button" class="chip" id="vb-chip-potion" data-vb-chip aria-haspopup="dialog" aria-expanded={openKey === "potion"} aria-controls="vb-pop" onclick={() => valuesBar.toggle("potion", path)}>
+        <ItemIcon slug={LIFE_ENERGY_POTION} size={22} />
+        {#if potionValue != null}<b class="num">{formatGold(potionValue)}</b>{@render gold()}{#if potionOv == null}<span class="tag">default</span>{/if}{:else}<span class="mut">no value</span>{/if}
+      </button>
+    {/if}
+    {#if has("pheons")}
+      <button type="button" class="chip" class:on={pheonsOn} class:off={!pheonsOn} id="vb-chip-pheons" data-vb-chip aria-haspopup="dialog" aria-expanded={openKey === "pheons"} aria-controls="vb-pop" onclick={() => valuesBar.toggle("pheons", path)}>
+        <ItemIcon slug="pheon" size={22} />
+        <span>{pheonsOn ? "Pheons included" : "Pheons excluded"}</span>
+      </button>
+    {/if}
+
+    {#if openKey}
+      <div class="backdrop" aria-hidden="true"></div>
+      <div class="pop" id="vb-pop" role="dialog" aria-labelledby={TITLE_ID[openKey]} {@attach popover(openKey)}>
+        <span class="grab" aria-hidden="true"></span>
+        {#if openKey === "exchange"}
           <div class="field">
-            <label class="fh" for="vb-f4"><ItemIcon slug="f4-shop" size={28} /> Currency exchange (F4)</label>
+            <label class="fh" id="vb-f4-title" for="vb-f4"><ItemIcon slug="f4-shop" size={28} /> Currency exchange (F4)</label>
             <div class="row">
-              <input id="vb-f4" type="number" min="0" aria-describedby="vb-f4-hint" value={f4.value} oninput={(e) => (f4.value = e.currentTarget.valueAsNumber)} onfocus={focusSelect} />
+              <input id="vb-f4" type="number" min="0" aria-describedby="vb-f4-hint" placeholder={String(f4.seed)}
+                value={shown("f4", f4Box)}
+                onfocus={(e) => { startTyping("f4", f4Box); focusSelect(e); }}
+                onblur={(e) => stopTyping(e.currentTarget, f4Box)}
+                oninput={(e) => valuesBar.writeF4(e.currentTarget.value, e.currentTarget.validity?.badInput)} />
               {@render gold()}<span class="mut">= {F4_DIVISOR}</span>{@render rc()}
             </div>
             <p class="hint" id="vb-f4-hint">
@@ -170,10 +255,9 @@
               <b class="num accent">{formatGold(f4.perBc)}</b>{@render gold()} per <img class="ic" src="{base}/icons/blue-crystal.png" alt="BC" />
             </p>
           </div>
-        {/if}
-        {#if has("g2g")}
+        {:else if openKey === "g2g"}
           <div class="field">
-            <label class="fh" for="vb-g2g">{@render g2gIcon("big")} Real-money gold price</label>
+            <label class="fh" id="vb-g2g-title" for="vb-g2g">{@render g2gIcon("big")} Real-money gold price</label>
             <div class="row">
               <span class="mut">{sym}</span><input id="vb-g2g" type="number" min="0" step="0.0001" aria-describedby="vb-g2g-hint" value={g2g.value ?? ""} oninput={(e) => g2g.setFromInput(e.currentTarget.valueAsNumber)} onfocus={focusSelect} />
               <span class="mut">per 1k</span>{@render gold()}
@@ -183,10 +267,9 @@
               Your own rate wins; clear the box to use the live rate.
             </p>
           </div>
-        {/if}
-        {#if has("gem")}
+        {:else if openKey === "gem"}
           <div class="field">
-            <label class="fh" for="vb-gem"><ItemIcon slug="lv-8-gem" size={28} /> Lv. 8 gem price</label>
+            <label class="fh" id="vb-gem-title" for="vb-gem"><ItemIcon slug="lv-8-gem" size={28} /> Lv. 8 gem price</label>
             <div class="row">
               <input id="vb-gem" type="number" min="0" step="any" aria-describedby="vb-gem-levels vb-gem-note" placeholder={String(GEM_LV8_DEFAULT[region])}
                 value={shown("gem", regionOv[GEM_LV8_SLUG] ?? "")}
@@ -205,10 +288,9 @@
             </ul>
             <p class="fine" id="vb-gem-note">Every gem level follows it: 3 gems fuse into 1 of the next level, so Lv. 7 is a third of Lv. 8. Clear the box to go back to the default.</p>
           </div>
-        {/if}
-        {#if has("potion")}
+        {:else if openKey === "potion"}
           <div class="field">
-            <label class="fh" for="vb-potion"><ItemIcon slug={LIFE_ENERGY_POTION} size={28} /> Life Energy Potion value</label>
+            <label class="fh" id="vb-potion-title" for="vb-potion"><ItemIcon slug={LIFE_ENERGY_POTION} size={28} /> Life Energy Potion value</label>
             <div class="row">
               <input id="vb-potion" type="number" min="0" step="any"
                 aria-describedby={leDefault ? "vb-potion-hint vb-potion-note" : "vb-potion-note"}
@@ -229,8 +311,7 @@
               <p class="fine" id="vb-potion-note">Gold per potion. Leave empty for no price; 0 counts as zero.</p>
             {/if}
           </div>
-        {/if}
-        {#if has("pheons")}
+        {:else if openKey === "pheons"}
           <div class="field">
             <div class="fh" id="vb-pheons-label"><ItemIcon slug="pheon" size={28} /> Pheons</div>
             <div class="seg" role="group" aria-labelledby="vb-pheons-label" aria-describedby="vb-pheons-hint">
@@ -244,16 +325,21 @@
             </p>
           </div>
         {/if}
+        <div class="pfoot">
+          <!-- The pheons setting is one switch for both regions; every other value is per region. -->
+          <p class="foot">Saved for {openKey === "pheons" ? "NA and EU" : region === "euc" ? "EU" : "NA"}. Shared with every tab that uses it.</p>
+          <button type="button" class="btn primary" onclick={() => dismiss(openKey!, true)}>Done</button>
+        </div>
       </div>
-      <p class="foot">Saved for {region === "euc" ? "EU" : "NA"}. Shared with every tab that uses them.</p>
-    </section>
-  {/if}
+    {/if}
+  </section>
 {/if}
 
 <style>
   .vb {
     --panel: #12141c; --chip: #161922; --line: #242838; --border: #2c3142; --field: #0c0e15;
     --text: #e6edf3; --soft: #b9c0d0; --muted: #8b90a6; --accent: #ffd166; --warn: #f0b341;
+    position: relative;
     margin: 14px 0 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
     color: var(--text); font-family: "Sora", system-ui, sans-serif; font-size: 13px; text-align: left;
   }
@@ -267,28 +353,38 @@
   .g2g.big { width: 28px; height: 28px; border-radius: 6px; }
   .title { color: var(--accent); font-weight: 600; white-space: nowrap; }
 
-  /* Collapsed: one wrapping line of chips with the Edit button at the end. */
+  /* One wrapping line of chips; each chip opens its own popover. */
   .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; }
   .chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; white-space: nowrap;
-    background: var(--chip); border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px 3px 4px;
-    color: var(--soft); font-size: 12.5px; }
+    background: var(--chip); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px 3px 4px;
+    color: var(--soft); font: 12.5px "Sora", system-ui, sans-serif; cursor: pointer;
+    transition: background-color .12s, border-color .12s; }
+  /* A small chevron says the chip opens something; it brightens on hover and flips while open. */
+  .chip::after { content: ""; flex: none; width: 5px; height: 5px; margin: 0 1px 3px 2px;
+    border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg); opacity: .4; transition: opacity .12s; }
+  .chip:hover, .chip:focus-visible, .chip[aria-expanded="true"] { background: #1d2130; border-color: #3a4160; }
+  .chip:hover::after, .chip:focus-visible::after, .chip[aria-expanded="true"]::after { opacity: .9; }
+  .chip[aria-expanded="true"]::after { transform: rotate(-135deg); margin-bottom: -2px; }
+  .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   .chip b { color: var(--text); font-weight: 600; }
   .chip .tag { color: var(--muted); font-size: 11px; }
   .chip.off { color: var(--muted); }
   .chip.off :global(.icon) { filter: grayscale(.85) brightness(.75); }
   .chip.on { color: var(--accent); border-color: rgba(255, 209, 102, .55); background: rgba(255, 209, 102, .07); }
+  .chip.on:hover, .chip.on[aria-expanded="true"] { background: rgba(255, 209, 102, .13); }
   .btn { margin-left: auto; background: #1d2130; color: var(--text); border: 1px solid #343a50; border-radius: 8px;
     padding: 6px 12px; font: 600 12.5px "Sora", system-ui, sans-serif; cursor: pointer; white-space: nowrap; }
   .btn.primary { background: var(--accent); color: #14161d; border-color: var(--accent); }
   .btn:hover { filter: brightness(1.1); }
 
-  /* Expanded: one card, a field per value; one column on phones, up to three across. */
-  .card { padding: 14px 16px; }
-  .head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .head .title { font-size: 14px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 12px; }
-  .field { background: var(--chip); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-width: 0; }
-  .fh { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; margin-bottom: 8px; }
+  /* The popover: just below its chip (--x / --y, set when it opens), above the page, no backdrop. */
+  .pop { position: absolute; z-index: 40; left: var(--x, 12px); top: var(--y, 44px); box-sizing: border-box;
+    width: min(360px, calc(100vw - 16px)); padding: 14px 16px 12px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, .55); }
+  .backdrop, .grab { display: none; }
+  .fh { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; margin-bottom: 10px; }
   .row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; color: var(--soft); }
   input { width: 120px; background: var(--field); color: var(--text); border: 1px solid var(--border); border-radius: 7px;
     padding: 6px 9px; font: 13px "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
@@ -308,5 +404,16 @@
   .seg { display: inline-flex; border: 1px solid #343a50; border-radius: 999px; overflow: hidden; }
   .seg button { background: none; border: 0; color: var(--muted); padding: 6px 14px; font: 12.5px "Sora", system-ui, sans-serif; cursor: pointer; }
   .seg button.sel { background: #2a2f42; color: var(--text); font-weight: 600; }
-  .foot { margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+  .pfoot { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .foot { margin: 0; color: var(--muted); font-size: 11.5px; line-height: 1.45; }
+
+  /* Phones: the same content as a bottom sheet over a light backdrop that closes it when tapped. */
+  @media (max-width: 600px) {
+    .backdrop { display: block; position: fixed; inset: 0; z-index: 40; background: rgba(5, 6, 10, .45); }
+    .pop { position: fixed; z-index: 41; left: 0; right: 0; top: auto; bottom: 0; width: auto;
+      max-height: 80vh; overflow-y: auto; overscroll-behavior: contain;
+      padding: 8px 16px calc(14px + env(safe-area-inset-bottom));
+      border-width: 1px 0 0; border-radius: 16px 16px 0 0; box-shadow: 0 -10px 30px rgba(0, 0, 0, .5); }
+    .grab { display: block; width: 40px; height: 4px; border-radius: 2px; background: #3a4058; margin: 0 auto 12px; }
+  }
 </style>

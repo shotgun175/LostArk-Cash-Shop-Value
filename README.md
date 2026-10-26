@@ -17,9 +17,11 @@ shown next to what a best-in-slot logging tool would earn, and you can override 
 set yourself that the tab actually uses: your F4 exchange rate (gold for 238 Royal Crystals),
 the real-money price of gold (G2G, shown as its icon), your Lv. 8 gem price (every other gem
 level follows it, 3 gems per level), the Life Energy Potion value, and whether pheons are
-included in key values. A tab that uses none of them (Prices) shows no bar. Press Edit to change
-them and Done to close; each value is saved in your browser per region (the pheons setting for
-both regions) and applies on every tab at once.
+included in key values. A tab that uses none of them (Prices) shows no bar. Click a value to
+change just that one (on a phone it opens from the bottom of the screen); Done, Escape or a click
+elsewhere closes it. Each value is saved in your browser per region (the pheons setting for both
+regions) and applies on every tab at once. Clear the exchange box to go back to the 35,000
+default.
 
 Live site: https://shotgun175.github.io/LostArk-Cash-Shop-Value/
 
