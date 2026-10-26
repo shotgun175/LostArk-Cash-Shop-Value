@@ -41,9 +41,9 @@ function bar(path: string, open: ValueKey | null = null): string {
   else valuesBar.close();
   return render(ValuesBar, { props: { path } }).body;
 }
-/** The visible text: tags and comments dropped, whitespace collapsed (alt and title are not text). */
+/** The visible text: tags, comments and screen-reader-only spans dropped, whitespace collapsed (alt and title are not text). */
 const text = (html: string): string =>
-  html.replace(/<!--[^>]*-->/g, "").replace(/<[^>]+>/g, " ").replace(/&#39;/g, "'").replace(/\s+/g, " ").trim();
+  html.replace(/<!--[^>]*-->/g, "").replace(/<span class="vh[^"]*">[^<]*<\/span>/g, " ").replace(/<[^>]+>/g, " ").replace(/&#39;/g, "'").replace(/\s+/g, " ").trim();
 /** Every chip button's markup, in order. */
 const chips = (body: string): string[] =>
   body
@@ -126,7 +126,8 @@ describe("ValuesBar per route (collapsed)", () => {
       expect(c).toContain(`id="vb-chip-${VALUE_KEYS[i]}"`);
       expect(c).toContain('aria-haspopup="dialog"');
       expect(c).toContain('aria-expanded="false"');
-      expect(c).toContain('aria-controls="vb-pop"');
+      // No dialog is rendered, so no chip points at one.
+      expect(c).not.toContain("aria-controls");
     });
   });
 
@@ -151,6 +152,8 @@ describe("ValuesBar per route (collapsed)", () => {
       expect(body).not.toContain("G2G");
     }
     expect(text(chip(bar("/"), "/icons/g2g.png"))).toBe("$2.05 / 100k default");
+    // Screen readers still hear what the number is (the icon's alt is empty).
+    expect(chip(bar("/"), "/icons/g2g.png")).toMatch(/<span class="vh[^"]*">Real-money gold price<\/span>/);
   });
 
   it("tags the live G2G rate as the default, like the exchange and gem chips, and drops it for a typed rate", () => {
@@ -252,7 +255,11 @@ describe("ValuesBar popovers", () => {
         else expect(body, `${k} shows ${other}`).not.toContain(FIELD_ID[other]);
       }
       for (const c of chips(body)) {
-        expect(c).toContain(c.includes(`id="vb-chip-${k}"`) ? 'aria-expanded="true"' : 'aria-expanded="false"');
+        const mine = c.includes(`id="vb-chip-${k}"`);
+        expect(c).toContain(mine ? 'aria-expanded="true"' : 'aria-expanded="false"');
+        // Only the open chip points at the dialog.
+        if (mine) expect(c).toContain('aria-controls="vb-pop"');
+        else expect(c).not.toContain("aria-controls");
       }
     }
     expect(dialog(bar("/", "g2g"))).toContain("/icons/g2g.png");
