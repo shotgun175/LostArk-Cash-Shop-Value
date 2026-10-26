@@ -2,6 +2,7 @@ import { app } from "./app.svelte";
 import type { Region } from "./api";
 import { overrides } from "./packs/overrides.svelte";
 import { f4 } from "./packs/f4.svelte";
+import { g2g } from "./packs/g2g.svelte";
 import { readValueInput, type ValueKey } from "./valuesBar";
 
 // The "Your values" bar's own state: which chip's popover is open (one at a time, never
@@ -69,6 +70,18 @@ class ValuesBarState {
     const a = readValueInput(raw, badInput);
     if (a.kind === "clear") f4.reset(app.region);
     else if (a.kind === "set") f4.value = a.value;
+  }
+
+  /**
+   * Applies the typed real-money rate box to this region: an empty box clears the override (back
+   * to the live rate), a number above 0 saves it, and a half-typed entry, 0 or a negative number
+   * leaves it as it was (a rate of 0 is not a rate, and "0" is on the way to "0.02"). Called only
+   * from an input event.
+   */
+  writeG2g(raw: string, badInput = false): void {
+    const a = readValueInput(raw, badInput);
+    if (a.kind === "clear") g2g.setFromInput(Number.NaN);
+    else if (a.kind === "set" && a.value > 0) g2g.setFromInput(a.value);
   }
 }
 

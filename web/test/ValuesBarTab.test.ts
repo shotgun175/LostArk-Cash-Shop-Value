@@ -150,7 +150,14 @@ describe("ValuesBar per route (collapsed)", () => {
       // Not in the text, and not in an attribute either (alt, title, aria-label).
       expect(body).not.toContain("G2G");
     }
-    expect(text(chip(bar("/"), "/icons/g2g.png"))).toBe("$2.05 / 100k");
+    expect(text(chip(bar("/"), "/icons/g2g.png"))).toBe("$2.05 / 100k default");
+  });
+
+  it("tags the live G2G rate as the default, like the exchange and gem chips, and drops it for a typed rate", () => {
+    loadFixture({}, { usdPer1kGold: 0.0205, usdFetchedAt: new Date(INSIDE - 10 * 60_000).toISOString() });
+    expect(text(chip(bar("/"), "/icons/g2g.png"))).toBe("$2.05 / 100k default");
+    valuesBar.writeG2g("0.03");
+    expect(text(chip(bar("/"), "/icons/g2g.png"))).not.toContain("default");
   });
 
   it("reads 'Pheons included', highlighted, once the setting is on", () => {
@@ -305,7 +312,12 @@ describe("ValuesBar popovers", () => {
   it("G2G: the per-1k input, the per-100k readout and a hint, without the word", () => {
     loadFixture({}, { usdPer1kGold: 0.0205, usdFetchedAt: new Date(INSIDE - 10 * 60_000).toISOString() });
     const f = field(bar("/", "g2g"), "Real-money gold price");
-    expect(f).toMatch(/id="vb-g2g"[^>]*value="0.0205"/);
+    // Like the exchange box: empty while the live rate applies, which shows as the watermark.
+    expect(f).toMatch(/id="vb-g2g"[^>]*placeholder="0.0205"/);
+    expect(f).not.toMatch(/id="vb-g2g"[^>]*value="0/);
+    valuesBar.writeG2g("0.03");
+    expect(field(bar("/", "g2g"), "Real-money gold price")).toMatch(/id="vb-g2g"[^>]*value="0.03"/);
+    valuesBar.writeG2g("");
     expect(text(f)).toBe("Real-money gold price $ per 1k = $2.05 / 100k Your own rate wins; clear the box to use the live rate.");
     expect(f).toMatch(/<img class="g2g[^"]*" src="\/icons\/g2g.png" alt="" title="Rate updated [^"]+"/);
   });
@@ -448,6 +460,10 @@ describe("ValuesBar writes", () => {
       removeItem: (k: string) => writes.push(`-${k}`),
     });
     try {
+      // The G2G store retires two pre-region keys when it first loads; that cleanup is not the
+      // bar's doing, so load it before counting.
+      await import("../src/lib/packs/g2g.svelte");
+      writes.length = 0;
       const fresh = await import("../src/lib/valuesBarState.svelte");
       expect(fresh.valuesBar.at).toBeNull();
       expect(fresh.valuesBar.openFor("/")).toBeNull();
@@ -462,6 +478,21 @@ describe("ValuesBar writes", () => {
     for (const f of ["../src/lib/components/ValuesBar.svelte", "../src/lib/valuesBarState.svelte.ts"]) {
       expect(readFileSync(new URL(f, import.meta.url), "utf-8"), f).not.toContain("csv.valuesBar.open");
     }
+  });
+
+  it("the real-money box saves a rate above 0, keeps half-typed input, 0 and negatives, and an empty box returns to the live rate", () => {
+    loadFixture({}, { usdPer1kGold: 0.0205, usdFetchedAt: new Date(INSIDE - 10 * 60_000).toISOString() });
+    valuesBar.writeG2g("0.03");
+    expect(g2g.override).toBe(0.03);
+    valuesBar.writeG2g("0"); // on the way to "0.02": keep the last rate
+    expect(g2g.override).toBe(0.03);
+    valuesBar.writeG2g("", true); // half-typed ("1e"): keep
+    expect(g2g.override).toBe(0.03);
+    valuesBar.writeG2g("-1");
+    expect(g2g.override).toBe(0.03);
+    valuesBar.writeG2g(""); // cleared: back to the live rate
+    expect(g2g.override).toBeNull();
+    expect(g2g.value).toBe(0.0205);
   });
 
   it("the exchange box saves a typed value, 0 included, and an empty box returns to the seed", () => {
@@ -547,7 +578,7 @@ describe("ValuesBar writes", () => {
     const src = readFileSync(new URL("../src/lib/components/ValuesBar.svelte", import.meta.url), "utf-8");
     expect(src).not.toMatch(/\$effect|onMount|beforeUpdate|afterUpdate|bind:value/);
     expect(src).toContain("oninput={(e) => valuesBar.writeF4(e.currentTarget.value, e.currentTarget.validity?.badInput)}");
-    expect(src).toContain("oninput={(e) => g2g.setFromInput(e.currentTarget.valueAsNumber)}");
+    expect(src).toContain("oninput={(e) => valuesBar.writeG2g(e.currentTarget.value, e.currentTarget.validity?.badInput)}");
     expect(src).toContain("oninput={(e) => valuesBar.writeOverride(GEM_LV8_SLUG, e.currentTarget.value, e.currentTarget.validity?.badInput)}");
     expect(src).toContain("oninput={(e) => valuesBar.writeOverride(LIFE_ENERGY_POTION, e.currentTarget.value, e.currentTarget.validity?.badInput)}");
     expect(src).toContain("onclick={() => hellSettings.setIncludePheons(false)}>Excluded</button>");

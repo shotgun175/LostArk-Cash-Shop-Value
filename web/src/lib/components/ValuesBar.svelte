@@ -56,7 +56,9 @@
   const f4Box = $derived(f4.isDefault || !f4Set ? "" : f4.value);
 
   // Real-money rate: the typed override, else the live feed (g2g.svelte.ts), with its freshness.
+  // Like the exchange box, the box is empty while the live rate applies (shown as the placeholder).
   const g2gOut = $derived(g2g.value ? g2gReadout(g2g.value, sym) : null);
+  const g2gBox = $derived(g2g.override ?? "");
 
   // Gem baseline: the user's lv-8-gem value or the regional default (gems.ts). Read from the
   // unlayered prices: the price map always fills lv-8-gem, so it cannot tell a default apart.
@@ -213,7 +215,7 @@
     {#if has("g2g")}
       <button type="button" class="chip" id="vb-chip-g2g" data-vb-chip aria-haspopup="dialog" aria-expanded={openKey === "g2g"} aria-controls="vb-pop" onclick={() => valuesBar.toggle("g2g", path)}>
         {@render g2gIcon("flat")}
-        {#if g2gOut}<b class="num" class:stale={g2g.stale}>{g2gOut}</b><span class="mut">/ 100k</span>{@render gold()}{:else}<span class="mut">no rate</span>{/if}
+        {#if g2gOut}<b class="num" class:stale={g2g.stale}>{g2gOut}</b><span class="mut">/ 100k</span>{@render gold()}{#if g2g.override == null}<span class="tag">default</span>{/if}{:else}<span class="mut">no rate</span>{/if}
       </button>
     {/if}
     {#if has("gem")}
@@ -241,7 +243,7 @@
         <span class="grab" aria-hidden="true"></span>
         {#if openKey === "exchange"}
           <div class="field">
-            <label class="fh" id="vb-f4-title" for="vb-f4"><ItemIcon slug="f4-shop" size={28} /> Currency exchange (F4)</label>
+            <label class="fh" for="vb-f4"><ItemIcon slug="f4-shop" size={28} /> <span id="vb-f4-title">Currency exchange (F4)</span></label>
             <div class="row">
               <input id="vb-f4" type="number" min="0" aria-describedby="vb-f4-hint" placeholder={String(f4.seed)}
                 value={shown("f4", f4Box)}
@@ -257,9 +259,14 @@
           </div>
         {:else if openKey === "g2g"}
           <div class="field">
-            <label class="fh" id="vb-g2g-title" for="vb-g2g">{@render g2gIcon("big")} Real-money gold price</label>
+            <label class="fh" for="vb-g2g">{@render g2gIcon("big")} <span id="vb-g2g-title">Real-money gold price</span></label>
             <div class="row">
-              <span class="mut">{sym}</span><input id="vb-g2g" type="number" min="0" step="0.0001" aria-describedby="vb-g2g-hint" value={g2g.value ?? ""} oninput={(e) => g2g.setFromInput(e.currentTarget.valueAsNumber)} onfocus={focusSelect} />
+              <span class="mut">{sym}</span><input id="vb-g2g" type="number" min="0" step="0.0001" aria-describedby="vb-g2g-hint"
+                placeholder={g2g.live != null ? String(g2g.live) : ""}
+                value={shown("g2g", g2gBox)}
+                onfocus={(e) => { startTyping("g2g", g2gBox); focusSelect(e); }}
+                onblur={(e) => stopTyping(e.currentTarget, g2gBox)}
+                oninput={(e) => valuesBar.writeG2g(e.currentTarget.value, e.currentTarget.validity?.badInput)} />
               <span class="mut">per 1k</span>{@render gold()}
             </div>
             <p class="hint" id="vb-g2g-hint">
@@ -269,7 +276,7 @@
           </div>
         {:else if openKey === "gem"}
           <div class="field">
-            <label class="fh" id="vb-gem-title" for="vb-gem"><ItemIcon slug="lv-8-gem" size={28} /> Lv. 8 gem price</label>
+            <label class="fh" for="vb-gem"><ItemIcon slug="lv-8-gem" size={28} /> <span id="vb-gem-title">Lv. 8 gem price</span></label>
             <div class="row">
               <input id="vb-gem" type="number" min="0" step="any" aria-describedby="vb-gem-levels vb-gem-note" placeholder={String(GEM_LV8_DEFAULT[region])}
                 value={shown("gem", regionOv[GEM_LV8_SLUG] ?? "")}
@@ -290,7 +297,7 @@
           </div>
         {:else if openKey === "potion"}
           <div class="field">
-            <label class="fh" id="vb-potion-title" for="vb-potion"><ItemIcon slug={LIFE_ENERGY_POTION} size={28} /> Life Energy Potion value</label>
+            <label class="fh" for="vb-potion"><ItemIcon slug={LIFE_ENERGY_POTION} size={28} /> <span id="vb-potion-title">Life Energy Potion value</span></label>
             <div class="row">
               <input id="vb-potion" type="number" min="0" step="any"
                 aria-describedby={leDefault ? "vb-potion-hint vb-potion-note" : "vb-potion-note"}
@@ -313,7 +320,7 @@
           </div>
         {:else if openKey === "pheons"}
           <div class="field">
-            <div class="fh" id="vb-pheons-label"><ItemIcon slug="pheon" size={28} /> Pheons</div>
+            <div class="fh"><ItemIcon slug="pheon" size={28} /> <span id="vb-pheons-label">Pheons</span></div>
             <div class="seg" role="group" aria-labelledby="vb-pheons-label" aria-describedby="vb-pheons-hint">
               <button type="button" class:sel={!pheonsOn} aria-pressed={!pheonsOn} onclick={() => hellSettings.setIncludePheons(false)}>Excluded</button>
               <button type="button" class:sel={pheonsOn} aria-pressed={pheonsOn} onclick={() => hellSettings.setIncludePheons(true)}>Included</button>
