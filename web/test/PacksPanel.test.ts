@@ -1,8 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { readFileSync } from "node:fs";
 import { render } from "svelte/server";
 import PacksPanel from "../src/lib/components/packs/PacksPanel.svelte";
 import { app } from "../src/lib/app.svelte";
 import { hellSettings } from "../src/lib/packs/hellSettings.svelte";
+import { overrides } from "../src/lib/packs/overrides.svelte";
+import { BAR_OVERRIDES } from "../src/lib/valuesBar";
 import fixture from "./fixtures/tjw-nae-prices.json";
 
 // Include pheons is a shared singleton that moves every key valuation, so each case starts off.
@@ -124,5 +127,43 @@ describe("PacksPanel Include pheons indicator", () => {
       .replace(/\s+/g, " ");
     expect(note).toContain(`Click any market price to enter your own AH price. ${INDICATOR}`);
     expect(body).not.toContain("Include pheons");
+  });
+});
+
+// The Your values Lv. 8 gem and potion are stored as price overrides but are settings: the note's
+// custom-price count leaves them out and "reset all" keeps them (user 2026-10-25). Clearing the
+// bar's box is how they go back to the baseline.
+describe("PacksPanel custom prices and Your values", () => {
+  afterEach(() => overrides.clearAll("nae"));
+
+  it("counts only price edits, not the bar's gem and potion values", () => {
+    app.region = "nae";
+    app.status = "ok";
+    app.payload = {
+      schema_version: 1,
+      generated_at: new Date().toISOString(),
+      regions: { nae: { prices: fixture.prices, source_valid_at: new Date().toISOString() } },
+      bundles: {},
+    } as unknown as typeof app.payload;
+    const note = (): string =>
+      (render(PacksPanel).body.match(/<p class="note[^"]*">[\s\S]*?<\/p>/)?.[0] ?? "")
+        .replace(/<!--[^>]*-->/g, "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ");
+    overrides.set("nae", "lv-8-gem", 300000);
+    overrides.set("nae", "basic-life-energy-potion", 1500);
+    expect(note()).not.toContain("custom price");
+    overrides.set("nae", "abidos-fusion-material", 95);
+    expect(note()).toContain("1 custom price");
+  });
+
+  it("keeps the bar's values on reset all, on Packs and on a pack's page", () => {
+    expect([...BAR_OVERRIDES].sort()).toEqual(["basic-life-energy-potion", "lv-8-gem"]);
+    for (const f of ["../src/lib/components/packs/PacksPanel.svelte", "../src/routes/pack/[slug]/+page.svelte"]) {
+      const src = readFileSync(new URL(f, import.meta.url), "utf-8");
+      expect(src, f).toContain("overrides.count(app.region, BAR_OVERRIDES)");
+      expect(src, f).toContain("overrides.clearAll(app.region, BAR_OVERRIDES)");
+      expect(src, f).not.toContain("overrides.clearAll(app.region)");
+    }
   });
 });

@@ -24,13 +24,20 @@ import { JUMP_UP_LEVELS } from "./packs/data/jumpUp";
 import { HELL_KEY_MAP, HELL_TIERS, COLUMN_VALUATION } from "./packs/data/hellRewards";
 import { CUBE_MAP, CUBE_REWARDS } from "./packs/data/cube";
 import { BC_COSTS } from "./packs/data/constants";
-import { T4_GEM_LEVELS } from "./packs/gems";
+import { T4_GEM_LEVELS, GEM_LV8_SLUG } from "./packs/gems";
 import { LIFE_ENERGY_POTION, SOARING_KIT } from "./packs/priceMap";
 import { bonusRoomActive } from "./packs/bonusRoom";
 
 /** A shared value the bar can show, in display order. */
 export type ValueKey = "exchange" | "g2g" | "gem" | "potion" | "pheons";
 export const VALUE_KEYS: readonly ValueKey[] = ["exchange", "g2g", "gem", "potion", "pheons"];
+
+/**
+ * Price overrides that hold a bar value (the Lv. 8 gem baseline and the potion value). They are
+ * settings, not price edits: the Packs custom-price count leaves them out and its "reset all"
+ * keeps them; clearing the bar's box returns each to its baseline.
+ */
+export const BAR_OVERRIDES: ReadonlySet<string> = new Set([GEM_LV8_SLUG, LIFE_ENERGY_POTION]);
 
 /** What a page lists and compares, the input to the relevance rules. */
 export interface PageUse {

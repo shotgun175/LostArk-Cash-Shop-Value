@@ -101,3 +101,24 @@ describe("overrides.clear", () => {
     expect(mem.getItem("csv.ov.nae")).toBeNull();
   });
 });
+
+describe("overrides.count and clearAll with exceptions", () => {
+  it("leaves the excepted slugs out of the count and keeps them through clearAll, in one region", async () => {
+    const bar = new Set(["lv-8-gem", "basic-life-energy-potion"]);
+    const a = await freshStore();
+    a.set("nae", "lv-8-gem", 300000);
+    a.set("nae", "basic-life-energy-potion", 0);
+    a.set("nae", "abidos-fusion-material", 95);
+    a.set("euc", "abidos-fusion-material", 90);
+    expect(a.count("nae")).toBe(3);
+    expect(a.count("nae", bar)).toBe(1);
+    a.clearAll("nae", bar);
+    expect(a.forRegion("nae")).toEqual({ "lv-8-gem": 300000, "basic-life-energy-potion": 0 });
+    expect(a.forRegion("euc")).toEqual({ "abidos-fusion-material": 90 });
+    const b = await freshStore();
+    expect(b.forRegion("nae")).toEqual({ "lv-8-gem": 300000, "basic-life-energy-potion": 0 });
+    // Without exceptions it still clears everything.
+    b.clearAll("nae");
+    expect(b.count("nae")).toBe(0);
+  });
+});
