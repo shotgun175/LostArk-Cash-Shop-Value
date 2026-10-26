@@ -20,8 +20,9 @@ level follows it, 3 gems per level), the Life Energy Potion value, and whether p
 included in key values. A tab that uses none of them (Prices) shows no bar. Click a value to
 change just that one (on a phone it opens from the bottom of the screen); Done, Escape or a click
 elsewhere closes it. Each value is saved in your browser per region (the pheons setting for both
-regions) and applies on every tab at once. Clear the exchange box to go back to the 35,000
-default.
+regions) and applies on every tab at once. Clear a box to go back to its default: 35,000 for the
+exchange, the live G2G rate, a typical Lv. 8 gem price for your region, or the logging estimate
+for the potion.
 
 Live site: https://shotgun175.github.io/LostArk-Cash-Shop-Value/
 
