@@ -131,8 +131,8 @@ describe("CUBE_REWARDS", () => {
 });
 
 describe("constants", () => {
-  it("bakes the lv-3 gem value (1,850 since the 2026-08-19 re-anchor)", () => {
-    expect(BAKED["lv-3-gem"]).toBe(1850);
+  it("does not bake the T4 gems: buildPriceMap prices them off the Lv. 8 baseline (2026-10-25)", () => {
+    for (const slug of ["lv-1-gem", "lv-2-gem", "lv-3-gem", "lv-8-gem"]) expect(slug in BAKED).toBe(false);
   });
   it("bakes TJW's Autumn Bonus Room Ancient chest seeds (adopted 2026-10-25)", () => {
     expect(BAKED["ancient-astrogem-selection-chest"]).toBe(500000);

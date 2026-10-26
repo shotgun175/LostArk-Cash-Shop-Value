@@ -38,4 +38,14 @@ describe("layout nav", () => {
     app.now = Date.parse("2026-11-19T00:00:00Z");
     expect(navLabels()).toEqual(["Packs", "Mari's Shop", "Ark Pass", "Jump-Up Boost", "Hell Key math", "Prices"]);
   });
+
+  it("renders the Your values bar between the header and the page", () => {
+    app.now = Date.parse("2026-10-25T12:00:00Z");
+    const body = render(Layout, { props: { children } }).body;
+    const header = body.indexOf("</header>");
+    const barAt = body.indexOf('<section class="vb');
+    expect(barAt).toBeGreaterThan(header);
+    expect(barAt).toBeLessThan(body.indexOf("<main"));
+    expect(body.slice(barAt)).toContain("Your values");
+  });
 });

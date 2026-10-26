@@ -43,21 +43,10 @@
         <div><dt>Gold / {sym}</dt><dd class="gold">{goldPerDollar.toLocaleString("en-US")}</dd></div>
       </dl>
     </div>
-    <div class="card">
-      <div class="tier">F4 currency exchange</div>
-      <div class="exch">
-        <input class="f4" type="number" min="0" value={f4.value} oninput={(e) => (f4.value = e.currentTarget.valueAsNumber)} aria-label="F4 exchange gold" />
-        <img class="ic" src="{base}/icons/gold.png" alt="gold" />
-        <span class="lbl">for 238</span><img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" />
-        <span class="lbl">=</span> <b class="num accent">{f4base.toFixed(2)}</b><img class="ic" src="{base}/icons/gold.png" alt="gold" /><span class="lbl">/</span><img class="ic" src="{base}/icons/royal-crystal.png" alt="RC" />
-        <span class="lbl">baseline</span>
-      </div>
-      <p class="fine">Shared with the Packs tab (per region). It prices the Crystalline Aura Plus reward and sets the vs-F4 baseline.</p>
-    </div>
   </div>
 
   <p class="note">
-    Bound Lv. 8 Brilliant Gems are valued at 3x the Lv. 7 gem seed (3:1 fuse chain). Fixed Epic Astrogem
+    Bound Lv. 8 Brilliant Gems are valued at the region's Lv. 8 gem price. Fixed Epic Astrogem
     Selection Chests are a flat 75,000 gold each. Crystalline Aura Plus is valued at its store cost (510 BC
     per 30 days, so 238 BC for 14 days) x the exchange rate. Azena's Blessing and the Ancient bracelet /
     accessory chests have no market value and count as 0.
@@ -102,9 +91,10 @@
   </div>
 
   <p class="note">
-    The F4 exchange input above is the only lever on this tab: it prices the Crystalline Aura Plus and
-    sets the vs-F4 baseline, while the gem and astrogem values are fixed seeds. The cumulative figure on
-    each level row is what you'd have banked if that is the last milestone you reach.
+    Two values from Your values move this tab: the F4 exchange prices the Crystalline Aura Plus and
+    sets the vs-F4 baseline, and the Lv. 8 gem price values the gems. The astrogem values are fixed
+    seeds. The cumulative figure on each level row is what you'd have banked if that is the last
+    milestone you reach.
   </p>
 </div>
 
@@ -117,7 +107,6 @@
   h2 { font-size: 20px; margin: 8px 0 6px; }
   .note { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0 0 16px; }
   .summary { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px; }
-  @media (min-width: 700px) { .summary { grid-template-columns: 1fr 1fr; } }
   .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
   .tier { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
   .cost { display: flex; align-items: center; gap: 5px; margin-bottom: 10px; }
@@ -131,15 +120,10 @@
   dd.bad { color: var(--bad); }
   .num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; }
   .accent { color: var(--accent); }
-  .lbl, .muted { color: var(--muted); }
+  .muted { color: var(--muted); }
   .warn { color: var(--warn); font-size: 12.5px; }
   .bad { color: var(--bad); }
   .ic { width: 15px; height: 15px; }
-  /* The shared F4 input, laid out like the Packs tab's exchange row but on its own card. */
-  .exch { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 13px; }
-  input.f4 { width: 90px; background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
-    border-radius: 6px; padding: 4px 6px; font: 600 13px "JetBrains Mono", monospace; }
-  .fine { color: var(--muted); font-size: 11.5px; line-height: 1.45; margin: 10px 0 0; }
   .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table { width: 100%; min-width: 560px; border-collapse: collapse; }
   th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13.5px; }

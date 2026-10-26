@@ -10,10 +10,9 @@
   import { MARIS_WARES, BC_PER_BUNDLE } from "$lib/packs/data/marisShop";
   import { formatGold, formatSignedPct } from "$lib/format";
   import ItemIcon from "../ItemIcon.svelte";
-  import { base } from "$app/paths";
 
   // The layered map (like every pack-valuing view), so user settings apply and the untradable
-  // Basic Life Energy Potion gets its logging default (or the user's Bonus Room value).
+  // Basic Life Energy Potion gets its logging default (or the user's value from Your values).
   const prices = $derived(layeredPrices());
   const goldPerBc = $derived(f4.perBc);
 
@@ -52,17 +51,11 @@
 <div class="maris">
   <h2>Mari's Shop</h2>
   <p class="note">
-    Wares cost blue crystals (BC), which you buy with gold at the F4 exchange rate, so the gold
-    cost is <b>BC × (F4 gold ÷ {BC_PER_BUNDLE})</b>. "Savings vs AH" compares that to buying the same
-    items outright on the Auction House at current prices (your Packs-page price edits apply here too).
+    Wares cost blue crystals (BC), which you buy with gold at the F4 exchange rate (set in Your
+    values), so the gold cost is <b>BC × (F4 gold ÷ {BC_PER_BUNDLE})</b>. "Savings vs AH" compares that
+    to buying the same items outright on the Auction House at current prices (your Packs-page price
+    edits apply here too).
   </p>
-
-  <div class="exch">
-    <span class="lbl">Currency exchange (F4):</span>
-    <input class="f4 num" type="number" min="0" value={f4.value} oninput={(e) => (f4.value = e.currentTarget.valueAsNumber)} aria-label="F4 exchange gold" />
-    <img class="ic" src="{base}/icons/gold.png" alt="gold" />
-    <span class="lbl">→ <b class="num accent">{formatGold(Math.round(goldPerBc))}</b> gold / BC</span>
-  </div>
 
   <div class="tscroll">
   <table>
@@ -96,10 +89,10 @@
         * Life Energy Potions aren't on the Auction House, so they're valued at what 3,000 Life Energy
         earns logging at live timber prices: <b class="num">{formatGold(potionNote.def)}</b> gold per potion
         with no tool bonuses (<b class="num">{formatGold(potionNote.best)}</b> with a best-in-slot tool). A potion
-        value you set on the Bonus Room tab replaces it.
+        value you set in Your values replaces it.
       {:else}
         * Life Energy Potions aren't on the Auction House, so they're valued at your potion value from
-        the Bonus Room tab.
+        Your values.
       {/if}
     </p>
   {/if}
@@ -108,14 +101,14 @@
       {#if kitNote.on && kitNote.perKit > 0}
         † Stone of Soaring kits are untradable, so each counts as {PHEONS_PER_ABILITY_STONE} pheons:
         <b class="num">{formatGold(kitNote.perKit)}</b> gold per kit at {BC_COSTS.pheon} BC per pheon and your
-        exchange rate (or your own pheon price). This follows the Include pheons setting on the Hell Key tab.
+        exchange rate (or your own pheon price). This follows the Pheons setting in Your values.
       {:else if kitNote.on}
         † Stone of Soaring kits are untradable and count as {PHEONS_PER_ABILITY_STONE} pheons each, but
-        pheons have no price until you set an exchange rate (above) or your own pheon price.
+        pheons have no price until you set an exchange rate (Your values) or your own pheon price.
       {:else}
-        † Stone of Soaring kits are untradable and count as 0 while Include pheons (Hell Key tab) is
-        off. {#if kitNote.perKit > 0}With it on, each kit counts as {PHEONS_PER_ABILITY_STONE} pheons:
-          <b class="num">{formatGold(kitNote.perKit)}</b> gold at your exchange rate (or your own pheon price).{:else}With it on and an
+        † Stone of Soaring kits are untradable and count as 0 while pheons are excluded (Your
+        values). {#if kitNote.perKit > 0}With pheons included, each kit counts as {PHEONS_PER_ABILITY_STONE} pheons:
+          <b class="num">{formatGold(kitNote.perKit)}</b> gold at your exchange rate (or your own pheon price).{:else}With pheons included and an
           exchange rate set, each kit counts as {PHEONS_PER_ABILITY_STONE} pheons.{/if}
       {/if}
     </p>
@@ -130,15 +123,7 @@
   }
   h2 { font-size: 20px; margin: 8px 0 6px; }
   .note { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0 0 14px; }
-  .exch { display: inline-flex; align-items: center; gap: 6px; font-size: 13px;
-    background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; }
-  .lbl { color: var(--muted); }
   .num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; }
-  .accent { color: var(--accent); }
-  .ic { width: 14px; height: 14px; vertical-align: -2px; }
-  input.f4 { width: 84px; background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
-    padding: 6px 10px; border-radius: 6px; font-size: 13px; }
-  input.f4:focus { outline: none; border-color: var(--accent); }
   .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table { width: 100%; min-width: 620px; border-collapse: collapse; }
   th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13.5px; }

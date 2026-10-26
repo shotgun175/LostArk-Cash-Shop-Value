@@ -1,13 +1,15 @@
 // Builds the slug -> gold price map the pack engine values against. Layers, in order:
-//   1. baked constants (gems, currencies, default recipe value)
+//   1. baked constants (currencies, seeds, default recipe value)
 //   2. live region prices (override baked where present)
-//   3. computed special-hone tap pseudo-slugs (the "Free taps" reward column)
-//   4. blue-crystal currency + BC-store-costed items (optional), priced off the F4 gold input
-//   5. the Basic Life Energy Potion default (lifeEnergy.ts: 3,000 LE x logging gold per LE at
+//   3. T4 gems (gems.ts): every level the user did not price is Lv. 8 / 3^(8 - N), off the
+//      user's lv-8-gem value or the region's default baseline (2026-10-25)
+//   4. computed special-hone tap pseudo-slugs (the "Free taps" reward column)
+//   5. blue-crystal currency + BC-store-costed items (optional), priced off the F4 gold input
+//   6. the Basic Life Energy Potion default (lifeEnergy.ts: 3,000 LE x logging gold per LE at
 //      live timber prices) unless the user set a value (2026-10-25)
-//   6. computed EV overrides for the hell/netherworld keys and the ebony cubes
-//   7. relic-recipe override (max engraving)
-//   8. the Stone of Soaring Engraving Setting Kit (Bonus Room): 9 pheons with Include pheons on,
+//   7. computed EV overrides for the hell/netherworld keys and the ebony cubes
+//   8. relic-recipe override (max engraving)
+//   9. the Stone of Soaring Engraving Setting Kit (Bonus Room): 9 pheons with Include pheons on,
 //      else 0 (TJW 2026-10-21, adopted 2026-10-25)
 // Order matters: EV is computed from the baked+region+taps+BC map, so EV inputs see live
 // prices, hell keys value their free taps at the live tap price, and with Include pheons on
@@ -27,16 +29,18 @@ import { CUBE_MAP } from "./data/cube";
 import { hellKeyEv, cubeEv, relicRecipe, pheonGold } from "./ev";
 import { withTapPrices, type TapOverrides } from "./tapPrices";
 import { potionDefault } from "./lifeEnergy";
+import { T4_GEM_LEVELS, gemBaseline, gemPriceAt } from "./gems";
+import type { Region } from "../api";
 
 // The Bonus Room's Stone of Soaring Engraving Setting Kit: untradable, so like the hell keys'
 // Ability stones it is worth PHEONS_PER_ABILITY_STONE pheons only while Include pheons is on.
 export const SOARING_KIT = "stone-of-soaring-engraving-setting-kit";
 
 // The Bonus Room's Basic Life Energy Potion: untradable, so with no user value it defaults to the
-// gold 3,000 LE earns logging (layer 5 below).
+// gold 3,000 LE earns logging (layer 6 below).
 export const LIFE_ENERGY_POTION = "basic-life-energy-potion";
 
-// Slugs whose price buildPriceMap computes (layers 6 to 8 below), mapped to the read-only
+// Slugs whose price buildPriceMap computes (layers 7 to 9 below), mapped to the read-only
 // tooltip the pack UIs show. Like F4_DERIVED_SLUGS, a click-to-edit override here would be
 // out-layered by the computation, so no edit is offered and stored overrides are dropped on load.
 const KEY_NOTE = "Expected value of the key's rewards at current prices. See the Hell Key tab.";
@@ -45,14 +49,22 @@ export const COMPUTED_PRICE_NOTES: ReadonlyMap<string, string> = new Map([
   ...Object.keys(HELL_KEY_MAP).map((s) => [s, KEY_NOTE] as const),
   ...Object.keys(CUBE_MAP).map((s) => [s, CUBE_NOTE] as const),
   ["relic-combat-engraving-recipe", "Priced as the most expensive relic combat engraving at current prices."],
-  [SOARING_KIT, "9 pheons when Include pheons is on (Hell Key tab), else 0. Read-only."],
+  [SOARING_KIT, "9 pheons while pheons are included (Your values), else 0. Read-only."],
 ]);
 
 export function buildPriceMap(
   regionPrices: Record<string, number>,
-  opts: { blueCrystalGold?: number; tapOverrides?: TapOverrides; includePheons?: boolean } = {},
+  opts: { blueCrystalGold?: number; tapOverrides?: TapOverrides; includePheons?: boolean; region?: Region } = {},
 ): Record<string, number> {
   const m0: Record<string, number> = { ...BAKED, ...regionPrices };
+  // T4 gems (gems.ts, DECISIONS 2026-10-25): every level follows the region's Lv. 8 baseline (the
+  // user's lv-8-gem value, else the regional default) at 3:1 per level. The feed never prices
+  // gems, so a value in regionPrices is the user's and replaces only that level, as with
+  // BC_COSTS. Not in COMPUTED_PRICE_NOTES: every level stays editable.
+  const { lv8 } = gemBaseline(regionPrices, opts.region ?? "nae");
+  for (const [slug, level] of Object.entries(T4_GEM_LEVELS)) {
+    if (!(slug in regionPrices)) m0[slug] = gemPriceAt(level, lv8);
+  }
   const m = withTapPrices(m0, opts.tapOverrides);
   // Blue Crystal ("Crystal" in the 1200 Crystal Pack) is not AH-traded: it's the F4 exchange
   // currency, valued at the shared gold input / 95 (one exchange listing = 238 RC = 95 BC).

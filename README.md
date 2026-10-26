@@ -13,6 +13,14 @@ money, and hides itself again when the room ends. The untradable Life Energy Pot
 default value from logging at live timber prices (Lv. 70 Logging, Relic charm, no tool bonuses),
 shown next to what a best-in-slot logging tool would earn, and you can override it per region.
 
+**Your values.** Under the header, every tab shows a slim "Your values" bar with the numbers you
+set yourself that the tab actually uses: your F4 exchange rate (gold for 238 Royal Crystals),
+the real-money price of gold (G2G, shown as its icon), your Lv. 8 gem price (every other gem
+level follows it, 3 gems per level), the Life Energy Potion value, and whether pheons are
+included in key values. A tab that uses none of them (Prices) shows no bar. Press Edit to change
+them and Done to close; each value is saved in your browser per region (the pheons setting for
+both regions) and applies on every tab at once.
+
 Live site: https://shotgun175.github.io/LostArk-Cash-Shop-Value/
 
 ## How it works
@@ -88,8 +96,8 @@ Run both suites when a change touches the wire format (`src/normalize.ts` types,
   (originally anchored to TheJungleWalrus's compiled cash-shop app, the reference this tool set
   out to match; hell-key values are now this project's own baseline). Key values count every
   chest a floor can offer in the best-of-3 pick, even one worth no gold, and untradable ability
-  stones count as 0 unless the Hell Key tab's opt-in Include pheons setting (off by default)
-  values them at 9 pheons each. The hell-key reward tables
+  stones count as 0 unless the opt-in Pheons setting in "Your values" (off by default) values
+  them at 9 pheons each. The hell-key reward tables
   are the one generated part: `scripts/gen-hell-rewards.mjs` regenerates them from a community
   datamine whose source file lives in the gitignored `docs/`, so regeneration is a
   maintainer-machine operation and the generated tables are committed.

@@ -1,14 +1,8 @@
 // Baked numeric constants from TJW's `ie` object (source B bakedConstants). These seed the
 // price map before the live feed / EV overrides are applied.
 export const BAKED: Record<string, number> = {
-  // T4 gems (Lv.1/2/3). lv-1-gem (171) prices the "Rest Bonus Recovery Brew" run-reward
-  // (12x Lv.1 gem) in the [Monthly] 1200 Crystal Pack; matches TJW's baked 171.
-  // lv-3-gem was 1,543 (the 3:1 fuse chain from Lv. 7 = 125,000); re-anchored to 1,850 on
-  // 2026-08-19 (user sign-off, adopting TJW's same-day direct base price — gold prices are up).
-  // Lv. 1/2 stay on the fuse chain.
-  "lv-1-gem": 171,
-  "lv-2-gem": 514,
-  "lv-3-gem": 1850,
+  // T4 gems (lv-1/2/3/8-gem) are not baked: buildPriceMap prices every level from the region's
+  // Lv. 8 gem price (see gems.ts, 2026-10-25).
   "elysian-attempt-plus-1": 3000,
   gold: 1,
   // Astrogem anchors, re-based 2026-08-14 (user sign-off; DECISIONS.md): the NPC-price anchor
@@ -25,11 +19,10 @@ export const BAKED: Record<string, number> = {
   // (probed 2026-09-16), so they carry TJW's same-day AH-screenshot prices until it does.
   "enhanced-metallurgy-hellfire-19-20": 14000,
   "enhanced-tailoring-hellfire-19-20": 12000,
-  // Jump-Up Boost Powerpass Premium rewards (2026-09-16, TJW's seeds, user sign-off). lv-8-gem
-  // is 3x the 125,000 Lv. 7 seed (the same 3:1 fuse chain the Lv. 1/2 gems use). The Fixed Epic
+  // Jump-Up Boost Powerpass Premium rewards (2026-09-16, TJW's seeds, user sign-off). The Lv. 8
+  // gem is priced by gems.ts (2026-10-25), not baked. The Fixed Epic
   // Astrogem Selection Chest grants one epic astrogem with PRE-SET options, a different item
   // from the regular picked epic (epic-astrogem-selected stays 43,000): flat 75,000.
-  "lv-8-gem": 375000,
   "fixed-epic-astrogem-selection": 75000,
   // Autumn Bonus Room Ark Grid bonus (2026-10-21): TJW's seeds (his app, "user-specified"
   // 2026-10-21), adopted 2026-10-25. The astrogem chest lets the buyer choose an Attack or

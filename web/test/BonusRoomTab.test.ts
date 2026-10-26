@@ -16,8 +16,8 @@ import fixture from "./fixtures/tjw-nae-prices.json";
 // countdown are deterministic. Values match the bonusRoom.test.ts pins (same fixture, F4 30,000).
 const INSIDE = Date.parse("2026-10-25T12:00:00Z");
 const AFTER = Date.parse("2026-11-19T00:00:00Z");
-const KIT_NOTE = "Counts as 0 gold while pheons are excluded (setting above).";
-const KIT_UNPRICED_NOTE = "Counts as 0 gold until an F4 exchange rate prices pheons (above).";
+const KIT_NOTE = "Counts as 0 gold while pheons are excluded (Your values).";
+const KIT_UNPRICED_NOTE = "Counts as 0 gold until an F4 exchange rate prices pheons (Your values).";
 const PRODUCTS = [
   "Autumn Astrogem Pack I",
   "Autumn Astrogem Pack II",
@@ -100,13 +100,13 @@ describe("BonusRoom while the room runs", () => {
     expect(body).toContain("[Bonus] Autumn Ark Grid Support Pack");
     expect(body).toContain("/icons/ancient-bracelet-chest.png"); // the data's bonus icon, kept as is
 
-    // Engine values (pinned in bonusRoom.test.ts): Astrogem Pack 896,775 each, the Ark Grid
-    // group 3 x 896,775 + the 600,000 bonus, +117.5% vs exchange on 12,000 RC.
-    expect(card(body, "Autumn Astrogem Pack I")).toContain("896,775");
-    expect(body).toContain("3,290,325");
-    expect(body).toContain("+118%");
+    // Engine values (pinned in bonusRoom.test.ts): Astrogem Pack 880,205 each, the Ark Grid
+    // group 3 x 880,205 + the 600,000 bonus, +114.2% vs exchange on 12,000 RC.
+    expect(card(body, "Autumn Astrogem Pack I")).toContain("880,205");
+    expect(body).toContain("3,240,615");
+    expect(body).toContain("+114%");
     expect(body).toContain("(1,512,605 gold at your F4 rate)"); // 12,000 RC x 30,000 / 238
-    expect(body).toContain("239,262"); // Growth & Life Skills: 6 cube chests + Abidos + bonus, potion unpriced
+    expect(body).toContain("234,426"); // Growth & Life Skills: 6 cube chests + Abidos + bonus, potion unpriced
 
     // The Packs-style card pieces: collapsed contents and the shared material table inside it.
     expect(body).toContain("Contents · 6 materials");
@@ -169,7 +169,7 @@ describe("BonusRoom while the room runs", () => {
       "Not counted (no price yet): Joyful Legendary - Epic Card Pack X10, [Bonus] Joyful Legendary Card Pack X 3.</p>",
     );
     expect(body).toContain(
-      "Not counted (no price yet): Basic Life Energy Potion X20. Enter a Life Energy Potion value above to count it.</p>",
+      "Not counted (no price yet): Basic Life Energy Potion X20. Enter a Life Energy Potion value in Your values to count it.</p>",
     );
     expect(body).not.toContain("Total includes priced contents only.");
   });
@@ -178,7 +178,7 @@ describe("BonusRoom while the room runs", () => {
     overrides.set("nae", "basic-life-energy-potion", 50);
     const { body } = render(BonusRoom);
     expect((body.match(/Not counted \(no price yet\)/g) ?? []).length).toBe(1);
-    expect(body).not.toContain("Enter a Life Energy Potion value above");
+    expect(body).not.toContain("Enter a Life Energy Potion value");
   });
 
   it("explains the soaring kit's 0 gold while pheons are excluded, and drops the note when included", () => {
@@ -226,7 +226,7 @@ describe("BonusRoom while the room runs", () => {
       const { body } = render(BonusRoom);
       const pack = card(body, "Autumn Astrogem Pack I");
       expect(pack).toContain("Some contents have no price");
-      expect(pack).toContain("391,385");
+      expect(pack).toContain("374,815");
       // The footer lists a partly priced product as "(part)".
       expect(body).toContain(
         "Not counted (no price yet): Autumn Astrogem Pack I (part), Autumn Astrogem Pack II (part), Autumn Astrogem Pack III (part).</p>",
@@ -237,7 +237,7 @@ describe("BonusRoom while the room runs", () => {
     }
   });
 
-  it("renders the value controls without writing any price override", () => {
+  it("renders without writing any price override, and leaves the value inputs to Your values", () => {
     const writes: string[] = [];
     const prior = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
     Object.defineProperty(globalThis, "localStorage", {
@@ -255,15 +255,12 @@ describe("BonusRoom while the room runs", () => {
       expect(overrides.has("nae", "lv-3-gem")).toBe(false);
       expect(writes).toEqual([]);
 
-      expect(body).toContain('aria-label="F4 exchange gold"'); // the shared exchange row
-      expect(body).toContain("Your Lv. 7 gem price");
-      // Empty box, the default Lv. 3 seed (1,850) x 81 as the placeholder.
-      expect(body).toMatch(/id="br-gem"[^>]*placeholder="149850"[^>]*value=""/);
-      expect(body).toContain("Default Lv. 3 gem value:");
-      expect(body).toContain("Life Energy Potion value");
-      expect(body).toMatch(/id="br-potion"[^>]*value=""/);
-      expect(body).toContain("Include pheons");
-      expect(body).toContain("On this tab the same setting values the Stone of Soaring Engraving Setting Kit");
+      // The exchange row, the gem and potion boxes and the pheons switch moved to the shared
+      // "Your values" bar (ValuesBarTab.test.ts); the tab has no inputs of its own.
+      expect(body).not.toContain("<input");
+      expect(body).not.toContain("Your Lv. 7 gem price");
+      expect(body).not.toContain('id="br-potion"');
+      expect(body).not.toContain("Include pheons");
     } finally {
       if (prior) Object.defineProperty(globalThis, "localStorage", prior);
       else delete (globalThis as { localStorage?: unknown }).localStorage;
@@ -276,26 +273,17 @@ describe("BonusRoom while the room runs", () => {
     // (DECISIONS 2026-10-25), so the component must not have a mount-time hook at all.
     const src = readFileSync(new URL("../src/lib/components/packs/BonusRoom.svelte", import.meta.url), "utf-8");
     expect(src).not.toMatch(/\$effect|onMount|beforeUpdate|afterUpdate|bind:value/);
-    expect(src.match(/overrides\.(set|clear)\(/g)).toHaveLength(2); // both inside onPriceInput
+    expect(src).not.toMatch(/overrides\.(set|clear)\(/); // the value boxes live in ValuesBar.svelte
   });
 
-  it("shows this region's own gem and potion overrides", () => {
-    overrides.set("euc", "lv-3-gem", 150000 / 81);
+  it("values the potion product at this region's own potion override", () => {
+    overrides.set("euc", "basic-life-energy-potion", 999);
     overrides.set("nae", "basic-life-energy-potion", 50);
-
-    let body = render(BonusRoom).body; // NA: the potion only
-    expect(body).toMatch(/id="br-gem"[^>]*value=""/);
-    expect(body).toMatch(/id="br-potion"[^>]*value="50"/);
+    const body = render(BonusRoom).body;
     expect(card(body, "Basic Life Energy Potion X20")).toContain("1,000"); // 20 x 50
-    expect(body).toContain("240,262"); // the Growth group gains the 1,000
-
-    app.region = "euc";
-    body = render(BonusRoom).body; // EU: the gem only (no EU payload, so no groups render)
-    expect(body).toMatch(/id="br-gem"[^>]*value="150000"/);
-    expect(body).toContain("Lv. 7 / 81 = ");
-    expect(body).toContain("1,852");
-    expect(body).toMatch(/id="br-potion"[^>]*value=""/);
-    expect(body).toContain("No prices yet. The feed may be refreshing.");
+    expect(body).toContain("235,426"); // the Growth group gains the 1,000
+    app.region = "euc"; // no EU payload in the fixture, so no groups render
+    expect(render(BonusRoom).body).toContain("No prices yet. The feed may be refreshing.");
   });
 });
 
@@ -309,59 +297,27 @@ describe("BonusRoom potion default from logging", () => {
     const potion = card(body, "Basic Life Energy Potion X20");
     expect(potion).toContain("45,300"); // 20 x 2,265
     expect(potion).not.toContain("no price");
-    expect(body).toContain("284,562"); // Growth & Life Skills: 239,262 + 45,300
+    expect(body).toContain("279,726"); // Growth & Life Skills: 234,426 + 45,300
     expect((body.match(/no price</g) ?? []).length).toBe(2); // Joyful x10 and its bonus only
     expect((body.match(/Not counted \(no price yet\)/g) ?? []).length).toBe(1);
     expect(body).not.toContain("Basic Life Energy Potion X20.");
-    expect(body).not.toContain("Enter a Life Energy Potion value above");
+    expect(body).not.toContain("Enter a Life Energy Potion value");
   });
 
-  // The hint shows the default (no tool bonuses) and the best-in-slot all-in-one tool's value per
-  // potion; at NA prices that tool is worth 3,000 x 1.141325... = 3,423.98 gold. The hover text
-  // carries the gold per LE and the tool's five lines.
-  const HINT = /id="br-potion-hint" title="([^"]*)">([\s\S]*?)<\/p>/;
-  const TIP =
-    "Logging at live timber prices: 3,000 LE × 0.755 gold per LE with no tool bonuses, or × 1.141 with a best-in-slot all-in-one tool (Rare, Treasure Attempt, Kick Reward, All Materials Drop and Kick Attempt at max rolls).";
-  function expectHint(body: string): void {
-    const [, title, text] = body.match(HINT) ?? [];
-    expect(title).toBe(TIP);
-    expect(text).toMatch(/No tool bonuses \(default\): <b class="num accent[^"]*">2,265<\/b><img[^>]*alt="gold"[^>]*\/?> per potion<br\s*\/?>/);
-    expect(text).toMatch(/Best-in-slot tool: <b class="num[^"]*">3,424<\/b><img[^>]*alt="gold"[^>]*\/?> per potion/);
-  }
-
-  it("shows the default as the placeholder and both logging values in the hint", () => {
-    const { body } = render(BonusRoom);
-    expect(body).toMatch(/id="br-potion"[^>]*placeholder="2265"[^>]*aria-describedby="br-potion-hint br-potion-note"[^>]*value=""/);
-    expectHint(body);
-    expect(body).toContain("The default is what 3,000 Life Energy earns logging at live timber prices (Lv. 70 Logging, Relic charm, no tool bonuses). Clear the box to go back to it.");
-    expect(body).not.toContain("Leave empty for no price");
-  });
-
-  it("uses a typed value over the default and keeps both logging values in the hint", () => {
+  it("uses a typed value over the default", () => {
     overrides.set("nae", "basic-life-energy-potion", 50);
     const { body } = render(BonusRoom);
-    expect(body).toMatch(/id="br-potion"[^>]*value="50"/);
     expect(card(body, "Basic Life Energy Potion X20")).toContain("1,000"); // 20 x 50
-    expect(body).toContain("240,262");
-    expectHint(body);
-  });
-
-  it("has no hint and keeps the old note without timber prices", () => {
-    loadFixture();
-    const { body } = render(BonusRoom);
-    expect(body).not.toContain("br-potion-hint");
-    expect(body).toMatch(/id="br-potion"[^>]*placeholder="Your value"/);
-    expect(body).toContain("Gold per potion, saved for this region. Leave empty for no price; 0 counts as zero.");
+    expect(body).toContain("235,426");
   });
 });
 
 describe("BonusRoom states", () => {
-  it("shows the loading state, with the controls, while there is no payload", () => {
+  it("shows the loading state while there is no payload", () => {
     app.status = "loading";
     app.payload = null;
     const { body } = render(BonusRoom);
     expect(body).toContain("Loading prices…");
-    expect(body).toContain("Your Lv. 7 gem price");
     expect(body).not.toContain("Autumn Ark Grid");
   });
 
@@ -378,7 +334,6 @@ describe("BonusRoom states", () => {
     expect(body).toContain("The Autumn Bonus Room ended with the scheduled maintenance on 11/18/2026.");
     expect(body).toMatch(/<a class="back[^"]*" href="\/">Back to Packs<\/a>/);
     expect(body).not.toContain("Autumn Ark Grid");
-    expect(body).not.toContain("Your Lv. 7 gem price");
     expect(body).not.toContain("Bonus for buying");
   });
 });

@@ -33,3 +33,5 @@ in-game item tooltip (Autumn Bonus Room product), not sourced from TJW.
 abidos-timber.png use the item art embedded in the user's copy of Lulu's
 Logging Guide spreadsheet, composited onto rarity backgrounds rebuilt from
 our existing icons; not sourced from TJW.
+
+2026-10-25: f4-shop.png was cropped from the user's in-game F4 shop button capture, not sourced from TJW.

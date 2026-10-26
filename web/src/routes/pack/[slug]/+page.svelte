@@ -157,7 +157,7 @@
           </div>
           <div class="srow">
             <span class="slabel">gold to buy {pack.blueCrystalCost.toLocaleString("en-US")} <img class="ic" src="{base}/icons/blue-crystal.png" alt="BC" /> <span class="rate">(F4 exchange)</span></span>
-            <span class="sval">{#if f4.perBc > 0}<b class="num">{formatGold(pack.blueCrystalCost * f4.perBc)}</b><img class="ic" src="{base}/icons/gold.png" alt="g" />{:else}<span class="num muted" title="Set the exchange input on the Packs tab">—</span>{/if}</span>
+            <span class="sval">{#if f4.perBc > 0}<b class="num">{formatGold(pack.blueCrystalCost * f4.perBc)}</b><img class="ic" src="{base}/icons/gold.png" alt="g" />{:else}<span class="num muted" title="Set the F4 exchange in Your values">—</span>{/if}</span>
           </div>
           <div class="srow">
             <span class="slabel">per {cashName} <span class="rate">({bcCashRate})</span></span>
