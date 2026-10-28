@@ -123,11 +123,14 @@
   const isSheet = (): boolean => typeof window !== "undefined" && window.matchMedia("(max-width: 600px)").matches;
 
   // Highlight the whole value for quick re-entry, and on narrow screens nudge the field above the
-  // on-screen keyboard once it settles (the bottom sheet holds its own fields, so not there).
+  // on-screen keyboard once it settles (the bottom sheet holds its own fields, so not there; nor
+  // while the bar is pinned to the top of the window, where the field already shows and a scroll
+  // would only jump the page).
   function focusSelect(e: FocusEvent & { currentTarget: HTMLInputElement }): void {
     const el = e.currentTarget;
     el.select();
-    if (typeof window !== "undefined" && window.innerWidth < 700 && !isSheet()) {
+    const pinned = (el.closest<HTMLElement>(".vb")?.getBoundingClientRect().top ?? 1) < 1;
+    if (typeof window !== "undefined" && window.innerWidth < 700 && !isSheet() && !pinned) {
       setTimeout(() => el.scrollIntoView({ block: "center", behavior: "smooth" }), 250);
     }
   }
@@ -209,20 +212,20 @@
     {#if has("exchange")}
       <button type="button" class="chip" id="vb-chip-exchange" data-vb-chip aria-haspopup="dialog" aria-expanded={openKey === "exchange"} aria-controls={openKey === "exchange" ? "vb-pop" : undefined} title="F4 currency exchange" onclick={() => valuesBar.toggle("exchange", path)}>
         <ItemIcon slug="f4-shop" size={22} />
-        <b class="num">{f4Text}</b>{#if f4Set}{@render gold()}<span class="mut">=</span><b class="num">{F4_DIVISOR}</b>{@render rc()}{/if}
+        <b class="num">{f4Text}</b>{#if f4Set}{@render gold()}<span class="wide"><span class="mut">=</span><b class="num">{F4_DIVISOR}</b>{@render rc()}</span>{/if}
       </button>
     {/if}
     {#if has("g2g")}
       <button type="button" class="chip" id="vb-chip-g2g" data-vb-chip aria-haspopup="dialog" aria-expanded={openKey === "g2g"} aria-controls={openKey === "g2g" ? "vb-pop" : undefined} onclick={() => valuesBar.toggle("g2g", path)}>
         <span class="vh">Real-money gold price</span>
         {@render g2gIcon("flat")}
-        {#if g2gOut}<b class="num" class:stale={g2g.stale}>{g2gOut}</b><span class="mut">/ 100k</span>{@render gold()}{:else}<span class="mut">no rate</span>{/if}
+        {#if g2gOut}<b class="num" class:stale={g2g.stale}>{g2gOut}</b><span class="wide"><span class="mut">/ 100k</span>{@render gold()}</span>{:else}<span class="mut">no rate</span>{/if}
       </button>
     {/if}
     {#if has("gem")}
       <button type="button" class="chip" id="vb-chip-gem" data-vb-chip aria-haspopup="dialog" aria-expanded={openKey === "gem"} aria-controls={openKey === "gem" ? "vb-pop" : undefined} onclick={() => valuesBar.toggle("gem", path)}>
         <ItemIcon slug="lv-8-gem" size={22} />
-        <span>Lv. 8</span><b class="num">{formatGold(gem.lv8)}</b>{@render gold()}
+        <span class="wide">Lv. 8</span><b class="num">{formatGold(gem.lv8)}</b>{@render gold()}
       </button>
     {/if}
     {#if has("potion")}
@@ -234,7 +237,7 @@
     {#if has("pheons")}
       <button type="button" class="chip" class:on={pheonsOn} class:off={!pheonsOn} id="vb-chip-pheons" data-vb-chip aria-haspopup="dialog" aria-expanded={openKey === "pheons"} aria-controls={openKey === "pheons" ? "vb-pop" : undefined} onclick={() => valuesBar.toggle("pheons", path)}>
         <ItemIcon slug="pheon" size={22} />
-        <span>{pheonsOn ? "Pheons included" : "Pheons excluded"}</span>
+        <span class="state"><span class="wide">Pheons</span> {pheonsOn ? "included" : "excluded"}</span>
       </button>
     {/if}
 
@@ -344,13 +347,21 @@
 {/if}
 
 <style>
+  /* The bar stays pinned to the top of the window as the page scrolls, over the page's cards (a
+     phone puts it at the bottom instead, below). Never give it a transform, filter or contain: any
+     of them would trap the phone's fixed bottom sheet inside the bar. */
   .vb {
     --panel: #12141c; --chip: #161922; --line: #242838; --border: #2c3142; --field: #0c0e15;
     --text: #e6edf3; --soft: #b9c0d0; --muted: #8b90a6; --accent: #ffd166; --warn: #f0b341;
-    position: relative;
+    position: sticky; top: 0; z-index: 30;
     margin: 14px 0 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .55);
     color: var(--text); font-family: "Sora", system-ui, sans-serif; font-size: 13px; text-align: left;
   }
+  /* A page or footer control that gets keyboard focus scrolls clear of the pinned bar (two rows of
+     chips at most). This sits on those controls, not on the window: scroll-padding there makes the
+     browser treat the pinned chips as hidden, so tabbing into the bar scrolled the page away. */
+  :global(html:has(.vb) :is(main, footer) :is(a, button, input, select, textarea, summary, [tabindex])) { scroll-margin-top: 96px; }
   .num { font-family: "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
   .accent { color: var(--accent); }
   .stale { color: var(--warn); }
@@ -380,6 +391,8 @@
   .chip.off :global(.icon) { filter: grayscale(.85) brightness(.75); }
   .chip.on { color: var(--accent); border-color: rgba(255, 209, 102, .55); background: rgba(255, 209, 102, .07); }
   .chip.on:hover, .chip.on[aria-expanded="true"] { background: rgba(255, 209, 102, .13); }
+  /* Parts of a chip only wider screens show; a phone cell keeps the icon and the short value. */
+  .wide { display: contents; }
   /* Read by screen readers only: the real-money chip shows just its icon. */
   .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .btn { margin-left: auto; background: #1d2130; color: var(--text); border: 1px solid #343a50; border-radius: 8px;
@@ -387,9 +400,12 @@
   .btn.primary { background: var(--accent); color: #14161d; border-color: var(--accent); }
   .btn:hover { filter: brightness(1.1); }
 
-  /* The popover: just below its chip (--x / --y, set when it opens), above the page, no backdrop. */
+  /* The popover: just below its chip (--x / --y, set when it opens), above the page, no backdrop.
+     It travels with the pinned bar, so on a short window (a phone on its side) it scrolls inside
+     itself rather than run off the bottom of the screen out of reach. */
   .pop { position: absolute; z-index: 40; left: var(--x, 12px); top: var(--y, 44px); box-sizing: border-box;
     width: min(360px, calc(100vw - 16px)); padding: 14px 16px 12px;
+    max-height: calc(100dvh - var(--y, 44px) - 16px); overflow-y: auto;
     background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
     box-shadow: 0 14px 36px rgba(0, 0, 0, .55); }
   .backdrop, .grab { display: none; }
@@ -416,13 +432,43 @@
   .pfoot { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
   .foot { margin: 0; color: var(--muted); font-size: 11.5px; line-height: 1.45; }
 
-  /* Phones: the same content as a bottom sheet over a light backdrop that closes it when tapped. */
+  /* Phones: the bar is a toolbar fixed to the bottom of the screen, in thumb reach, with one
+     equal-width cell per value (the icon over a short value) so every value shows at once, and the
+     page gets room below its footer to scroll clear of it. A cell opens the same content as a
+     bottom sheet over a light backdrop that closes it when tapped. */
   @media (max-width: 600px) {
+    .vb { position: fixed; left: 0; right: 0; bottom: 0; top: auto; margin: 0; border-width: 1px 0 0; border-radius: 0;
+      box-shadow: 0 -8px 20px rgba(0, 0, 0, .45); }
+    .bar { flex-wrap: nowrap; align-items: stretch; gap: 6px; padding: 4px 8px calc(4px + env(safe-area-inset-bottom)); }
+    .title, .wide, .chip::after { display: none; }
+    /* Every cell has the same two rows, so the values line up across cells whatever their font: the
+       icon across the top, then the value and its coin. No column gap (the coin carries its own),
+       so a value with no coin stays centered. */
+    .chip { flex: 1 1 0; min-width: 0; display: grid; grid-template-columns: auto auto; grid-template-rows: 18px 16px;
+      justify-content: center; align-content: center; align-items: center; gap: 2px 0; padding: 5px 1px 4px;
+      border-radius: 10px; font-size: 12px; line-height: 16px; }
+    .chip > :global(.icon-box), .chip > .g2g { grid-column: 1 / -1; justify-self: center; }
+    /* ItemIcon sizes its box with an inline style. */
+    .chip > :global(.icon-box) { width: 18px !important; height: 18px !important; }
+    .chip > .ic { margin: 0 0 0 2px; }
+    .state { text-transform: capitalize; }
+    :global(html:has(.vb) :is(main, footer) :is(a, button, input, select, textarea, summary, [tabindex])) { scroll-margin: 0 0 72px; }
+    :global(body:has(.vb)) { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
     .backdrop { display: block; position: fixed; inset: 0; z-index: 40; background: rgba(5, 6, 10, .45); }
     .pop { position: fixed; z-index: 41; left: 0; right: 0; top: auto; bottom: 0; width: auto;
       max-height: 80vh; overflow-y: auto; overscroll-behavior: contain;
       padding: 8px 16px calc(14px + env(safe-area-inset-bottom));
       border-width: 1px 0 0; border-radius: 16px 16px 0 0; box-shadow: 0 -10px 30px rgba(0, 0, 0, .5); }
     .grab { display: block; width: 40px; height: 4px; border-radius: 2px; background: #3a4058; margin: 0 auto 12px; }
+  }
+  /* Under 390 px the coins drop so a value fits its cell (five cells is the budget: "348,000" and
+     its coin fill a 390 px phone's cell). */
+  @media (max-width: 389px) {
+    .chip > .ic { display: none; }
+  }
+  /* Under 350 px the bar's spacing tightens and the values drop a size, so "Excluded" still fits. */
+  @media (max-width: 349px) {
+    .bar { padding-left: 4px; padding-right: 4px; gap: 4px; }
+    .chip { font-size: 11px; }
   }
 </style>
