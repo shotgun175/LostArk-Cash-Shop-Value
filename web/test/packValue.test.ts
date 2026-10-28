@@ -597,6 +597,37 @@ describe("2026-08-19 packs (BC pricing + self-goldens at the pinned fixture)", (
 });
 
 // ---------------------------------------------------------------------------
+// 2026-10-28: three of the [Discount] tiles above are back for a week as -2 entries, with the
+// originals' contents (so their totals at the pinned fixture) and the Destiny pouches now at
+// 350 BC instead of 400.
+// ---------------------------------------------------------------------------
+describe("2026-10-28 [Discount] re-runs (self-goldens at the pinned fixture)", () => {
+  const map = buildPriceMap(NAE);
+
+  // [slug, total, BC cost, goldPerBc]
+  const reruns: [string, number, number, number][] = [
+    // 5 pouches x (1000 x 29) = 145,000; / 350 BC = 414.3
+    ["discount-crystallized-destiny-destruction-stone-pouch-2", 145000, 350, 414.3],
+    // 20 chests x (20 x 171) = 68,400; / 150 BC = 456
+    ["discount-superior-abidos-fusion-2", 68400, 150, 456],
+    // selection: glaciers 20 x 319 = 6,380 > lavas 10 x 330 = 3,300; 20 x 6,380 = 127,600; / 150 BC
+    ["discount-t4-breath-selection-chest-2", 127600, 150, 850.7],
+  ];
+  for (const [slug, total, bc, gpb] of reruns) {
+    it(`${slug}: total ${total} at ${bc} BC, ${gpb} g/BC, 3 per roster`, () => {
+      const p = pack(slug);
+      expect(p.blueCrystalCost).toBe(bc);
+      expect(p.retired).toBe(false);
+      const r = packValue(p, map);
+      expect(r.total).toBe(total);
+      expect(r.goldPerBc!).toBeCloseTo(gpb, 1);
+      expect(r.goldPerRc).toBeNull();
+      expect(r.maxPurchases).toBe(3);
+    });
+  }
+});
+
+// ---------------------------------------------------------------------------
 // 2026-09-16 rotation: the Dimensionalist Welcome pair + the second Paradise Special Pack II.
 // Self-goldens hand-computed on the pinned fixture (BAKED astrogems/gems, EV keys and cubes).
 // ---------------------------------------------------------------------------
