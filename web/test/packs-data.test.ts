@@ -7,10 +7,10 @@ import { BAKED, TRADE_UP, RELIC_ENGRAVING_SLUGS } from "../src/lib/packs/data/co
 
 describe("PACKS", () => {
   // Guards against a retired pack being dropped by accident; update the count on each rotation.
-  it("has all 40 packs", () => {
-    expect(PACKS.length).toBe(40);
+  it("has all 43 packs", () => {
+    expect(PACKS.length).toBe(43);
   });
-  it("lists exactly the 7 non-retired packs (post-2026-10-21 rotation)", () => {
+  it("lists exactly the 10 non-retired packs (post-2026-10-28 discount re-runs)", () => {
     const active = PACKS.filter((p) => !p.retired).map((p) => p.slug).sort();
     expect(active).toEqual(
       [
@@ -22,6 +22,10 @@ describe("PACKS", () => {
         "vambraces-growth-package",
         "weekly-autumn-t4-crystallized-stone",
         "weekly-autumn-t4-shards-support",
+        // 2026-10-28: three [Discount] tiles back for a week, as -2 entries
+        "discount-crystallized-destiny-destruction-stone-pouch-2",
+        "discount-superior-abidos-fusion-2",
+        "discount-t4-breath-selection-chest-2",
       ].sort(),
     );
   });
@@ -38,12 +42,15 @@ describe("PACKS", () => {
       const bc = p.blueCrystalCost != null;
       expect(rc !== bc, `${p.slug} must set exactly one of royalCrystalCost/blueCrystalCost`).toBe(true);
     }
-    // The four 2026-08-19 [Discount] tiles are the BC-priced ones.
+    // The four 2026-08-19 [Discount] tiles and the three 2026-10-28 re-runs are the BC-priced ones.
     const bcSlugs = PACKS.filter((p) => p.blueCrystalCost != null).map((p) => p.slug).sort();
     expect(bcSlugs).toEqual([
       "discount-crystallized-destiny-destruction-stone-pouch",
+      "discount-crystallized-destiny-destruction-stone-pouch-2",
       "discount-superior-abidos-fusion",
+      "discount-superior-abidos-fusion-2",
       "discount-t4-breath-selection-chest",
+      "discount-t4-breath-selection-chest-2",
       "discount-t4-gem-chest-lv3-x120",
     ]);
   });

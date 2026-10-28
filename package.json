@@ -1,6 +1,6 @@
 {
   "name": "lostark-cash-shop-value",
-  "version": "1.14.2",
+  "version": "1.15.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,9 +14,9 @@
     "postinstall": "wrangler types"
   },
   "devDependencies": {
-    "@cloudflare/vitest-plugin": "^1.4.0",
+    "@cloudflare/vitest-plugin": "^1.4.8",
     "typescript": "^5.6.3",
     "vitest": "~5.0.3",
-    "wrangler": "^4.145.0"
+    "wrangler": "^4.153.0"
   }
 }

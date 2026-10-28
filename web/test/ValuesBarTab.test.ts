@@ -81,6 +81,25 @@ function field(body: string, heading: string): string {
   expect(piece, `field "${heading}"`).toBeDefined();
   return '<div class="field' + piece!.split('<div class="pfoot')[0];
 }
+/** A chip's visible text on a phone, where the `wide` spans (and everything inside them) are hidden. */
+function phoneText(html: string): string {
+  let out = html;
+  for (let at = out.indexOf('<span class="wide'); at >= 0; at = out.indexOf('<span class="wide')) {
+    const tags = /<span\b|<\/span>/g;
+    tags.lastIndex = at;
+    let depth = 0;
+    let end = out.length;
+    for (let m = tags.exec(out); m; m = tags.exec(out)) {
+      depth += m[0] === "</span>" ? -1 : 1;
+      if (depth === 0) {
+        end = tags.lastIndex;
+        break;
+      }
+    }
+    out = out.slice(0, at) + out.slice(end);
+  }
+  return text(out);
+}
 
 beforeEach(() => {
   hellSettings.setIncludePheons(false);
@@ -184,6 +203,19 @@ describe("ValuesBar per route (collapsed)", () => {
 
   it("dims 'Pheons excluded' while it is off", () => {
     expect(chip(bar("/"), "/icons/pheon.png")).toMatch(/^[^>]*\boff\b/);
+  });
+
+  it("on a phone each chip keeps its icon and a short value; the extras are in wide-only spans", () => {
+    loadFixture(TIMBER, { usdPer1kGold: 0.0205, usdFetchedAt: new Date(INSIDE - 10 * 60_000).toISOString() });
+    const body = bar("/bonus-room");
+    expect(chips(body).map(phoneText)).toEqual(["35,000", "$2.05", "348,000", "2,265", "excluded"]);
+    // Wider screens show the full chips, as before.
+    expect(chips(body).map(text)).toEqual(["35,000 = 238", "$2.05 / 100k", "Lv. 8 348,000", "2,265", "Pheons excluded"]);
+    // A real space follows the wide-only "Pheons" (text() would hide a missing one); phones
+    // capitalize the state word.
+    expect(chip(body, "/icons/pheon.png")).toMatch(/>Pheons<\/span> excluded</);
+    hellSettings.setIncludePheons(true);
+    expect(phoneText(chip(bar("/bonus-room"), "/icons/pheon.png"))).toBe("included");
   });
 
   it("shows the region's own Lv. 8 price, the EU baseline in EU, and the baseline again once cleared", () => {

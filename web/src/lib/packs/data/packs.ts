@@ -531,6 +531,18 @@ export const PACKS: Pack[] = [
     contents: [{ chest: "Crystallized Destiny Destruction Stone Pouch", qty: 5 }],
   },
   {
+    // 2026-10-28 re-run of the tile above (same name; the retired entry keeps its frozen
+    // history): the same 5 pouches, now 350 BC instead of 400, 3 per roster, on sale until
+    // 11/04/2026. From the user's purchase-window capture (pouch confirmed by pixel match).
+    name: "[Discount] Crystallized Destiny Destruction Stone Pouch",
+    slug: "discount-crystallized-destiny-destruction-stone-pouch-2",
+    blueCrystalCost: 350,
+    maxPurchases: 3,
+    limited: true,
+    retired: false,
+    contents: [{ chest: "Crystallized Destiny Destruction Stone Pouch", qty: 5 }],
+  },
+  {
     // Priced in Blue Crystals. Chests are bound to roster on pickup.
     name: "[Discount] Superior Abidos Fusion Material Chest",
     slug: "discount-superior-abidos-fusion",
@@ -540,6 +552,18 @@ export const PACKS: Pack[] = [
     limited: true,
     retired: true,
     retiredOn: "2026-08-26",
+    contents: [{ chest: "Superior Abidos Fusion Material Chest", qty: 20 }],
+  },
+  {
+    // 2026-10-28 re-run of the tile above (the retired entry keeps its frozen history): the same
+    // 20 chests at 150 BC, 3 per roster, on sale until 11/04/2026. From the user's
+    // purchase-window capture (Superior, not the Epic chest, by pixel match).
+    name: "[Discount] Superior Abidos Fusion Material Chest",
+    slug: "discount-superior-abidos-fusion-2",
+    blueCrystalCost: 150,
+    maxPurchases: 3,
+    limited: true,
+    retired: false,
     contents: [{ chest: "Superior Abidos Fusion Material Chest", qty: 20 }],
   },
   {
@@ -553,6 +577,18 @@ export const PACKS: Pack[] = [
     limited: true,
     retired: true,
     retiredOn: "2026-08-26",
+    contents: [{ chest: "T4 Breath Selection Chest", qty: 20 }],
+  },
+  {
+    // 2026-10-28 re-run of the tile above (the retired entry keeps its frozen history), named as
+    // the shop tile reads it: the same 20 chests at 150 BC, 3 per roster, on sale until
+    // 11/04/2026. From the user's purchase-window capture.
+    name: "[Discount] T4 Breath Selection Chest X20",
+    slug: "discount-t4-breath-selection-chest-2",
+    blueCrystalCost: 150,
+    maxPurchases: 3,
+    limited: true,
+    retired: false,
     contents: [{ chest: "T4 Breath Selection Chest", qty: 20 }],
   },
   {
