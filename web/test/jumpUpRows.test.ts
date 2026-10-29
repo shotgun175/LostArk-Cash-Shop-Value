@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { jumpUpRows } from "../src/lib/packs/jumpUpRows";
+import { jumpUpRows, JUMP_UP_EDITABLE_SLUGS } from "../src/lib/packs/jumpUpRows";
 import { JUMP_UP_LEVELS, JUMP_UP_RC } from "../src/lib/packs/data/jumpUp";
 import { buildPriceMap } from "../src/lib/packs/priceMap";
 import { RESOLVER } from "../src/lib/packs/data/resolver";
@@ -70,5 +70,44 @@ describe("jumpUpRows", () => {
     const r = jumpUpRows(buildPriceMap({ ...NAE, "lv-8-gem": 300000 }));
     expect(r.rows[1].gold).toBe(600000);
     expect(r.rows[4].gold).toBe(600000);
+  });
+
+  it("flags which lines are priced and marks the gold bars as currency", () => {
+    const lv1 = jumpUpRows(buildPriceMap(NAE)).rows[0].lines;
+    expect(lv1.map((l) => [l.slug, l.priced, !!l.isCurrency])).toEqual([
+      ["gold", true, true],
+      ["crystalline-aura-plus-14d", false, false], // no exchange input: the BC-costed aura is unpriced
+      ["azenas-blessing-28d", false, false],
+      ["ancient-bracelet-chest", false, false],
+      ["ancient-accessory-set-chest", false, false],
+    ]);
+  });
+
+  it("a user price on a no-market item counts, and an explicit 0 is priced at 0", () => {
+    const r = jumpUpRows(buildPriceMap({ ...NAE, "azenas-blessing-28d": 10000, "ancient-bracelet-chest": 0 }));
+    const lv1 = r.rows[0].lines;
+    expect(lv1[2]).toMatchObject({ slug: "azenas-blessing-28d", priced: true, perUnit: 10000, gold: 10000 });
+    expect(lv1[3]).toMatchObject({ slug: "ancient-bracelet-chest", priced: true, perUnit: 0, gold: 0 });
+    expect(r.total).toBe(2042000 + 10000);
+  });
+
+  it("an explicit 0 on the BC-costed aura or the Lv. 8 gem survives the computed price layers", () => {
+    const r = jumpUpRows(
+      buildPriceMap({ ...NAE, "crystalline-aura-plus-14d": 0, "lv-8-gem": 0 }, { blueCrystalGold: 30000 / BC_PER_BUNDLE }),
+    );
+    expect(r.rows[0].lines[1]).toMatchObject({ slug: "crystalline-aura-plus-14d", priced: true, gold: 0 });
+    expect(r.rows[1].lines[0]).toMatchObject({ slug: "lv-8-gem", priced: true, gold: 0 });
+    expect(r.rows[1].gold).toBe(0);
+  });
+
+  it("lets the tab price every reward except the gold bars", () => {
+    expect([...JUMP_UP_EDITABLE_SLUGS].sort()).toEqual([
+      "ancient-accessory-set-chest",
+      "ancient-bracelet-chest",
+      "azenas-blessing-28d",
+      "crystalline-aura-plus-14d",
+      "fixed-epic-astrogem-selection",
+      "lv-8-gem",
+    ]);
   });
 });

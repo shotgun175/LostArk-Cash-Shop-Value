@@ -8,6 +8,7 @@
 import { JUMP_UP_LEVELS, JUMP_UP_RC } from "./data/jumpUp";
 import { RESOLVER } from "./data/resolver";
 import { valueChestOptions } from "./packValue";
+import { COMPUTED_PRICE_NOTES, F4_DERIVED_SLUGS } from "./priceMap";
 
 export interface JumpUpLine {
   slug: string;
@@ -16,9 +17,21 @@ export interface JumpUpLine {
   qty: number; // units after scaling by chestQty
   perUnit: number;
   gold: number;
+  priced: boolean; // the slug is in the price map (an explicit 0 counts); false reads "no price"
   isBound?: boolean;
+  isCurrency?: boolean; // the gold bars: face value, not click-to-edit
   unresolved?: boolean; // chest name missing from the resolver (a typo), never a price gap
 }
+
+/**
+ * Slugs a user can price from the Jump-Up tab: every reward output except currency (the gold bars
+ * count at face value) and any F4-derived or computed price, which no tab edits.
+ */
+export const JUMP_UP_EDITABLE_SLUGS: ReadonlySet<string> = new Set(
+  JUMP_UP_LEVELS.flatMap((l) =>
+    l.rewards.flatMap((r) => (RESOLVER[r.chest]?.outputs ?? []).filter((o) => !o.isCurrency).map((o) => o.slug)),
+  ).filter((s) => !F4_DERIVED_SLUGS.has(s) && !COMPUTED_PRICE_NOTES.has(s)),
+);
 
 export interface JumpUpRow {
   level: number;
@@ -44,12 +57,12 @@ export function jumpUpRows(prices: Record<string, number>): JumpUpResult {
     for (const r of lvl.rewards) {
       const chest = RESOLVER[r.chest];
       if (!chest) {
-        lines.push({ slug: r.chest, chest: r.chest, chestQty: r.qty, qty: 0, perUnit: 0, gold: 0, unresolved: true });
+        lines.push({ slug: r.chest, chest: r.chest, chestQty: r.qty, qty: 0, perUnit: 0, gold: 0, priced: false, unresolved: true });
         continue;
       }
       const v = valueChestOptions(chest, prices, r.qty);
-      for (const o of v.options) {
-        if (!o.chosen) continue;
+      v.options.forEach((o, i) => {
+        if (!o.chosen) return;
         lines.push({
           slug: o.slug,
           chest: r.chest,
@@ -57,9 +70,11 @@ export function jumpUpRows(prices: Record<string, number>): JumpUpResult {
           qty: o.qtyPerChest * r.qty,
           perUnit: o.perUnit,
           gold: o.lineGold,
+          priced: o.slug in prices,
           isBound: o.isBound,
+          isCurrency: chest.outputs[i].isCurrency,
         });
-      }
+      });
       gold += v.gold;
     }
     running += gold;
