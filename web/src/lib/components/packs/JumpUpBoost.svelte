@@ -189,7 +189,19 @@
   @media (max-width: 640px) {
     .tscroll table { min-width: 0; }
     .tscroll th, .tscroll td { padding-left: 4px; padding-right: 4px; font-size: 12.5px; }
-    .tscroll td.total { font-size: 14px; }
+    .tscroll td.total { font-size: 13px; }
     .cum { display: block; margin-left: 0; white-space: normal; }
+  }
+  /* Under 390 px the icons drop (the column collapses to zero width rather than disappearing, so
+     the level rows' colspans still line up), which lets a 360 px phone fit. */
+  @media (max-width: 389px) {
+    .tscroll .ic-col { width: 0; padding: 0; }
+    .ic-col :global(.icon-box) { display: none; }
+  }
+  /* Under 350 px "set price" may wrap and the open editor narrows, so a 320 px phone fits too. */
+  @media (max-width: 349px) {
+    .tscroll th, .tscroll td { padding-left: 3px; padding-right: 3px; }
+    td.price { white-space: normal; }
+    td.price :global(input.edit) { width: 44px; }
   }
 </style>
