@@ -1,5 +1,7 @@
 // The click-to-edit price rule shared by every unit-price cell (PriceEdit.svelte): what the editor
-// opens with, and which committed entries become an override.
+// opens with, and what committing it does to the slug's override.
+
+import { readValueInput, type InputAction } from "../valuesBar";
 
 /**
  * The editor's starting text: the unit price as the cell shows it from 100 up (whole gold, like
@@ -12,14 +14,15 @@ export function draftFor(value: number | null): string {
 }
 
 /**
- * The override a committed entry sets, or null when nothing should change: an empty, unreadable or
- * negative entry, or the value the editor opened with (opening a price and clicking away must not
- * create a "custom" override). `draft` is whatever the number input's binding holds, which is a
- * number once the user types.
+ * What committing the editor does, by the Your values boxes' rule (readValueInput): an emptied box
+ * clears the override, so the price goes back to its market or default value; a number of 0 or more
+ * sets it (a typed -0 as 0); a half-typed or negative entry keeps it. The value the editor opened
+ * with also keeps it, so opening a price and clicking away never creates a "custom" override.
+ * `raw` is the input's text and `badInput` its validity flag ("1e" reads as empty text).
  */
-export function parseDraft(draft: unknown, original: string): number | null {
-  const v = typeof draft === "number" ? draft : parseFloat(String(draft ?? ""));
-  if (!Number.isFinite(v) || v < 0) return null;
-  if (v === parseFloat(original)) return null;
-  return v === 0 ? 0 : v; // a typed "-0" saves as 0, never -0
+export function commitDraft(raw: string, original: string, badInput = false): InputAction {
+  const a = readValueInput(raw, badInput);
+  if (a.kind !== "set") return a;
+  if (a.value === parseFloat(original)) return { kind: "keep" };
+  return { kind: "set", value: a.value === 0 ? 0 : a.value };
 }

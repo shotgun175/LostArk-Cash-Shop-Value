@@ -3,7 +3,7 @@
   import { app } from "$lib/app.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
   import { F4_DERIVED_SLUGS, COMPUTED_PRICE_NOTES } from "$lib/packs/priceMap";
-  import { draftFor, parseDraft } from "$lib/packs/priceDraft";
+  import { draftFor, commitDraft } from "$lib/packs/priceDraft";
   import { displayName } from "$lib/catalog";
   import { formatGold } from "$lib/format";
 
@@ -35,25 +35,27 @@
   const name = $derived(`${value == null ? (emptyText === "—" ? "unpriced" : emptyText) : shown}, ${displayName(slug)}`);
 
   let editing = $state(false);
-  let draft = $state("");
-  let original = "";
+  let original = $state("");
   let btn = $state<HTMLButtonElement>();
+  let input = $state<HTMLInputElement>();
 
   function start(): void {
     original = draftFor(value);
-    draft = original;
     editing = true;
   }
-  // Enter and blur commit, Escape cancels. Enter and Escape hand focus back to the price while its
-  // row is still there (a save that changes which option a selection chest counts replaces the
-  // row, and focus then falls back to the page). The editing guard turns a second call into a
-  // no-op: Chromium fires blur when the input is removed, which used to make Escape save.
+  // Enter and blur commit, Escape cancels. Committing reads the box's own text (commitDraft): an
+  // emptied box removes the user's price, back to the market or default value. Enter and Escape
+  // hand focus back to the price while its row is still there (a save that changes which option a
+  // selection chest counts replaces the row, and focus then falls back to the page). The editing
+  // guard turns a second call into a no-op: Chromium fires blur when the input is removed, which
+  // used to make Escape save.
   function finish(save: boolean, refocus: boolean): void {
     if (!editing) return;
     editing = false;
-    if (save) {
-      const v = parseDraft(draft, original);
-      if (v !== null) overrides.set(app.region, slug, v);
+    if (save && input) {
+      const a = commitDraft(input.value, original, input.validity.badInput);
+      if (a.kind === "clear") overrides.clear(app.region, slug);
+      else if (a.kind === "set") overrides.set(app.region, slug, a.value);
     }
     if (refocus) void tick().then(() => btn?.focus());
   }
@@ -71,7 +73,7 @@
   <span class="num price-ro" title={readOnlyTitle || undefined}>{shown}</span>
 {:else if editing}
   <input
-    class="edit num" type="number" min="0" step="0.01" bind:value={draft}
+    class="edit num" type="number" min="0" step="0.01" value={original} bind:this={input}
     use:focusSelect
     onblur={() => finish(true, false)}
     onkeydown={(e) => {

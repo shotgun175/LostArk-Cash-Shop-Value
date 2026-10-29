@@ -125,7 +125,7 @@ describe("PacksPanel Include pheons indicator", () => {
     const note = (body.match(/<p class="note[^"]*">[\s\S]*?<\/p>/)?.[0] ?? "")
       .replace(/<!--[^>]*-->/g, "")
       .replace(/\s+/g, " ");
-    expect(note).toContain(`Click any market price to enter your own AH price. ${INDICATOR}`);
+    expect(note).toContain(`Click any market price to enter your own AH price; empty it to go back to the default. ${INDICATOR}`);
     expect(body).not.toContain("Include pheons");
   });
 });

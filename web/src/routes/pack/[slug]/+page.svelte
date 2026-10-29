@@ -92,7 +92,8 @@
         </div>
       {:else}
         <p class="hint">
-          Click any market price to enter your own AH value, or click a selection-chest option to value
+          Click any market price to enter your own AH value (empty it to go back to the default), or
+          click a selection-chest option to value
           the pack with your pick; changes apply site-wide until reset. The highest-value option (✓)
           counts by default.
         </p>

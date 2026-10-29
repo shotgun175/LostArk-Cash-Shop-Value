@@ -69,8 +69,9 @@
   </p>
 
   <p class="note edit-note" tabindex="-1" bind:this={editNote}>
-    Click a unit price to enter your own value, including the items with no market value. Your prices
-    are saved per region and used on every tab that shows the same item.{#if customSlugs.length > 0}{" "}<span class="custom"><span><b class="num">{customSlugs.length}</b> custom price{customSlugs.length === 1 ? "" : "s"}</span> <button class="reset" title="Clear the prices entered for this tab's rewards" onclick={resetPrices}>reset</button></span>{/if}
+    Click a unit price to enter your own value, including the items with no market value; empty it to
+    go back to the default. Your prices are saved per region and used on every tab that shows the
+    same item.{#if customSlugs.length > 0}{" "}<span class="custom"><span><b class="num">{customSlugs.length}</b> custom price{customSlugs.length === 1 ? "" : "s"}</span> <button class="reset" title="Clear the prices entered for this tab's rewards" onclick={resetPrices}>reset</button></span>{/if}
   </p>
 
   <div class="tscroll">
