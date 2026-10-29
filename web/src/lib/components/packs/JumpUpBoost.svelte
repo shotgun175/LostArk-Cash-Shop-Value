@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { jumpUpRows, JUMP_UP_EDITABLE_SLUGS } from "$lib/packs/jumpUpRows";
+  import { tick } from "svelte";
+  import { jumpUpRows, jumpUpCustomSlugs } from "$lib/packs/jumpUpRows";
   import { JUMP_UP_RC, JUMP_UP_LEVELS } from "$lib/packs/data/jumpUp";
+  import { BC_COSTS } from "$lib/packs/data/constants";
   import { layeredPrices } from "$lib/packs/prices.svelte";
   import { f4 } from "$lib/packs/f4.svelte";
   import { overrides } from "$lib/packs/overrides.svelte";
@@ -27,11 +29,13 @@
 
   // The prices entered for this track's rewards, here or on another tab showing the same item. The
   // Lv. 8 gem price is a Your values setting, so it is neither counted nor reset here (as on Packs).
-  const customSlugs = $derived(
-    [...JUMP_UP_EDITABLE_SLUGS].filter((s) => !BAR_OVERRIDES.has(s) && overrides.has(app.region, s)),
-  );
+  const customSlugs = $derived(jumpUpCustomSlugs((s) => overrides.has(app.region, s), BAR_OVERRIDES));
+  let editNote = $state<HTMLParagraphElement>();
   function resetPrices(): void {
-    for (const s of customSlugs) overrides.clear(app.region, s);
+    for (const s of [...customSlugs]) overrides.clear(app.region, s);
+    // The chip, and the reset button with keyboard focus, disappear with the last price; keep focus
+    // on this line instead of dropping it to the top of the page.
+    void tick().then(() => editNote?.focus());
   }
 </script>
 
@@ -64,7 +68,7 @@
     accessory chests have no market value and count as 0 until you enter a value for them.
   </p>
 
-  <p class="note edit-note">
+  <p class="note edit-note" tabindex="-1" bind:this={editNote}>
     Click a unit price to enter your own value, including the items with no market value. Your prices
     are saved per region and used on every tab that shows the same item.{#if customSlugs.length > 0}{" "}<span class="custom"><span><b class="num">{customSlugs.length}</b> custom price{customSlugs.length === 1 ? "" : "s"}</span> <button class="reset" title="Clear the prices entered for this tab's rewards" onclick={resetPrices}>reset</button></span>{/if}
   </p>
@@ -97,9 +101,11 @@
               {/if}
             </td>
             <td class="right num">{l.qty ? l.qty.toLocaleString("en-US") : "—"}</td>
+            <!-- A BC-costed item (the aura) is unpriced only while no exchange rate is set, so it
+                 keeps the plain dash rather than inviting a price that would pin it. -->
             <td class="right price">{#if l.unresolved}<span class="num muted">—</span>{:else}<PriceEdit
                 slug={l.slug} value={l.priced ? l.perUnit : null} readOnly={!!l.isCurrency}
-                readOnlyTitle="Gold counts at face value." emptyText="set price"
+                readOnlyTitle="Gold counts at face value." emptyText={l.slug in BC_COSTS ? "—" : "set price"}
                 title="Click to enter your own value" editLabel="Edit unit price for" />{/if}</td>
             <td class="right num accent">{#if l.priced}{formatGold(l.gold)}{:else}<span class="warn">no price</span>{/if}</td>
           </tr>
@@ -172,6 +178,7 @@
   td.price { white-space: nowrap; }
   /* The click-to-edit line and its "N custom prices · reset" chip (the Packs tab's chip style). */
   .edit-note { line-height: 1.9; }
+  .edit-note:focus { outline: none; } /* a programmatic focus target after reset, not a control */
   .custom { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; white-space: nowrap;
     vertical-align: middle; color: var(--accent); background: rgba(255, 209, 102, 0.1);
     border: 1px solid rgba(255, 209, 102, 0.4); border-radius: 6px; padding: 3px 10px; }
@@ -191,6 +198,9 @@
     .tscroll th, .tscroll td { padding-left: 4px; padding-right: 4px; font-size: 12.5px; }
     .tscroll td.total { font-size: 13px; }
     .cum { display: block; margin-left: 0; white-space: normal; }
+    .chest { display: block; margin-left: 0; }
+    /* Six digits (a 348,000 gem opens as "348000") fit without widening the Unit column. */
+    td.price :global(input.edit) { width: 62px; }
   }
   /* Under 390 px the icons drop (the column collapses to zero width rather than disappearing, so
      the level rows' colspans still line up), which lets a 360 px phone fit. */
@@ -202,6 +212,6 @@
   @media (max-width: 349px) {
     .tscroll th, .tscroll td { padding-left: 3px; padding-right: 3px; }
     td.price { white-space: normal; }
-    td.price :global(input.edit) { width: 44px; }
+    td.price :global(input.edit) { width: 52px; padding: 2px 3px; font-size: 12px; }
   }
 </style>

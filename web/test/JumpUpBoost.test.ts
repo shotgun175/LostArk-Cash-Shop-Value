@@ -135,6 +135,20 @@ describe("JumpUpBoost click-to-edit prices", () => {
     expect(body).toContain("2,129,684"); // a 0 adds nothing
   });
 
+  it("keeps the aura a plain dash while no exchange rate is set, instead of inviting a price", () => {
+    loadFixture();
+    const saved = f4.value;
+    try {
+      f4.value = NaN; // a cleared exchange input: the BC-costed aura has no price
+      const body = render(JumpUpBoost).body;
+      const aura = rowsOf(body).find((r) => r.includes("Crystalline Aura Plus"));
+      expect(aura!).toMatch(/class="price-btn num[^"]*"[^>]*>—<\/button>/);
+      expect((body.match(/>set price<\/button>/g) ?? []).length).toBe(3);
+    } finally {
+      f4.value = saved;
+    }
+  });
+
   it("counts a price set on another tab for an item shown here, but not the Lv. 8 gem setting", () => {
     loadFixture();
     // The astrogem chest is also a Bonus Room line; its override shows and counts here.

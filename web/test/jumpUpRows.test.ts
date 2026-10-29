@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { jumpUpRows, JUMP_UP_EDITABLE_SLUGS } from "../src/lib/packs/jumpUpRows";
+import { jumpUpRows, jumpUpCustomSlugs, JUMP_UP_EDITABLE_SLUGS } from "../src/lib/packs/jumpUpRows";
 import { JUMP_UP_LEVELS, JUMP_UP_RC } from "../src/lib/packs/data/jumpUp";
 import { buildPriceMap } from "../src/lib/packs/priceMap";
 import { RESOLVER } from "../src/lib/packs/data/resolver";
@@ -98,6 +98,13 @@ describe("jumpUpRows", () => {
     expect(r.rows[0].lines[1]).toMatchObject({ slug: "crystalline-aura-plus-14d", priced: true, gold: 0 });
     expect(r.rows[1].lines[0]).toMatchObject({ slug: "lv-8-gem", priced: true, gold: 0 });
     expect(r.rows[1].gold).toBe(0);
+  });
+
+  it("counts and resets only the tab's own prices: not the Lv. 8 gem setting, not other items", () => {
+    const priced = new Set(["azenas-blessing-28d", "fixed-epic-astrogem-selection", "lv-8-gem", "gold", "pheon"]);
+    const custom = jumpUpCustomSlugs((s) => priced.has(s), new Set(["lv-8-gem", "basic-life-energy-potion"]));
+    expect(custom.sort()).toEqual(["azenas-blessing-28d", "fixed-epic-astrogem-selection"]);
+    expect(jumpUpCustomSlugs(() => false, new Set())).toEqual([]);
   });
 
   it("lets the tab price every reward except the gold bars", () => {

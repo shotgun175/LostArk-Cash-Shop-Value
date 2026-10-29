@@ -30,6 +30,9 @@
   } = $props();
 
   const shown = $derived(value == null ? "—" : formatGold(value));
+  // The button's accessible name starts with its visible text and adds the item, since a column of
+  // bare numbers or repeated "set price" buttons is otherwise indistinguishable to a screen reader.
+  const name = $derived(`${value == null ? (emptyText === "—" ? "unpriced" : emptyText) : shown}, ${displayName(slug)}`);
 
   let editing = $state(false);
   let draft = $state("");
@@ -41,9 +44,10 @@
     draft = original;
     editing = true;
   }
-  // Enter and blur commit, Escape cancels; Enter and Escape hand focus back to the price. The
-  // editing guard turns a second call into a no-op (some browsers fire blur when the input is
-  // removed), so Escape can never save.
+  // Enter and blur commit, Escape cancels. Enter and Escape hand focus back to the price while its
+  // row is still there (a save that changes which option a selection chest counts replaces the
+  // row, and focus then falls back to the page). The editing guard turns a second call into a
+  // no-op: Chromium fires blur when the input is removed, which used to make Escape save.
   function finish(save: boolean, refocus: boolean): void {
     if (!editing) return;
     editing = false;
@@ -78,7 +82,7 @@
     }}
     aria-label="{editLabel} {displayName(slug)}" />
 {:else}
-  <button bind:this={btn} class="price-btn num" class:edited={overrides.has(app.region, slug)} {title} onclick={start}>{value == null ? emptyText : shown}</button>
+  <button bind:this={btn} class="price-btn num" class:edited={overrides.has(app.region, slug)} {title} aria-label={name} onclick={start}>{value == null ? emptyText : shown}</button>
 {/if}
 
 <style>
@@ -86,16 +90,19 @@
      table cell's font size, so each table keeps its own. */
   .num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; }
   .price-ro { color: var(--muted); font-size: inherit; cursor: help; }
-  /* The padding makes the whole cell the tap target on a phone; the negative margin keeps the
-     layout exactly as it was. */
-  .price-btn { background: none; border: 0; padding: 6px 8px; margin: -6px -8px; cursor: pointer;
+  /* The vertical padding makes the row's full height the tap target and the negative margin keeps
+     the layout exactly as it was. The side padding stays within the narrowest cell padding (3 px),
+     so the button and its focus ring stay inside the cell. */
+  .price-btn { background: none; border: 0; padding: 6px 3px; margin: -6px -3px; cursor: pointer;
     color: var(--muted); font-size: inherit; }
+  .price-btn:focus-visible { outline-offset: 0; }
   .price-btn:hover { color: var(--text); text-decoration: underline dotted; text-underline-offset: 3px; }
   .price-btn.edited { color: var(--accent); }
   .edit { width: 78px; padding: 2px 6px; text-align: right; background: var(--panel-2); color: var(--text);
     border: 1px solid var(--accent); border-radius: 4px; font-size: 13px; }
-  /* Phones: a narrower editor (still 6 digits wide), so opening it doesn't widen a tight table. */
-  @media (max-width: 640px) {
-    .edit { width: 56px; }
-  }
+  /* Hide the number-input spinners so the value uses the full width and never clips (as in the
+     Your values bar). */
+  .edit[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+  .edit[type="number"]::-webkit-outer-spin-button,
+  .edit[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 </style>

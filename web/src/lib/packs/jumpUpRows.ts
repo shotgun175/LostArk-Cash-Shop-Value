@@ -33,6 +33,15 @@ export const JUMP_UP_EDITABLE_SLUGS: ReadonlySet<string> = new Set(
   ).filter((s) => !F4_DERIVED_SLUGS.has(s) && !COMPUTED_PRICE_NOTES.has(s)),
 );
 
+/**
+ * The tab's own custom prices, which its chip counts and its reset clears: the editable slugs
+ * `has` reports as priced by the user, minus `except` (the Your values settings, which the tab
+ * neither counts nor resets).
+ */
+export function jumpUpCustomSlugs(has: (slug: string) => boolean, except: ReadonlySet<string>): string[] {
+  return [...JUMP_UP_EDITABLE_SLUGS].filter((s) => !except.has(s) && has(s));
+}
+
 export interface JumpUpRow {
   level: number;
   ilvl: number;

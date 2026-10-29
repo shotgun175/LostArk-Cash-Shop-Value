@@ -1,9 +1,14 @@
 // The click-to-edit price rule shared by every unit-price cell (PriceEdit.svelte): what the editor
 // opens with, and which committed entries become an override.
 
-/** The editor's starting text: the shown unit price (at most 4 decimals), or empty when unpriced. */
+/**
+ * The editor's starting text: the unit price as the cell shows it from 100 up (whole gold, like
+ * formatGold), with at most 4 decimals below that, or empty when unpriced. Whole numbers keep a
+ * BC-costed price such as 87,684.2105 readable in a narrow editor.
+ */
 export function draftFor(value: number | null): string {
-  return value == null ? "" : String(Number(value.toFixed(4)));
+  if (value == null) return "";
+  return value >= 100 ? String(Math.round(value)) : String(Number(value.toFixed(4)));
 }
 
 /**
@@ -16,5 +21,5 @@ export function parseDraft(draft: unknown, original: string): number | null {
   const v = typeof draft === "number" ? draft : parseFloat(String(draft ?? ""));
   if (!Number.isFinite(v) || v < 0) return null;
   if (v === parseFloat(original)) return null;
-  return v;
+  return v === 0 ? 0 : v; // a typed "-0" saves as 0, never -0
 }
