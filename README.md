@@ -27,6 +27,12 @@ them alone. Clear a box to go back to its default: 35,000 for the
 exchange, the live G2G rate, a typical Lv. 8 gem price for your region, or the logging estimate
 for the potion.
 
+**Your own prices.** On Packs, a pack's page, the Bonus Room and Jump-Up, click an item's price
+to enter your own; empty the box to go back to the market or default price (Escape cancels). Each
+price is saved in your browser per region and used on every tab that values that item. "reset
+all" on Packs clears every one of them, and Jump-Up's own reset clears just its rewards. Prices the
+app works out itself (hell keys, ebony cubes, Blue Crystal, gold) can't be edited.
+
 Live site: https://shotgun175.github.io/LostArk-Cash-Shop-Value/
 
 ## How it works
