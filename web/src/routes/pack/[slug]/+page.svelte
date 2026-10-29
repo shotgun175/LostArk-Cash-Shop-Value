@@ -1,7 +1,6 @@
 <script lang="ts">
   import { packValue } from "$lib/packs/packValue";
-  import { packDetail, type DetailOption } from "$lib/packs/packDetail";
-  import { F4_DERIVED_SLUGS, COMPUTED_PRICE_NOTES } from "$lib/packs/priceMap";
+  import { packDetail } from "$lib/packs/packDetail";
   import { layeredPrices } from "$lib/packs/prices.svelte";
   import { BAR_OVERRIDES } from "$lib/valuesBar";
   import { f4 } from "$lib/packs/f4.svelte";
@@ -16,6 +15,7 @@
   import { displayName } from "$lib/catalog";
   import ItemIcon from "$lib/components/ItemIcon.svelte";
   import GoldRate from "$lib/components/packs/GoldRate.svelte";
+  import PriceEdit from "$lib/components/packs/PriceEdit.svelte";
   import { base } from "$app/paths";
 
   let { data } = $props();
@@ -59,25 +59,6 @@
   // (SvelteKit reuses this component across /pack/[slug] navigations, and chest names can repeat).
   $effect(() => { void pack.slug; imgOk = true; expandedChests = {}; });
 
-  // Click-to-edit market prices — writes the shared, site-wide override store.
-  let editing = $state<string | null>(null);
-  let draft = $state("");
-  let original = $state(""); // value shown when the editor opened; used to ignore no-op edits
-  function startEdit(o: DetailOption): void {
-    editing = o.slug;
-    draft = o.perUnit > 0 ? String(Number(o.perUnit.toFixed(4))) : "";
-    original = draft;
-  }
-  function commit(slug: string): void {
-    const v = parseFloat(draft);
-    editing = null;
-    if (!Number.isFinite(v) || v < 0) return;
-    // Opening a price and clicking away without changing it must not create a "custom" override.
-    if (v === parseFloat(original)) return;
-    overrides.set(app.region, slug, v);
-  }
-  function focusSelect(el: HTMLInputElement): void { el.focus(); el.select(); }
-
   const tagFor = (t: string) => (t === "selection" ? "select" : t === "multi" ? "everything" : "fixed");
 
   // Selection chests show only the chosen option by default; this toggles the rest into view.
@@ -111,7 +92,8 @@
         </div>
       {:else}
         <p class="hint">
-          Click any market price to enter your own AH value, or click a selection-chest option to value
+          Click any market price to enter your own AH value (empty it to go back to the default), or
+          click a selection-chest option to value
           the pack with your pick; changes apply site-wide until reset. The highest-value option (✓)
           counts by default.
         </p>
@@ -236,22 +218,10 @@
                 <td class="right price">
                   {#if readOnly}
                     <span class="num">{o.perUnit > 0 ? formatGold(o.perUnit) : "—"}</span>
-                  {:else if F4_DERIVED_SLUGS.has(o.slug)}
-                    <!-- F4-derived currency (blue crystal): the exchange input is the single
-                         source of truth, so no edit affordance here. -->
-                    <span class="num price-ro" title="Priced from the F4 exchange input (gold / 95). Change the exchange input to change it.">{o.perUnit > 0 ? formatGold(o.perUnit) : "—"}</span>
-                  {:else if COMPUTED_PRICE_NOTES.has(o.slug)}
-                    <!-- Computed by buildPriceMap (key / cube EV, relic recipe): read-only for the
-                         same reason. -->
-                    <span class="num price-ro" title={COMPUTED_PRICE_NOTES.get(o.slug)}>{o.perUnit > 0 ? formatGold(o.perUnit) : "—"}</span>
-                  {:else if editing === o.slug}
-                    <input class="edit num" type="number" min="0" step="0.01" bind:value={draft} use:focusSelect
-                      onblur={() => commit(o.slug)}
-                      onkeydown={(e) => { if (e.key === "Enter") commit(o.slug); else if (e.key === "Escape") editing = null; }}
-                      aria-label="Edit market price for {displayName(o.slug)}" />
                   {:else}
-                    <button class="price-btn num" class:edited={overrides.has(app.region, o.slug)}
-                      title="Click to enter your own AH price" onclick={() => startEdit(o)}>{o.perUnit > 0 ? formatGold(o.perUnit) : "—"}</button>
+                    <!-- Click-to-edit, writing the shared, site-wide override store (PriceEdit keeps
+                         F4-derived and computed prices read-only). -->
+                    <PriceEdit slug={o.slug} value={o.perUnit > 0 ? o.perUnit : null} />
                   {/if}
                 </td>
                 <td class="right num accent">{o.lineGold > 0 ? formatGold(o.lineGold) : "—"}</td>
@@ -376,10 +346,4 @@
     padding: 1px 9px; font-size: 11px; cursor: pointer; font-family: inherit; }
   .opts-toggle:hover { color: var(--accent); border-color: var(--accent); }
   .unresolved { color: var(--muted); font-size: 13px; margin: 4px 0 0; }
-  .price-ro { color: var(--muted); font-size: 13.5px; cursor: help; }
-  .price-btn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--muted); font-size: 13.5px; }
-  .price-btn:hover { color: var(--text); text-decoration: underline dotted; text-underline-offset: 3px; }
-  .price-btn.edited { color: var(--accent); }
-  .edit { width: 78px; padding: 2px 6px; text-align: right; background: var(--panel-2); color: var(--text);
-    border: 1px solid var(--accent); border-radius: 4px; font-size: 13px; }
 </style>

@@ -1,13 +1,18 @@
 <script lang="ts">
-  import { jumpUpRows } from "$lib/packs/jumpUpRows";
+  import { tick } from "svelte";
+  import { jumpUpRows, jumpUpCustomSlugs } from "$lib/packs/jumpUpRows";
   import { JUMP_UP_RC, JUMP_UP_LEVELS } from "$lib/packs/data/jumpUp";
+  import { BC_COSTS } from "$lib/packs/data/constants";
   import { layeredPrices } from "$lib/packs/prices.svelte";
   import { f4 } from "$lib/packs/f4.svelte";
+  import { overrides } from "$lib/packs/overrides.svelte";
   import { cashPerRc, currencySymbol, vsExchangePct } from "$lib/packs/exchange";
+  import { BAR_OVERRIDES } from "$lib/valuesBar";
   import { app } from "$lib/app.svelte";
   import { formatGold, formatSignedPct } from "$lib/format";
   import { displayName } from "$lib/catalog";
   import ItemIcon from "../ItemIcon.svelte";
+  import PriceEdit from "./PriceEdit.svelte";
   import { base } from "$app/paths";
 
   // The same fully layered map the Packs tab values against (layeredPrices(): baked seeds + live +
@@ -21,6 +26,17 @@
   const goldPerDollar = $derived(Math.round(result.total / (JUMP_UP_RC * cashPerRc(app.region))));
   const levels = JUMP_UP_LEVELS.length;
   const rc = JUMP_UP_RC.toLocaleString("en-US");
+
+  // The prices entered for this track's rewards, here or on another tab showing the same item. The
+  // Lv. 8 gem price is a Your values setting, so it is neither counted nor reset here (as on Packs).
+  const customSlugs = $derived(jumpUpCustomSlugs((s) => overrides.has(app.region, s), BAR_OVERRIDES));
+  let editNote = $state<HTMLParagraphElement>();
+  function resetPrices(): void {
+    for (const s of [...customSlugs]) overrides.clear(app.region, s);
+    // The chip, and the reset button with keyboard focus, disappear with the last price; keep focus
+    // on this line instead of dropping it to the top of the page.
+    void tick().then(() => editNote?.focus());
+  }
 </script>
 
 <div class="ju">
@@ -47,9 +63,15 @@
 
   <p class="note">
     Bound Lv. 8 Brilliant Gems are valued at the region's Lv. 8 gem price. Fixed Epic Astrogem
-    Selection Chests are a flat 75,000 gold each. Crystalline Aura Plus is valued at its store cost (510 BC
+    Selection Chests default to 75,000 gold each. Crystalline Aura Plus is valued at its store cost (510 BC
     per 30 days, so 238 BC for 14 days) x the exchange rate. Azena's Blessing and the Ancient bracelet /
-    accessory chests have no market value and count as 0.
+    accessory chests have no market value and count as 0 until you enter a value for them.
+  </p>
+
+  <p class="note edit-note" tabindex="-1" bind:this={editNote}>
+    Click a unit price to enter your own value, including the items with no market value; empty it to
+    go back to the default. Your prices are saved per region and used on every tab that shows the
+    same item.{#if customSlugs.length > 0}{" "}<span class="custom"><span><b class="num">{customSlugs.length}</b> custom price{customSlugs.length === 1 ? "" : "s"}</span> <button class="reset" title="Clear the prices entered for this tab's rewards" onclick={resetPrices}>reset</button></span>{/if}
   </p>
 
   <div class="tscroll">
@@ -73,13 +95,20 @@
               {#if l.unresolved}
                 <span class="bad">Unresolved: {l.chestQty}× {l.chest}</span>
               {:else}
-                <span class="rname">{displayName(l.slug)}</span>{#if l.isBound}<span class="bound"> (Bound)</span>{/if}
+                <!-- {" "}: Svelte drops a tag's leading space, which glued "(Bound)" to the name and
+                     made "Bracelet(Bound)" one word too wide for a phone. -->
+                <span class="rname">{displayName(l.slug)}</span>{#if l.isBound}<span class="bound">{" "}(Bound)</span>{/if}
                 {#if l.chest.replace(/ \(Bound\)$/, "") !== displayName(l.slug)}<span class="chestnote">{l.chestQty}× {l.chest}</span>{/if}
               {/if}
             </td>
             <td class="right num">{l.qty ? l.qty.toLocaleString("en-US") : "—"}</td>
-            <td class="right num muted">{l.perUnit > 0 ? formatGold(l.perUnit) : "—"}</td>
-            <td class="right num accent">{#if l.gold > 0}{formatGold(l.gold)}{:else}<span class="warn">no price</span>{/if}</td>
+            <!-- A BC-costed item (the aura) is unpriced only while no exchange rate is set, so it
+                 keeps the plain dash rather than inviting a price that would pin it. -->
+            <td class="right price">{#if l.unresolved}<span class="num muted">—</span>{:else}<PriceEdit
+                slug={l.slug} value={l.priced ? l.perUnit : null} readOnly={!!l.isCurrency}
+                readOnlyTitle="Gold counts at face value." emptyText={l.slug in BC_COSTS ? "—" : "set price"}
+                title="Click to enter your own value" editLabel="Edit unit price for" />{/if}</td>
+            <td class="right num accent">{#if l.priced}{formatGold(l.gold)}{:else}<span class="warn">no price</span>{/if}</td>
           </tr>
         {/each}
       {/each}
@@ -92,9 +121,9 @@
 
   <p class="note">
     Two values from Your values move this tab: the F4 exchange prices the Crystalline Aura Plus and
-    sets the vs-F4 baseline, and the Lv. 8 gem price values the gems. The astrogem values are fixed
-    seeds. The cumulative figure on each level row is what you'd have banked if that is the last
-    milestone you reach.
+    sets the vs-F4 baseline, and the Lv. 8 gem price values the gems (a gem's unit price here is that
+    same setting). A price you enter for the aura replaces its exchange-based value. The cumulative
+    figure on each level row is what you'd have banked if that is the last milestone you reach.
   </p>
 </div>
 
@@ -147,4 +176,43 @@
   tfoot td { border-bottom: 0; padding-top: 10px; }
   .total-lbl { font-weight: 700; }
   .total { font-weight: 700; font-size: 15px; }
+  td.price { white-space: nowrap; }
+  /* The click-to-edit line and its "N custom prices · reset" chip (the Packs tab's chip style). */
+  .edit-note { line-height: 1.9; }
+  .edit-note:focus { outline: none; } /* a programmatic focus target after reset, not a control */
+  .custom { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; white-space: nowrap;
+    vertical-align: middle; color: var(--accent); background: rgba(255, 209, 102, 0.1);
+    border: 1px solid rgba(255, 209, 102, 0.4); border-radius: 6px; padding: 3px 10px; }
+  .custom .num { color: var(--accent); }
+  /* The ::after widens the tap target past the small pill without changing how it looks. */
+  .reset { position: relative; background: rgba(255, 209, 102, 0.12); color: var(--accent);
+    border: 1px solid rgba(255, 209, 102, 0.5); padding: 3px 10px; border-radius: 6px; font-size: 12px;
+    font-weight: 600; cursor: pointer; font-family: inherit; }
+  .reset::after { content: ""; position: absolute; inset: -10px -6px; }
+  .reset:hover { background: var(--bad); border-color: var(--bad); color: var(--bg); }
+  /* Phones: drop the table's min-width, tighten the cells and step the text down so every column,
+     the clickable Unit prices included, fits the screen with no sideways swipe (as on the pack
+     drill-down), with an editor open too. Reward names and the level rows wrap; the running total
+     moves under the level's gold. */
+  @media (max-width: 640px) {
+    .tscroll table { min-width: 0; }
+    .tscroll th, .tscroll td { padding-left: 4px; padding-right: 4px; font-size: 12.5px; }
+    .tscroll td.total { font-size: 13px; }
+    .cum { display: block; margin-left: 0; white-space: normal; }
+    .chest { display: block; margin-left: 0; }
+    /* Six digits (a 348,000 gem opens as "348000") fit without widening the Unit column. */
+    td.price :global(input.edit) { width: 62px; }
+  }
+  /* Under 390 px the icons drop (the column collapses to zero width rather than disappearing, so
+     the level rows' colspans still line up), which lets a 360 px phone fit. */
+  @media (max-width: 389px) {
+    .tscroll .ic-col { width: 0; padding: 0; }
+    .ic-col :global(.icon-box) { display: none; }
+  }
+  /* Under 350 px "set price" may wrap and the open editor narrows, so a 320 px phone fits too. */
+  @media (max-width: 349px) {
+    .tscroll th, .tscroll td { padding-left: 3px; padding-right: 3px; }
+    td.price { white-space: normal; }
+    td.price :global(input.edit) { width: 52px; padding: 2px 3px; font-size: 12px; }
+  }
 </style>

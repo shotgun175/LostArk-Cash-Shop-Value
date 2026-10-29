@@ -374,7 +374,8 @@ export const RESOLVER: Record<string, Chest> = {
   // Jump-Up Boost Powerpass Premium rewards (2026-09-16, see data/jumpUp.ts). Gold bars are
   // literal character-bound gold at 1; the aura is a BC-store item (238 BC for 14 days, BC_COSTS);
   // the Lv. 8 gem is the gem layer's baseline (gems.ts), the fixed-epic astrogem chest a BAKED seed; Azena's Blessing and the two
-  // Ancient chests have no market and render as "no price" rows. All bound on pickup.
+  // Ancient chests have no market and render as "no price" rows until the user enters a value.
+  // All bound on pickup.
   "50,000 Gold Bars": {
     name: "50,000 Gold Bars",
     type: "fixed",

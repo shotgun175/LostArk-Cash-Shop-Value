@@ -13,17 +13,25 @@ money, and hides itself again when the room ends. The untradable Life Energy Pot
 default value from logging at live timber prices (Lv. 70 Logging, Relic charm, no tool bonuses),
 shown next to what a best-in-slot logging tool would earn, and you can override it per region.
 
-**Your values.** Under the header, every tab shows a slim "Your values" bar with the numbers you
+**Your values.** Every tab shows a slim "Your values" bar with the numbers you
 set yourself that the tab actually uses: your F4 exchange rate (gold for 238 Royal Crystals),
 the real-money price of gold (G2G, shown as its icon), your Lv. 8 gem price (every other gem
 level follows it, 3 gems per level), the Life Energy Potion value, and whether pheons are
-included in key values. A tab that uses none of them (Prices) shows no bar. Click a value to
-change just that one (on a phone it opens from the bottom of the screen); Done, Escape or a click
-elsewhere closes it. Each value is saved in your browser per region (the pheons setting for both
+included in key values. A tab that uses none of them (Prices) shows no bar. On a computer the bar
+sits under the header and stays pinned to the top of the window as you scroll, so you can change
+a value right beside the pack it moves; on a phone it is a strip along the bottom of the screen
+with one tile per value. Click a value to change just that one (on a phone it opens from the
+bottom of the screen); Done, Escape or a click elsewhere closes it. Each value is saved in your browser per region (the pheons setting for both
 regions) and applies on every tab at once; "reset all" for your own market prices on Packs leaves
 them alone. Clear a box to go back to its default: 35,000 for the
 exchange, the live G2G rate, a typical Lv. 8 gem price for your region, or the logging estimate
 for the potion.
+
+**Your own prices.** On Packs, a pack's page, the Bonus Room and Jump-Up, click an item's price
+to enter your own; empty the box to go back to the market or default price (Escape cancels). Each
+price is saved in your browser per region and used on every tab that values that item. "reset
+all" on Packs clears every one of them, and Jump-Up's own reset clears just its rewards. Prices the
+app works out itself (hell keys, ebony cubes, Blue Crystal, gold) can't be edited.
 
 Live site: https://shotgun175.github.io/LostArk-Cash-Shop-Value/
 

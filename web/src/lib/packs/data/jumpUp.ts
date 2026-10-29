@@ -4,7 +4,8 @@
 // through 1,720). Only those paid chests are valued; the free left-hand chests and the Sub
 // Mission point shop are not. Every reward is a RESOLVER chest, so gold comes from the shared
 // price map: nothing here is AH-priced (bound gold at 1, baked gem and astrogem seeds, the aura
-// at its BC store cost off the F4 input, and three no-market items that stay unpriced).
+// at its BC store cost off the F4 input, and three no-market items that stay unpriced until the
+// user enters a value).
 export interface JumpUpLevel {
   level: number;
   ilvl: number; // the "Reach Equipped Item Lv." milestone requirement
