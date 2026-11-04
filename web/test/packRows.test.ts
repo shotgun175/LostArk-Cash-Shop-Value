@@ -58,11 +58,16 @@ describe("buildPackRows", () => {
 
   it("orders retired packs most-recently-retired first, then gold/RC desc", () => {
     const retired = rows.filter((r) => r.retired);
-    // Newest retirement leads the section (the 2026-10-21 cohort); within that shared date the
-    // higher frozen gold/RC wins: Paradise Special II 373.3, Dimensionalist Welcome 317.4,
+    // Newest retirement leads the section: the 2026-11-04 [Discount] re-runs, whose BC packs rank
+    // at their frozen gold/BC x(95/238): Breath 1,226.7 g/BC = 489.6, Superior Abidos 365.3 =
+    // 145.8, Destiny pouch 349.1 = 139.4. The 2026-10-21 cohort follows; within that shared date
+    // the higher frozen gold/RC wins: Paradise Special II 373.3, Dimensionalist Welcome 317.4,
     // Welcome Growth 275.1, Summer Crystallized Stone 258.5, Summer Shards 241.5, Weekly
     // Astrogem 219.6.
-    expect(retired.slice(0, 6).map((r) => r.slug)).toEqual([
+    expect(retired.slice(0, 9).map((r) => r.slug)).toEqual([
+      "discount-t4-breath-selection-chest-2",
+      "discount-superior-abidos-fusion-2",
+      "discount-crystallized-destiny-destruction-stone-pouch-2",
       "paradise-special-pack-ii-2",
       "dimensionalist-welcome-package",
       "dimensionalist-welcome-growth-package",

@@ -532,14 +532,17 @@ export const PACKS: Pack[] = [
   },
   {
     // 2026-10-28 re-run of the tile above (same name; the retired entry keeps its frozen
-    // history): the same 5 pouches, now 350 BC instead of 400, 3 per roster, on sale until
-    // 11/04/2026. From the user's purchase-window capture (pouch confirmed by pixel match).
+    // history): the same 5 pouches, now 350 BC instead of 400, 3 per roster. From the user's
+    // purchase-window capture (pouch confirmed by pixel match). Retired 2026-11-04 at its
+    // sales end.
     name: "[Discount] Crystallized Destiny Destruction Stone Pouch",
     slug: "discount-crystallized-destiny-destruction-stone-pouch-2",
+    frozenTotal: 122200, // NA card value captured 2026-11-04 (EU card showed 97,400)
     blueCrystalCost: 350,
     maxPurchases: 3,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-11-04",
     contents: [{ chest: "Crystallized Destiny Destruction Stone Pouch", qty: 5 }],
   },
   {
@@ -556,14 +559,16 @@ export const PACKS: Pack[] = [
   },
   {
     // 2026-10-28 re-run of the tile above (the retired entry keeps its frozen history): the same
-    // 20 chests at 150 BC, 3 per roster, on sale until 11/04/2026. From the user's
-    // purchase-window capture (Superior, not the Epic chest, by pixel match).
+    // 20 chests at 150 BC, 3 per roster. From the user's purchase-window capture (Superior, not
+    // the Epic chest, by pixel match). Retired 2026-11-04 at its sales end.
     name: "[Discount] Superior Abidos Fusion Material Chest",
     slug: "discount-superior-abidos-fusion-2",
+    frozenTotal: 54800, // NA card value captured 2026-11-04 (EU card showed 57,600)
     blueCrystalCost: 150,
     maxPurchases: 3,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-11-04",
     contents: [{ chest: "Superior Abidos Fusion Material Chest", qty: 20 }],
   },
   {
@@ -581,14 +586,16 @@ export const PACKS: Pack[] = [
   },
   {
     // 2026-10-28 re-run of the tile above (the retired entry keeps its frozen history), named as
-    // the shop tile reads it: the same 20 chests at 150 BC, 3 per roster, on sale until
-    // 11/04/2026. From the user's purchase-window capture.
+    // the shop tile reads it: the same 20 chests at 150 BC, 3 per roster. From the user's
+    // purchase-window capture. Retired 2026-11-04 at its sales end.
     name: "[Discount] T4 Breath Selection Chest X20",
     slug: "discount-t4-breath-selection-chest-2",
+    frozenTotal: 184000, // NA card value captured 2026-11-04 (EU card showed 155,600)
     blueCrystalCost: 150,
     maxPurchases: 3,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-11-04",
     contents: [{ chest: "T4 Breath Selection Chest", qty: 20 }],
   },
   {
