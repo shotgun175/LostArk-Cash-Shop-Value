@@ -10,7 +10,7 @@ describe("PACKS", () => {
   it("has all 43 packs", () => {
     expect(PACKS.length).toBe(43);
   });
-  it("lists exactly the 10 non-retired packs (post-2026-10-28 discount re-runs)", () => {
+  it("lists exactly the 7 non-retired packs (post-2026-11-04: the [Discount] re-runs retired)", () => {
     const active = PACKS.filter((p) => !p.retired).map((p) => p.slug).sort();
     expect(active).toEqual(
       [
@@ -22,10 +22,6 @@ describe("PACKS", () => {
         "vambraces-growth-package",
         "weekly-autumn-t4-crystallized-stone",
         "weekly-autumn-t4-shards-support",
-        // 2026-10-28: three [Discount] tiles back for a week, as -2 entries
-        "discount-crystallized-destiny-destruction-stone-pouch-2",
-        "discount-superior-abidos-fusion-2",
-        "discount-t4-breath-selection-chest-2",
       ].sort(),
     );
   });

@@ -599,7 +599,8 @@ describe("2026-08-19 packs (BC pricing + self-goldens at the pinned fixture)", (
 // ---------------------------------------------------------------------------
 // 2026-10-28: three of the [Discount] tiles above are back for a week as -2 entries, with the
 // originals' contents (so their totals at the pinned fixture) and the Destiny pouches now at
-// 350 BC instead of 400.
+// 350 BC instead of 400. All three retired 2026-11-04 at their sales end; these goldens are the
+// live math (no useFrozen), so retirement leaves them unchanged.
 // ---------------------------------------------------------------------------
 describe("2026-10-28 [Discount] re-runs (self-goldens at the pinned fixture)", () => {
   const map = buildPriceMap(NAE);
@@ -617,7 +618,8 @@ describe("2026-10-28 [Discount] re-runs (self-goldens at the pinned fixture)", (
     it(`${slug}: total ${total} at ${bc} BC, ${gpb} g/BC, 3 per roster`, () => {
       const p = pack(slug);
       expect(p.blueCrystalCost).toBe(bc);
-      expect(p.retired).toBe(false);
+      expect(p.retired).toBe(true);
+      expect(p.retiredOn).toBe("2026-11-04");
       const r = packValue(p, map);
       expect(r.total).toBe(total);
       expect(r.goldPerBc!).toBeCloseTo(gpb, 1);
