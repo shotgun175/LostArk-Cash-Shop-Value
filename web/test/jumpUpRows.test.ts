@@ -10,8 +10,10 @@ const NAE = fixture.prices as Record<string, number>;
 
 // Nothing in this track is AH-priced (bound gold, the Lv. 8 gem baseline, the astrogem seed, a
 // BC-costed aura, three no-market items), so the fixture only matters for the "override flows
-// through" case. buildPriceMap defaults to NA, so the Lv. 8 gems read the NA default 348,000
-// (2026-10-25; TJW's 375,000 seed gave 2,150,000 / 2,225,158, cross-checked 2026-09-16).
+// through" case. buildPriceMap defaults to NA, so the Lv. 8 gems read the NA default 320,000
+// (2026-11-20; TJW's 375,000 seed gave 2,150,000 / 2,225,158, cross-checked 2026-09-16).
+// (re-baselined 2026-11-20: the NA Lv. 8 default moved from 348,000 to 320,000, so the 4 Lv. 8
+// gems on the track drop 4 x 28,000 = 112,000; was 2,042,000 / 2,117,158)
 describe("JUMP_UP_LEVELS data", () => {
   it("has the five Powerpass Premium milestones at 1,700 to 1,720 with resolvable rewards", () => {
     expect(JUMP_UP_RC).toBe(3000);
@@ -24,22 +26,22 @@ describe("JUMP_UP_LEVELS data", () => {
 });
 
 describe("jumpUpRows", () => {
-  it("values the track at 2,042,000 with no exchange input (aura unpriced) and 680.7 g/RC", () => {
+  it("values the track at 1,930,000 with no exchange input (aura unpriced) and 643.3 g/RC", () => {
     const r = jumpUpRows(buildPriceMap(NAE));
-    // 4x50,000 gold | 2x348,000 | 3x75,000 | 3x75,000 | 2x348,000
-    expect(r.rows.map((x) => x.gold)).toEqual([200000, 696000, 225000, 225000, 696000]);
-    expect(r.total).toBe(2042000);
-    expect(r.goldPerRc).toBeCloseTo(2042000 / 3000, 4);
+    // 4x50,000 gold | 2x320,000 | 3x75,000 | 3x75,000 | 2x320,000
+    expect(r.rows.map((x) => x.gold)).toEqual([200000, 640000, 225000, 225000, 640000]);
+    expect(r.total).toBe(1930000);
+    expect(r.goldPerRc).toBeCloseTo(1930000 / 3000, 4);
   });
 
-  it("totals 2,117,158 at the 30,000 seed once the aura is priced at 238 BC", () => {
+  it("totals 2,005,158 at the 30,000 seed once the aura is priced at 238 BC", () => {
     const r = jumpUpRows(buildPriceMap(NAE, { blueCrystalGold: 30000 / BC_PER_BUNDLE }));
     // aura: 238 x 30,000/95 = 75,157.9 -> 75,158 (per-chest rounding)
-    expect(r.rows.map((x) => x.gold)).toEqual([275158, 696000, 225000, 225000, 696000]);
-    expect(r.rows.map((x) => x.cumulativeGold)).toEqual([275158, 971158, 1196158, 1421158, 2117158]);
+    expect(r.rows.map((x) => x.gold)).toEqual([275158, 640000, 225000, 225000, 640000]);
+    expect(r.rows.map((x) => x.cumulativeGold)).toEqual([275158, 915158, 1140158, 1365158, 2005158]);
     expect(r.rows[0].cumulativeGoldPerRc).toBeCloseTo(91.7, 1);
-    expect(r.rows[4].cumulativeGoldPerRc).toBeCloseTo(705.7, 1);
-    expect(r.total).toBe(2117158);
+    expect(r.rows[4].cumulativeGoldPerRc).toBeCloseTo(668.4, 1);
+    expect(r.total).toBe(2005158);
   });
 
   it("lists every reward line with its scaled quantity; no-market items are unpriced, not unresolved", () => {
@@ -56,7 +58,7 @@ describe("jumpUpRows", () => {
     expect(lv1.lines.every((l) => !l.unresolved)).toBe(true);
     expect(lv1.lines[0]).toMatchObject({ chest: "50,000 Gold Bars", chestQty: 4, perUnit: 1 });
     expect(r.rows[1].lines).toEqual([
-      expect.objectContaining({ slug: "lv-8-gem", chestQty: 2, qty: 2, perUnit: 348000, gold: 696000, isBound: true }),
+      expect.objectContaining({ slug: "lv-8-gem", chestQty: 2, qty: 2, perUnit: 320000, gold: 640000, isBound: true }),
     ]);
     expect(r.rows[2].lines[0]).toMatchObject({
       slug: "fixed-epic-astrogem-selection",
@@ -88,7 +90,7 @@ describe("jumpUpRows", () => {
     const lv1 = r.rows[0].lines;
     expect(lv1[2]).toMatchObject({ slug: "azenas-blessing-28d", priced: true, perUnit: 10000, gold: 10000 });
     expect(lv1[3]).toMatchObject({ slug: "ancient-bracelet-chest", priced: true, perUnit: 0, gold: 0 });
-    expect(r.total).toBe(2042000 + 10000);
+    expect(r.total).toBe(1930000 + 10000);
   });
 
   it("an explicit 0 on the BC-costed aura or the Lv. 8 gem survives the computed price layers", () => {

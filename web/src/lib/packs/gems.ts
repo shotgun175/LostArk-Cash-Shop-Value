@@ -6,8 +6,8 @@
 
 import type { Region } from "../api";
 
-/** Default Lv. 8 gem price per region (the user's market prices, 2026-10-25). */
-export const GEM_LV8_DEFAULT: Readonly<Record<Region, number>> = { nae: 348000, euc: 398000 };
+/** Default Lv. 8 gem price per region (2026-11-20: NA the user's estimate, EU TJW's 11/18 scrape). */
+export const GEM_LV8_DEFAULT: Readonly<Record<Region, number>> = { nae: 320000, euc: 340000 };
 
 /** The baseline slug: the user's Lv. 8 gem price is stored as this region override. */
 export const GEM_LV8_SLUG = "lv-8-gem";

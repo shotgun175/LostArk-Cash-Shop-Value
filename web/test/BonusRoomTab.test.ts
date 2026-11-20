@@ -100,13 +100,15 @@ describe("BonusRoom while the room runs", () => {
     expect(body).toContain("[Bonus] Autumn Ark Grid Support Pack");
     expect(body).toContain("/icons/ancient-bracelet-chest.png"); // the data's bonus icon, kept as is
 
-    // Engine values (pinned in bonusRoom.test.ts): Astrogem Pack 880,205 each, the Ark Grid
-    // group 3 x 880,205 + the 600,000 bonus, +114.2% vs exchange on 12,000 RC.
-    expect(card(body, "Autumn Astrogem Pack I")).toContain("880,205");
-    expect(body).toContain("3,240,615");
-    expect(body).toContain("+114%");
+    // Engine values (pinned in bonusRoom.test.ts): Astrogem Pack 872,530 each, the Ark Grid
+    // group 3 x 872,530 + the 600,000 bonus, +112.7% vs exchange on 12,000 RC.
+    // (Re-baselined 2026-11-20 with the 320,000 NA Lv. 8 default; was 880,205, 3,240,615 and
+    // +114%, and the Growth group was 234,426.)
+    expect(card(body, "Autumn Astrogem Pack I")).toContain("872,530");
+    expect(body).toContain("3,217,590");
+    expect(body).toContain("+113%");
     expect(body).toContain("(1,512,605 gold at your F4 rate)"); // 12,000 RC x 30,000 / 238
-    expect(body).toContain("234,426"); // Growth & Life Skills: 6 cube chests + Abidos + bonus, potion unpriced
+    expect(body).toContain("229,356"); // Growth & Life Skills: 6 cube chests + Abidos + bonus, potion unpriced
 
     // The Packs-style card pieces: collapsed contents and the shared material table inside it.
     expect(body).toContain("Contents · 6 materials");
@@ -226,7 +228,7 @@ describe("BonusRoom while the room runs", () => {
       const { body } = render(BonusRoom);
       const pack = card(body, "Autumn Astrogem Pack I");
       expect(pack).toContain("Some contents have no price");
-      expect(pack).toContain("374,815");
+      expect(pack).toContain("367,140"); // 872,530 - 189,600 - 315,790 (was 374,815 before 2026-11-20)
       // The footer lists a partly priced product as "(part)".
       expect(body).toContain(
         "Not counted (no price yet): Autumn Astrogem Pack I (part), Autumn Astrogem Pack II (part), Autumn Astrogem Pack III (part).</p>",
@@ -281,7 +283,7 @@ describe("BonusRoom while the room runs", () => {
     overrides.set("nae", "basic-life-energy-potion", 50);
     const body = render(BonusRoom).body;
     expect(card(body, "Basic Life Energy Potion X20")).toContain("1,000"); // 20 x 50
-    expect(body).toContain("235,426"); // the Growth group gains the 1,000
+    expect(body).toContain("230,356"); // the Growth group gains the 1,000 (229,356 + 1,000)
     app.region = "euc"; // no EU payload in the fixture, so no groups render
     expect(render(BonusRoom).body).toContain("No prices yet. The feed may be refreshing.");
   });
@@ -297,7 +299,7 @@ describe("BonusRoom potion default from logging", () => {
     const potion = card(body, "Basic Life Energy Potion X20");
     expect(potion).toContain("45,300"); // 20 x 2,265
     expect(potion).not.toContain("no price");
-    expect(body).toContain("279,726"); // Growth & Life Skills: 234,426 + 45,300
+    expect(body).toContain("274,656"); // Growth & Life Skills: 229,356 + 45,300 (was 279,726 before 2026-11-20)
     expect((body.match(/no price</g) ?? []).length).toBe(2); // Joyful x10 and its bonus only
     expect((body.match(/Not counted \(no price yet\)/g) ?? []).length).toBe(1);
     expect(body).not.toContain("Basic Life Energy Potion X20.");
@@ -308,7 +310,7 @@ describe("BonusRoom potion default from logging", () => {
     overrides.set("nae", "basic-life-energy-potion", 50);
     const { body } = render(BonusRoom);
     expect(card(body, "Basic Life Energy Potion X20")).toContain("1,000"); // 20 x 50
-    expect(body).toContain("235,426");
+    expect(body).toContain("230,356");
   });
 });
 

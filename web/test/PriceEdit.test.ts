@@ -70,6 +70,14 @@ describe("PriceEdit", () => {
     expect(gold).not.toContain("price-btn");
   });
 
+  it("keeps gold read-only even when the caller does not lock it (the Vestiges gold bars)", () => {
+    // Pack tables and drill-downs pass no readOnly; a gold override would move every gold line.
+    const gold = html({ slug: "gold", value: 1 });
+    expect(gold).toContain("price-ro");
+    expect(gold).toContain('title="Gold counts at face value."');
+    expect(gold).not.toContain("price-btn");
+  });
+
   it("names each price button after its item, starting with the visible text", () => {
     expect(html({ slug: "fixed-epic-astrogem-selection", value: 75000 })).toContain(
       'aria-label="75,000, Fixed Epic Astrogem (player-picked)"',

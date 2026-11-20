@@ -4,7 +4,8 @@ import type { Chest } from "./types";
 // transcribed verbatim from source B (resolverFull), plus manual additions noted inline (gold
 // bars; the 2026-07-15 summer-rotation Season 4 tickets and astrogem chests; the 2026-08-12
 // rotation chests; the 2026-09-16 rotation chests and Jump-Up Boost rewards; the Tenebrous
-// Judge Ark Pass chests; the 2026-10-21 Autumn Bonus Room chests).
+// Judge Ark Pass chests; the 2026-10-21 Autumn Bonus Room chests; the 2026-11-18 Vestiges of the
+// End clear-pack chests).
 // Selection chests: use defaultPickSlug if set, else auto-pick the highest line-gold option.
 export const RESOLVER: Record<string, Chest> = {
   "Crystallized Destiny Destruction Stone Pouch": {
@@ -440,5 +441,32 @@ export const RESOLVER: Record<string, Chest> = {
     name: "Basic Life Energy Potion",
     type: "fixed",
     outputs: [{ slug: "basic-life-energy-potion", qtyPerChest: 1 }],
+  },
+  // 2026-11-18 rotation: the Vestiges of the End Clear Pack chests (data/packs.ts). Bound gold
+  // bars count at face value, like the Jump-Up's. The shard count and the support chest's two
+  // options come from the in-game Chest Preview (user captures 2026-11-20); TJW's 2026-11-18
+  // catalog leaves the support chest unpriced.
+  "10,000 Bound Gold Bars": {
+    name: "10,000 Bound Gold Bars",
+    type: "fixed",
+    outputs: [{ slug: "gold", qtyPerChest: 10000, isCurrency: true, isBound: true }],
+  },
+  "20,000 Bound Gold Bars": {
+    name: "20,000 Bound Gold Bars",
+    type: "fixed",
+    outputs: [{ slug: "gold", qtyPerChest: 20000, isCurrency: true, isBound: true }],
+  },
+  "Destiny Shard Pouch (M)": {
+    name: "Destiny Shard Pouch (M)",
+    type: "fixed",
+    outputs: [{ slug: "destiny-shard", qtyPerChest: 2000, isCurrency: true }],
+  },
+  "T4 Support Materials Selection Chest III": {
+    name: "T4 Support Materials Selection Chest III",
+    type: "selection",
+    outputs: [
+      { slug: "lavas-breath", qtyPerChest: 50, isBound: true },
+      { slug: "glaciers-breath", qtyPerChest: 50, isBound: true },
+    ],
   },
 };

@@ -140,7 +140,9 @@ describe("packValue golden parity with TJW live pack cards", () => {
     // re-anchor (1,543 -> 1,850, user sign-off) adds 30 x 307 = 9,210 on its 30 gem chests.
     // The 2026-10-25 Lv. 8 gem baseline (NA default 348,000; Lv. 3 = 348,000 / 243, 1,432 per
     // chest) takes 30 x 418 = 12,540 back off (was 1,883,299 / 348.8).
-    ["limited-relic-engraving-growth", 1870759, 346.4],
+    // The 2026-11-20 default move (NA 320,000; Lv. 3 = 320,000 / 243, 1,317 per chest) takes
+    // 30 x 115 = 3,450 more off (was 1,870,759 / 346.4).
+    ["limited-relic-engraving-growth", 1867309, 345.8],
     ["monthly-t4-growth-support", 172875, 45.5],
     ["shadow-growth-support-pack-1", 1459800, 260.7],
     ["shadow-growth-support-pack-2", 626550, 174.0],
@@ -201,7 +203,7 @@ describe("paradise-special-pack-ii (EV pack: deterministic engine value)", () =>
     //   elysian:   3000 * 3
     //   frost key (selection, higher of flame 48636 / frost 50440): round(50440) * 1
     //   cube 4th:  round(EV_cube) * 5
-    //   lv-3 gem:  round(348000 / 243) * 50 (the NA default Lv. 8 baseline, 2026-10-25)
+    //   lv-3 gem:  round(320000 / 243) * 50 (the NA default Lv. 8 baseline, 2026-11-20)
     //   abidos:    100*137 * 10
     //   T4 support (selection, glaciers 100@319=31900 > lavas 25@330=8250): 31900 * 5
     const evEpic = Math.round(map["splendid-hell-key-of-destiny-v-epic"]);
@@ -212,7 +214,7 @@ describe("paradise-special-pack-ii (EV pack: deterministic engine value)", () =>
       3000 * 3 +
       evFrost * 1 +
       evCube * 5 +
-      Math.round(348000 / 243) * 50 +
+      Math.round(320000 / 243) * 50 +
       100 * 137 * 10 +
       31900 * 5;
     expect(r.total).toBe(expected);
@@ -228,7 +230,9 @@ describe("paradise-special-pack-ii (EV pack: deterministic engine value)", () =>
     // keys drop to 129,313 each and the Frost key to 84,125.
     // (re-baselined 2026-10-25: T4 gems follow the NA Lv. 8 baseline of 348,000) 50 gem chests at
     // 1,432 (-20,900) and 5 cubes at 17,621 (-4,030, the Lv. 2 gems), from 832,886.
-    expect(r.total).toBe(807956);
+    // (re-baselined 2026-11-20: the NA Lv. 8 default moved to 320,000) 50 gem chests at 1,317
+    // (-5,750) and 5 cubes at 16,776 (-4,225, the Lv. 2 gems); was 807,956.
+    expect(r.total).toBe(797981);
     expect(evFrost).toBe(84125);
   });
 
@@ -305,19 +309,26 @@ describe("2026-08-12 rotation packs (self-goldens at the pinned fixture)", () =>
   const map = buildPriceMap(NAE);
 
   const golden: [string, number][] = [
-    // 6x3,750 + 33,000 + 43,000 + 25x1,432 (both processing tickets 0 without an exchange input)
+    // 6x3,750 + 33,000 + 43,000 + 25x1,317 (both processing tickets 0 without an exchange input)
     // (Lv. 3 gems at the NA Lv. 8 baseline 348,000 / 243 since 2026-10-25; was 144,750 at 1,850)
-    ["limited-astrogem-package", 134300],
-    // 3xVI-epic(159,450) + 2xVI(231,145) + frost-VI(106,795) + 3x3,000 + 10x17,621 + 120x1,432 + 50x13,700
+    // (re-baselined 2026-11-20: the NA Lv. 8 default moved to 320,000, so 25 gem chests at 1,317
+    // (-2,875); was 134,300)
+    ["limited-astrogem-package", 131425],
+    // 3xVI-epic(159,450) + 2xVI(231,145) + frost-VI(106,795) + 3x3,000 + 10x16,776 + 120x1,317 + 50x13,700
     // (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule; was 2,274,384)
     // (re-baselined 2026-10-25: T4 gems follow the NA Lv. 8 baseline 348,000, so the cube EV
     // reads Lv. 2 = 348,000 / 729; was 2,147,705)
-    ["paradise-special-pack", 2089485],
+    // (re-baselined 2026-11-20: the NA Lv. 8 default moved to 320,000, so 120 gem chests at 1,317
+    // (-13,800) and 10 cubes at 16,776 (-8,450); was 2,089,485)
+    ["paradise-special-pack", 2067235],
     // default top-5 picks: CD Destruction Pouch / Epic HK S4 / Glacier's / Superior Abidos / T4 Gems
-    // (T4 Gems at 120x1,432 since the 2026-10-25 Lv. 8 baseline; 120x1,850 from 2026-08-19)
+    // (T4 Gems at 120x1,317 since the 2026-11-20 Lv. 8 default; 120x1,432 from 2026-10-25,
+    // 120x1,850 from 2026-08-19)
     // (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule; was 2,043,175)
     // (re-baselined 2026-10-25 for the gem baseline; was 1,998,250)
-    ["summer-custom-pack-1", 1948090],
+    // (re-baselined 2026-11-20: the NA Lv. 8 default moved to 320,000, so 120 gem chests at 1,317
+    // (-13,800); was 1,948,090)
+    ["summer-custom-pack-1", 1934290],
     // default top-4 picks: Artisan Armor / Abidos (100) / DD Bundle / Relic Recipe Pouch
     ["summer-custom-pack-2", 496849],
     // 15x1000x29 + 15x1000x0.92 + 15x20x171
@@ -336,7 +347,7 @@ describe("2026-08-12 rotation packs (self-goldens at the pinned fixture)", () =>
   it("the astrogem pack gains the BC-costed processing tickets when the exchange input is set", () => {
     // gold/BC 200: reset 3x20,000 + refresh 3x3,600 = +70,800.
     const mapBc = buildPriceMap(NAE, { blueCrystalGold: 200 });
-    expect(packValue(pack("limited-astrogem-package"), mapBc).total).toBe(134300 + 70800);
+    expect(packValue(pack("limited-astrogem-package"), mapBc).total).toBe(131425 + 70800);
   });
 
   it("a user click-to-edit override on a BC-costed ticket wins over the BC derivation", () => {
@@ -462,9 +473,10 @@ describe("frozen retirement values (display path)", () => {
   });
 
   it("the default (live) path ignores frozenTotal", () => {
-    // relic's live value (golden) is 1,870,759, distinct from its retirement snapshot (1,769,665).
+    // relic's live value (golden) is 1,867,309, distinct from its retirement snapshot (1,769,665).
+    // (re-baselined 2026-11-20: 30 gem chests at 1,317 under the NA 320,000 default; was 1,870,759)
     const relic = pack("limited-relic-engraving-growth");
-    expect(packValue(relic, map).total).toBe(1870759);
+    expect(packValue(relic, map).total).toBe(1867309);
     expect(relic.frozenTotal).toBe(1769665);
   });
 });
@@ -545,9 +557,9 @@ describe("2026-08-19 packs (BC pricing + self-goldens at the pinned fixture)", (
     ["discount-superior-abidos-fusion", 68400, 456],
     // selection: glaciers 20x319 = 6,380 > lavas 10x330 = 3,300; 20 x 6,380 = 127,600; / 150 BC
     ["discount-t4-breath-selection-chest", 127600, 850.7],
-    // 120 x 1,432 (Lv. 3 = the NA Lv. 8 baseline 348,000 / 243, 2026-10-25; was 120 x 1,850 =
-    // 222,000) = 171,840; / 600 BC = 286.4
-    ["discount-t4-gem-chest-lv3-x120", 171840, 286.4],
+    // 120 x 1,317 (Lv. 3 = the NA Lv. 8 baseline 320,000 / 243, 2026-11-20; was 120 x 1,850 =
+    // 222,000, then 120 x 1,432 = 171,840 from 2026-10-25) = 158,040; / 600 BC = 263.4
+    ["discount-t4-gem-chest-lv3-x120", 158040, 263.4],
   ];
   for (const [slug, total, gpb] of bcGolden) {
     it(`${slug}: total ${total}, ${gpb} g/BC, no RC metric`, () => {
@@ -572,10 +584,10 @@ describe("2026-08-19 packs (BC pricing + self-goldens at the pinned fixture)", (
     expect(eu.goldPerDollar!).toBeGreaterThan(r.goldPerDollar!);
   });
 
-  it("the x180 gem tile is RC-priced: 180 x 1,432 at 1,600 RC", () => {
+  it("the x180 gem tile is RC-priced: 180 x 1,317 at 1,600 RC", () => {
     const r = packValue(pack("discount-t4-gem-chest-lv3"), map);
-    expect(r.total).toBe(180 * 1432);
-    expect(r.goldPerRc!).toBeCloseTo(257760 / 1600, 4);
+    expect(r.total).toBe(180 * 1317);
+    expect(r.goldPerRc!).toBeCloseTo(237060 / 1600, 4);
     expect(r.goldPerBc).toBeNull();
     expect(r.goldPerDollar).not.toBeNull();
   });
@@ -638,17 +650,21 @@ describe("2026-09-16 rotation packs (self-goldens at the pinned fixture)", () =>
 
   const golden: [string, number][] = [
     // 4x the per-package contents, no exchange input: 100x3,750 + 4x0 (Processed Astrogem Box,
-    // no price) + 12x43,000 + 40x0 (reset tickets, BC-costed) + 120x1,432 + 20x17,621 (cube EV)
+    // no price) + 12x43,000 + 40x0 (reset tickets, BC-costed) + 120x1,317 + 20x16,776 (cube EV)
     // (re-baselined 2026-10-25: T4 gems follow the NA Lv. 8 baseline 348,000; was 1,481,540)
-    ["dimensionalist-welcome-package", 1415260],
+    // (re-baselined 2026-11-20: the NA Lv. 8 default moved to 320,000, so 120 gem chests at 1,317
+    // (-13,800) and 20 cubes at 16,776 (-16,900); was 1,415,260)
+    ["dimensionalist-welcome-package", 1384560],
     // 20x1000x29 + 60x1000x0.92 + 20x20x47 + 40x20x171 + 50x3000x0.224
     // + 3x25,080 (Armor chest -> 12 Artisan's Tailoring Lv 3 at 2,090)
     // + 3x21,588 (Weapons chest -> 12 Artisan's Metallurgy Lv 3 at 1,799)
     ["dimensionalist-welcome-growth-package", 964404],
-    // 2xVI-epic(159,450) + 1xVI(231,145) + 2x3,000 + 5x17,621 + 50x1,432 + 30x13,700
+    // 2xVI-epic(159,450) + 1xVI(231,145) + 2x3,000 + 5x16,776 + 50x1,317 + 30x13,700
     // (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule; was 1,204,327)
     // (re-baselined 2026-10-25: T4 gems follow the NA Lv. 8 baseline 348,000; was 1,151,680)
-    ["paradise-special-pack-ii-2", 1126750],
+    // (re-baselined 2026-11-20: the NA Lv. 8 default moved to 320,000, so 50 gem chests at 1,317
+    // (-5,750) and 5 cubes at 16,776 (-4,225); was 1,126,750)
+    ["paradise-special-pack-ii-2", 1116775],
   ];
   for (const [slug, total] of golden) {
     it(`${slug}: total ${total} on the fixture`, () => {
@@ -662,7 +678,7 @@ describe("2026-09-16 rotation packs (self-goldens at the pinned fixture)", () =>
     expect(mapBc["pheon"]).toBe(1700);
     expect(buildPriceMap(NAE)["pheon"]).toBeUndefined(); // no input -> unpriced, like the tickets
     const r = packValue(pack("dimensionalist-welcome-package"), mapBc);
-    expect(r.total).toBe(1415260 + 340000 + 800000);
+    expect(r.total).toBe(1384560 + 340000 + 800000);
     expect(r.maxPurchases).toBe(1);
   });
 
@@ -707,17 +723,20 @@ describe("2026-09-30 shop check packs (self-goldens at the pinned fixture)", () 
 
 // ---------------------------------------------------------------------------
 // 2026-10-21 rotation: Autumn Paradise, Vambraces Growth and the two Autumn weeklies.
-// Self-goldens hand-computed on the pinned fixture.
+// Self-goldens hand-computed on the pinned fixture. All four retired 2026-11-18; these goldens
+// are the live math (no useFrozen), so retirement leaves them unchanged.
 // ---------------------------------------------------------------------------
 describe("2026-10-21 rotation packs (self-goldens at the pinned fixture)", () => {
   const map = buildPriceMap(NAE);
 
   const golden: [string, number][] = [
-    // 3xVI-epic(159,450) + 2xVI(231,145) + frost-VI(106,795) + 3x3,000 + 10x17,621 + 125x1,432
+    // 3xVI-epic(159,450) + 2xVI(231,145) + frost-VI(106,795) + 3x3,000 + 10x16,776 + 125x1,317
     // + 50x13,700 (the 5,400 RC Paradise Special Pack's lines with 5 more gem chests)
     // (re-baselined 2026-10-25: zero-gold chests count as offers, TJW 2026-10-21 rule; was 2,283,634)
     // (re-baselined 2026-10-25: T4 gems follow the NA Lv. 8 baseline 348,000; was 2,156,955)
-    ["autumn-paradise-pack", 2096645],
+    // (re-baselined 2026-11-20: the NA Lv. 8 default moved to 320,000, so 125 gem chests at 1,317
+    // (-14,375) and 10 cubes at 16,776 (-8,450); was 2,096,645)
+    ["autumn-paradise-pack", 2073820],
     // 30x1000x29 + 80x1000x0.92 + 20x20x47 + 50x20x171 + 200x3000x0.224
     ["vambraces-growth-package", 1267800],
     // 15x1000x29 + 15x20x171 + 20x1000x0.92
@@ -733,6 +752,70 @@ describe("2026-10-21 rotation packs (self-goldens at the pinned fixture)", () =>
 
   it("the Autumn Paradise Pack is the 5,400 RC Paradise Special Pack plus 5 gem chests", () => {
     const autumn = packValue(pack("autumn-paradise-pack"), map).total;
-    expect(autumn - packValue(pack("paradise-special-pack"), map).total).toBe(5 * 1432);
+    expect(autumn - packValue(pack("paradise-special-pack"), map).total).toBe(5 * 1317);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 2026-11-18 rotation: Harvest Paradise, the two Vestiges of the End Clear Packs and the
+// Shimmering Gem Pack. Self-goldens hand-computed on the pinned fixture, no exchange input (the
+// reset tickets are BC-costed, so they stay unpriced here).
+// ---------------------------------------------------------------------------
+describe("2026-11-18 rotation packs (self-goldens at the pinned fixture)", () => {
+  const map = buildPriceMap(NAE);
+
+  const golden: [string, number][] = [
+    // 2xVI-epic(159,450) + 1xVI(231,145) + 3x3,000 + 5x16,776 + 50x1,317 + 20x13,700
+    // (re-baselined 2026-11-20: the NA Lv. 8 default moved to 320,000, so 50 gem chests at 1,317
+    // (-5,750) and 5 cubes at 16,776 (-4,225); was 992,750)
+    ["harvest-paradise-pack", 982775],
+    // 10x10,000 gold + 10x1000x29 + 30x1000x0.92 + 10x20x47 + 20x20x171 + 50x2000x0.224
+    // + 15x16,500 (T4 Support III -> 50 Lava's at 330) + 1x75,000 (fixed epic) + 5x43,000
+    // + 5x0 (reset tickets) + 50x1,317
+    // (re-baselined 2026-11-20: 50 gem chests at 1,317 (-5,750); was 1,126,900)
+    ["vestiges-of-the-end-normal-clear-pack", 1121150],
+    // 10x20,000 gold + 20x1000x29 + 60x1000x0.92 + 25x20x47 + 50x20x171 + 120x2000x0.224
+    // + 30x16,500 + 2x75,000 + 10x43,000 + 10x0 + 100x1,317
+    // (re-baselined 2026-11-20: 100 gem chests at 1,317 (-11,500); was 2,301,660)
+    ["vestiges-of-the-end-hard-clear-pack", 2290160],
+    // 200x1,317 + 5x75,000 (fixed epic) + 20x0 (reset tickets)
+    // (re-baselined 2026-11-20: 200 gem chests at 1,317 (-23,000); was 661,400)
+    ["shimmering-gem-pack", 638400],
+  ];
+  for (const [slug, total] of golden) {
+    it(`${slug}: total ${total} on the fixture`, () => {
+      expect(packValue(pack(slug), map).total).toBe(total);
+    });
+  }
+
+  it("the Harvest Paradise Pack is Paradise Special Pack II plus an Elysian ticket, minus 10 Abidos chests", () => {
+    const harvest = packValue(pack("harvest-paradise-pack"), map).total;
+    expect(harvest - packValue(pack("paradise-special-pack-ii-2"), map).total).toBe(3000 - 10 * 13700);
+  });
+
+  it("prices the reset tickets off the exchange input", () => {
+    // gold/BC 200: each reset ticket is 100 BC x 200 = 20,000.
+    const mapBc = buildPriceMap(NAE, { blueCrystalGold: 200 });
+    expect(packValue(pack("vestiges-of-the-end-normal-clear-pack"), mapBc).total).toBe(1121150 + 5 * 20000);
+    expect(packValue(pack("vestiges-of-the-end-hard-clear-pack"), mapBc).total).toBe(2290160 + 10 * 20000);
+    expect(packValue(pack("shimmering-gem-pack"), mapBc).total).toBe(638400 + 20 * 20000);
+  });
+
+  it("T4 Support Materials Selection Chest III defaults to Lava's Breath and honors a Glacier's pick", () => {
+    expect(resolveChest(RESOLVER["T4 Support Materials Selection Chest III"], map).lines).toEqual([
+      { slug: "lavas-breath", qty: 50, gold: 16500, isBound: true },
+    ]);
+    const base = packValue(pack("vestiges-of-the-end-hard-clear-pack"), map).total;
+    const picked = packValue(pack("vestiges-of-the-end-hard-clear-pack"), map, {
+      "T4 Support Materials Selection Chest III": "glaciers-breath",
+    }).total;
+    expect(base - picked).toBe(30 * (16500 - 50 * 319));
+  });
+
+  it("counts the bound gold bars at face value", () => {
+    const hard = packValue(pack("vestiges-of-the-end-hard-clear-pack"), map);
+    expect(hard.lines.find((l) => l.slug === "gold")).toMatchObject({ gold: 200000, isBound: true });
+    const normal = packValue(pack("vestiges-of-the-end-normal-clear-pack"), map);
+    expect(normal.lines.find((l) => l.slug === "gold")).toMatchObject({ gold: 100000, isBound: true });
   });
 });
