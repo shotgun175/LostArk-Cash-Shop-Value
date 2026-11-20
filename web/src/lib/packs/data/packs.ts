@@ -733,10 +733,12 @@ export const PACKS: Pack[] = [
       { chest: "Astrogem Processing Option Refresh Ticket", qty: 2 },
     ],
   },
-  // --- 2026-10-21 rotation (all sales periods end 11/18/2026 04:00; from the user's
-  // purchase-window captures, not in TJW's build yet). The windows show icons and quantities
-  // only, so each line was pixel-matched against the same icon in an earlier pack's window;
-  // where two chests share the same art, the user's in-game tooltip captures settled it. ---
+  // --- 2026-10-21 rotation (all sales periods ended 11/18/2026 04:00 and all four retired that
+  // day; from the user's purchase-window captures, not in TJW's build at the time). The windows
+  // show icons and quantities only, so each line was pixel-matched against the same icon in an
+  // earlier pack's window; where two chests share the same art, the user's in-game tooltip
+  // captures settled it. Frozen totals were captured 2026-11-20 while the upstream price feed
+  // was 5 to 7 h stale (prices as of that morning UTC). ---
   {
     // Successor to the retired Paradise Special Pack II (3,000 RC): the same seven lines as the
     // 2026-08-12 Paradise Special Pack (5,400 RC) in the same order, with T4 Gem Chests
@@ -744,13 +746,16 @@ export const PACKS: Pack[] = [
     // identical across seasons, so all four tickets were confirmed "(Season 4)" from in-game
     // tooltips (Paradise Season 4 runs 07/15/2026 to 02/03/2027), as was the Abidos chest's 100
     // per chest. No [Limited] banner in-game; tagged limited like the rest of the Paradise line
-    // since it is a one-off timed sale.
+    // since it is a one-off timed sale. Retired 2026-11-18 at its sales end; succeeded by the
+    // Harvest Paradise Pack (2,800 RC).
     name: "Autumn Paradise Pack",
     slug: "autumn-paradise-pack",
+    frozenTotal: 1724700, // NA card value captured 2026-11-20 (EU card showed 1,837,122)
     royalCrystalCost: 5100,
     maxPurchases: 5,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-11-18",
     contents: [
       { chest: "Epic Hell Key of Destiny Exchange Ticket (Season 4)", qty: 3 },
       { chest: "Legendary Hell Key of Destiny Exchange Ticket (Season 4)", qty: 2 },
@@ -766,12 +771,15 @@ export const PACKS: Pack[] = [
     // T4 honing mats: the first five lines of the retired Summer Growth Support Pack I in the
     // same order, at 30/80/20/50/200. 5 per roster, no reset. No [Limited] banner in-game;
     // tagged limited like the no-banner Paradise packs since it is a one-off timed sale.
+    // Retired 2026-11-18 at its sales end.
     name: "Vambraces Growth Package",
     slug: "vambraces-growth-package",
+    frozenTotal: 1165000, // NA card value captured 2026-11-20 (EU card showed 941,400)
     royalCrystalCost: 4800,
     maxPurchases: 5,
     limited: true,
-    retired: false,
+    retired: true,
+    retiredOn: "2026-11-18",
     contents: [
       { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 30 },
       { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 80 },
@@ -783,13 +791,16 @@ export const PACKS: Pack[] = [
   {
     // Successor to the retired Summer Crystallized Stone & Fusion weekly (15/15/15 at the same
     // 2,100 RC): Guardian pouches 15 -> 20. 5 per roster per week (first reset 10/25/2026).
+    // Retired 2026-11-18 at its sales end; the 11/18 shop listed no weekly successor.
     name: "[Weekly] Autumn T4 Crystallized Stone & Fusion Pack",
     slug: "weekly-autumn-t4-crystallized-stone",
+    frozenTotal: 392300, // NA card value captured 2026-11-20 (EU card showed 326,700)
     royalCrystalCost: 2100,
     maxPurchases: 5,
     limited: true,
     recurrence: "weekly",
-    retired: false,
+    retired: true,
+    retiredOn: "2026-11-18",
     contents: [
       { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 15 },
       { chest: "Superior Abidos Fusion Material Chest", qty: 15 },
@@ -801,17 +812,122 @@ export const PACKS: Pack[] = [
     // 1,400 RC): 7 chests + 80 pouches at 1,600 RC. 5 per roster per week (first reset
     // 10/25/2026). The x7 chest's art is identical to the T4 Breath Selection Chest's (about 5x
     // cheaper); its in-game tooltip confirmed T4 Support Materials Selection Chest (25 Lava's or
-    // 100 Glacier's Breath).
+    // 100 Glacier's Breath). Retired 2026-11-18 at its sales end; the 11/18 shop listed no
+    // weekly successor.
     name: "[Weekly] Autumn T4 Shards & Support Material Pack",
     slug: "weekly-autumn-t4-shards-support",
+    frozenTotal: 220000, // NA card value captured 2026-11-20 (EU card showed 241,440)
     royalCrystalCost: 1600,
     maxPurchases: 5,
     limited: true,
     recurrence: "weekly",
-    retired: false,
+    retired: true,
+    retiredOn: "2026-11-18",
     contents: [
       { chest: "T4 Support Materials Selection Chest", qty: 7 },
       { chest: "Destiny Shard Pouch (L)", qty: 80 },
+    ],
+  },
+  // --- 2026-11-18 rotation (from the user's 2026-11-20 purchase-window and tooltip captures;
+  // TJW's 2026-11-18 catalog has the same pack names, prices, caps and quantities, but leaves the
+  // astrogem and support chests unpriced). None carries a [Limited] banner in-game; all are
+  // tagged limited because each is a one-off timed sale. ---
+  {
+    // Successor to the retired Autumn Paradise Pack (5,100 RC): the six lines of the retired
+    // Paradise Special Pack II (3,000 RC, slug -ii-2) in the same order, with Elysian tickets
+    // 2 -> 3 and Abidos chests 30 -> 20, at 2,800 RC. Every icon pixel-matches that window. The
+    // tooltips confirmed the Legendary ticket is Season 4 (the art is identical across seasons;
+    // the other two tickets are assumed Season 4 with it, one Paradise season) and the Abidos
+    // chest is the Epic 100-per-chest one.
+    // 5 per roster, purchase count resets 11/30/2026, sales end 12/16/2026.
+    name: "Harvest Paradise Pack",
+    slug: "harvest-paradise-pack",
+    royalCrystalCost: 2800,
+    maxPurchases: 5,
+    limited: true,
+    retired: false,
+    contents: [
+      { chest: "Epic Hell Key of Destiny Exchange Ticket (Season 4)", qty: 2 },
+      { chest: "Legendary Hell Key of Destiny Exchange Ticket (Season 4)", qty: 1 },
+      { chest: "Elysian Attempt +1 Exchange Ticket (Season 4)", qty: 3 },
+      { chest: "(NEW) Ebony Cube Entrance Ticket Selection Chest II", qty: 5 },
+      { chest: "T4 Gem Chest (Lv. 3)", qty: 50 },
+      { chest: "Abidos Fusion Material Chest", qty: 20 },
+    ],
+  },
+  {
+    // Raid clear pack, 1 per roster, sales end 01/13/2027. Its one item, the Vestiges of the End
+    // Clear Celebration Chest (Normal): Level 1, opens after a [Normal] Vestiges of the End
+    // Level 1 clear and holds that level's rewards plus the Level 2 chest, which opens after the
+    // Level 2 clear. These lines are both chests' tooltips added together, so the value assumes
+    // both clears (as TJW's does). The two astrogem chests carry the same in-game names and art
+    // as the ones already priced, so they take the same values (DECISIONS 2026-11-20): the picked
+    // epic at 43,000, and the fixed epic at the Jump-Up's 75,000. The fixed epic is a different
+    // item ID from the Jump-Up's (roster-bound, not character-bound) with the same description
+    // (pick an Offense or Support astrogem selection chest). TJW leaves these and the support
+    // chest unpriced.
+    name: "(Normal) Vestiges of the End Clear Pack",
+    slug: "vestiges-of-the-end-normal-clear-pack",
+    royalCrystalCost: 2000,
+    maxPurchases: 1,
+    limited: true,
+    retired: false,
+    contents: [
+      { chest: "10,000 Bound Gold Bars", qty: 10 },
+      { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 10 },
+      { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 30 },
+      { chest: "Great Destiny Leapstone Chest", qty: 10 },
+      { chest: "Superior Abidos Fusion Material Chest", qty: 20 },
+      { chest: "Destiny Shard Pouch (M)", qty: 50 },
+      { chest: "T4 Support Materials Selection Chest III", qty: 15 },
+      { chest: "Fixed Epic Astrogem Selection Chest", qty: 1 },
+      { chest: "Epic Astrogem Selection Chest", qty: 5 },
+      { chest: "Astrogem Processing Reset Ticket", qty: 5 },
+      { chest: "T4 Gem Chest (Lv. 3)", qty: 50 },
+    ],
+  },
+  {
+    // The Hard version of the pack above, built the same way from the (Hard) Level 1 and Level 2
+    // chest tooltips: 20,000-gold bars and twice the stones, support chests, astrogem lines and
+    // gem chests, with 2.5x the leapstone and Abidos chests and 2.4x the shard pouches. 1 per
+    // roster, sales end 01/13/2027.
+    name: "(Hard) Vestiges of the End Clear Pack",
+    slug: "vestiges-of-the-end-hard-clear-pack",
+    royalCrystalCost: 3800,
+    maxPurchases: 1,
+    limited: true,
+    retired: false,
+    contents: [
+      { chest: "20,000 Bound Gold Bars", qty: 10 },
+      { chest: "Crystallized Destiny Destruction Stone Pouch", qty: 20 },
+      { chest: "Crystallized Destiny Guardian Stone Pouch", qty: 60 },
+      { chest: "Great Destiny Leapstone Chest", qty: 25 },
+      { chest: "Superior Abidos Fusion Material Chest", qty: 50 },
+      { chest: "Destiny Shard Pouch (M)", qty: 120 },
+      { chest: "T4 Support Materials Selection Chest III", qty: 30 },
+      { chest: "Fixed Epic Astrogem Selection Chest", qty: 2 },
+      { chest: "Epic Astrogem Selection Chest", qty: 10 },
+      { chest: "Astrogem Processing Reset Ticket", qty: 10 },
+      { chest: "T4 Gem Chest (Lv. 3)", qty: 100 },
+    ],
+  },
+  {
+    // 5 per roster, sales end 12/09/2026. Identified by pixel match: the x200 and x20 cells
+    // against the T4 Gem Chest (Lv. 3) and Astrogem Processing Reset Ticket in earlier windows,
+    // the x5 chest against the named Fixed Epic Astrogem Selection Chest icon in the Vestiges
+    // tooltips (no tooltip was captured for it). TJW calls it "Fixed Epic Astrogem Selection Chest
+    // (Attack/Support)" and leaves it unpriced; it takes the Jump-Up chest's 75,000 here, like the
+    // Vestiges ones (DECISIONS 2026-11-20).
+    name: "Shimmering Gem Pack",
+    slug: "shimmering-gem-pack",
+    royalCrystalCost: 4200,
+    maxPurchases: 5,
+    limited: true,
+    retired: false,
+    contents: [
+      { chest: "T4 Gem Chest (Lv. 3)", qty: 200 },
+      { chest: "Fixed Epic Astrogem Selection Chest", qty: 5 },
+      { chest: "Astrogem Processing Reset Ticket", qty: 20 },
     ],
   },
 ];

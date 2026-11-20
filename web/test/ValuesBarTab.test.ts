@@ -129,7 +129,7 @@ describe("ValuesBar per route (collapsed)", () => {
   it("Packs: exchange, G2G, gem and pheons chips, and no potion", () => {
     const body = bar("/");
     expect(body).toContain('<section class="vb bar');
-    expect(text(body)).toBe("Your values 35,000 = 238 no rate Lv. 8 348,000 Pheons excluded");
+    expect(text(body)).toBe("Your values 35,000 = 238 no rate Lv. 8 320,000 Pheons excluded");
     expect(chips(body)).toHaveLength(4);
     expect(body).toContain("/icons/f4-shop.png");
     expect(body).toContain("/icons/lv-8-gem.png");
@@ -208,9 +208,9 @@ describe("ValuesBar per route (collapsed)", () => {
   it("on a phone each chip keeps its icon and a short value; the extras are in wide-only spans", () => {
     loadFixture(TIMBER, { usdPer1kGold: 0.0205, usdFetchedAt: new Date(INSIDE - 10 * 60_000).toISOString() });
     const body = bar("/bonus-room");
-    expect(chips(body).map(phoneText)).toEqual(["35,000", "$2.05", "348,000", "2,265", "excluded"]);
+    expect(chips(body).map(phoneText)).toEqual(["35,000", "$2.05", "320,000", "2,265", "excluded"]);
     // Wider screens show the full chips, as before.
-    expect(chips(body).map(text)).toEqual(["35,000 = 238", "$2.05 / 100k", "Lv. 8 348,000", "2,265", "Pheons excluded"]);
+    expect(chips(body).map(text)).toEqual(["35,000 = 238", "$2.05 / 100k", "Lv. 8 320,000", "2,265", "Pheons excluded"]);
     // A real space follows the wide-only "Pheons" (text() would hide a missing one); phones
     // capitalize the state word.
     expect(chip(body, "/icons/pheon.png")).toMatch(/>Pheons<\/span> excluded</);
@@ -222,10 +222,10 @@ describe("ValuesBar per route (collapsed)", () => {
     valuesBar.writeOverride("lv-8-gem", "400000");
     expect(text(chip(bar("/"), "/icons/lv-8-gem.png"))).toBe("Lv. 8 400,000");
     app.region = "euc";
-    expect(text(chip(bar("/"), "/icons/lv-8-gem.png"))).toBe("Lv. 8 398,000");
+    expect(text(chip(bar("/"), "/icons/lv-8-gem.png"))).toBe("Lv. 8 340,000");
     app.region = "nae";
     valuesBar.writeOverride("lv-8-gem", "");
-    expect(text(chip(bar("/"), "/icons/lv-8-gem.png"))).toBe("Lv. 8 348,000");
+    expect(text(chip(bar("/"), "/icons/lv-8-gem.png"))).toBe("Lv. 8 320,000");
   });
 
   it("Mari's Shop: exchange, potion and pheons; a cleared potion box goes back to the logging value", () => {
@@ -239,14 +239,14 @@ describe("ValuesBar per route (collapsed)", () => {
   });
 
   it("Bonus Room: all five while the room runs, nothing after it", () => {
-    expect(text(bar("/bonus-room"))).toBe("Your values 35,000 = 238 no rate Lv. 8 348,000 no value Pheons excluded");
+    expect(text(bar("/bonus-room"))).toBe("Your values 35,000 = 238 no rate Lv. 8 320,000 no value Pheons excluded");
     app.now = Date.parse("2026-11-19T00:00:00Z");
     expect(bar("/bonus-room")).not.toContain("Your values");
   });
 
   it("Ark Pass, Jump-Up Boost and Hell Key math show only their own values", () => {
-    expect(text(bar("/ark-pass"))).toBe("Your values Lv. 8 348,000");
-    expect(text(bar("/jump-up"))).toBe("Your values 35,000 = 238 Lv. 8 348,000");
+    expect(text(bar("/ark-pass"))).toBe("Your values Lv. 8 320,000");
+    expect(text(bar("/jump-up"))).toBe("Your values 35,000 = 238 Lv. 8 320,000");
     expect(text(bar("/hell-key"))).toBe("Your values 35,000 = 238 Pheons excluded");
   });
 
@@ -378,12 +378,13 @@ describe("ValuesBar popovers", () => {
 
   it("gem: the Lv. 8 input with the regional default as placeholder, and the effective lower levels", () => {
     const f = field(bar("/", "gem"), "Lv. 8 gem price");
-    expect(f).toMatch(/id="vb-gem"[^>]*placeholder="348000"[^>]*value=""/);
-    // 348,000 / 3, / 243, / 729, / 2,187.
-    expect(inner(f, 'id="vb-gem-levels"', "</ul>")).toBe("Lv. 7 116,000 Lv. 3 1,432 Lv. 2 477 Lv. 1 159");
+    expect(f).toMatch(/id="vb-gem"[^>]*placeholder="320000"[^>]*value=""/);
+    // 320,000 / 3, / 243, / 729, / 2,187 (re-baselined 2026-11-20: the NA Lv. 8 default moved
+    // to 320,000; was 116,000, 1,432, 477 and 159 at 348,000).
+    expect(inner(f, 'id="vb-gem-levels"', "</ul>")).toBe("Lv. 7 106,667 Lv. 3 1,317 Lv. 2 439 Lv. 1 146");
     expect(f).not.toContain("(your edit)");
     app.region = "euc";
-    expect(field(bar("/", "gem"), "Lv. 8 gem price")).toMatch(/id="vb-gem"[^>]*placeholder="398000"/);
+    expect(field(bar("/", "gem"), "Lv. 8 gem price")).toMatch(/id="vb-gem"[^>]*placeholder="340000"/);
   });
 
   it("gem: shows the user's Lv. 8 price, and a per-level edit with a reset button", () => {

@@ -20,6 +20,9 @@ function loadFixture(): void {
 // The Jump-Up golden is defined at a 30,000 exchange input, which was the app's seed until
 // 2026-10-25; the seed is now 35,000, so those cases set 30,000 explicitly. It was TJW's 2,225,158
 // until the Lv. 8 gems moved to the NA default baseline of 348,000 (2026-10-25): 2,117,158.
+// (re-baselined 2026-11-20: the NA Lv. 8 default moved to 320,000, so the track's 4 Lv. 8 gems
+// drop 4 x 28,000 = 112,000: 2,005,158 at 30,000 and 2,017,684 at the 35,000 seed; was 2,117,158
+// and 2,129,684)
 function withExchange<T>(gold: number, fn: () => T): T {
   const saved = f4.value;
   f4.value = gold;
@@ -38,10 +41,10 @@ describe("JumpUpBoost", () => {
     for (const ilvl of ["1,700", "1,705", "1,710", "1,715", "1,720"]) {
       expect(body).toContain(`Reach Item Lv. ${ilvl}`);
     }
-    // Lv 1 = 200,000 bound gold + the aura at 238 BC x 30,000/95; the track totals 2,117,158.
+    // Lv 1 = 200,000 bound gold + the aura at 238 BC x 30,000/95; the track totals 2,005,158.
     expect(body).toContain("275,158");
-    expect(body).toContain("2,117,158");
-    expect(body).toContain("705.7");
+    expect(body).toContain("2,005,158");
+    expect(body).toContain("668.4");
     // Azena's Blessing and the two Ancient chests carry no market value.
     expect((body.match(/no price/g) ?? []).length).toBe(3);
     // The chest subline only appears when it adds information: "4x 50,000 Gold Bars" under the
@@ -71,16 +74,16 @@ describe("JumpUpBoost", () => {
     app.status = "ok";
     app.payload = { schema_version: 1, generated_at: new Date().toISOString(), regions: {}, bundles: {} };
     const body = withExchange(30000, () => render(JumpUpBoost).body); // body renders lazily: read it inside
-    expect(body).toContain("2,117,158");
+    expect(body).toContain("2,005,158");
   });
 
   it("prices the aura off the default 35,000 exchange seed when the user has typed nothing", () => {
     loadFixture();
     const { body } = render(JumpUpBoost);
     // Aura: 238 BC x 35,000 / 95 = 87,684 (per-chest rounding); Lv 1 = 200,000 + 87,684, and the
-    // track totals 2,129,684 (the 30,000 golden total plus 12,526 more aura).
+    // track totals 2,017,684 (the 30,000 golden total plus 12,526 more aura).
     expect(body).toContain("287,684");
-    expect(body).toContain("2,129,684");
+    expect(body).toContain("2,017,684");
   });
 });
 
@@ -117,7 +120,7 @@ describe("JumpUpBoost click-to-edit prices", () => {
   it("a price entered for a no-market item moves the totals and shows the reset chip", () => {
     loadFixture();
     const body = renderWith({ "azenas-blessing-28d": 10000 });
-    expect(body).toContain("2,139,684"); // 2,129,684 at the 35,000 seed, plus 10,000
+    expect(body).toContain("2,027,684"); // 2,017,684 at the 35,000 seed, plus 10,000
     expect((body.match(/no price/g) ?? []).length).toBe(2);
     const azena = rowsOf(body).find((r) => r.includes("Azena")); // the apostrophe may be escaped
     expect(azena!).toMatch(/class="price-btn num[^"]*\bedited\b[^>]*>10,000<\/button>/);
@@ -132,7 +135,7 @@ describe("JumpUpBoost click-to-edit prices", () => {
     const bracelet = rowsOf(body).find((r) => r.includes("1× Ancient Bracelet Chest"));
     // Strip Svelte's hydration markers (<!--[0-->) so the cell reads as plain markup.
     expect(bracelet!.replace(/<!--[\s\S]*?-->/g, "")).toMatch(/accent[^"]*">0<\/td>/);
-    expect(body).toContain("2,129,684"); // a 0 adds nothing
+    expect(body).toContain("2,017,684"); // a 0 adds nothing
   });
 
   it("keeps the aura a plain dash while no exchange rate is set, instead of inviting a price", () => {

@@ -25,13 +25,16 @@ describe("ArkPass", () => {
     // Support row (300 breaths) totals the same at the fixture prices.
     const text = body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
     // Lv 16/17: Ebony Cube ticket chests at the cube EV (no live price for the ticket slug), which
-    // reads the NA default Lv. 2 gem (348,000 / 729, 2026-10-25; it was 36,854 at the baked 514).
-    expect(text.match(/ 2 35,242 /g)?.length).toBe(2);
+    // reads the NA default Lv. 2 gem (320,000 / 729, 2026-11-20; it was 36,854 at the baked 514).
+    // (re-baselined 2026-11-20: the NA Lv. 8 default moved from 348,000 to 320,000, so each 4th-unlock
+    // ticket is 16,776 (22 Lv. 2 gems x -38.41 = -845); was 2 x 17,621 = 35,242)
+    expect(text.match(/ 2 33,552 /g)?.length).toBe(2);
     // Lv 18/19: 3 Epic Astrogem Chests at BAKED 33,000; Lv 20: fixed epic astrogem at 75,000.
     expect(text.match(/ 3 99,000 /g)?.length).toBe(2);
     expect(text).toContain(" 1 75,000 ");
     // The raw effectivePrices() map would leave Lv 16-20 at 0 and total 3,035,255.
-    expect(body).toContain("3,378,739");
+    // (re-baselined 2026-11-20: 4 cube tickets at -845 each (-3,380); was 3,378,739)
+    expect(body).toContain("3,375,359");
     expect(body).not.toContain("3,035,255");
   });
 });

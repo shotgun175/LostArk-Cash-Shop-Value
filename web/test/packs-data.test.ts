@@ -7,21 +7,21 @@ import { BAKED, TRADE_UP, RELIC_ENGRAVING_SLUGS } from "../src/lib/packs/data/co
 
 describe("PACKS", () => {
   // Guards against a retired pack being dropped by accident; update the count on each rotation.
-  it("has all 43 packs", () => {
-    expect(PACKS.length).toBe(43);
+  it("has all 47 packs", () => {
+    expect(PACKS.length).toBe(47);
   });
-  it("lists exactly the 7 non-retired packs (post-2026-11-04: the [Discount] re-runs retired)", () => {
+  it("lists exactly the 7 non-retired packs (post-2026-11-18: the Autumn packs retired)", () => {
     const active = PACKS.filter((p) => !p.retired).map((p) => p.slug).sort();
     expect(active).toEqual(
       [
         "adventurers-path-package", // still in the live shop despite TJW's retired flag (2026-09-09)
         "monthly-1200-crystal-pack",
         "monthly-t4-growth-support",
-        // 2026-10-21 rotation, from the user's purchase-window captures
-        "autumn-paradise-pack",
-        "vambraces-growth-package",
-        "weekly-autumn-t4-crystallized-stone",
-        "weekly-autumn-t4-shards-support",
+        // 2026-11-18 rotation, from the user's purchase-window and tooltip captures
+        "harvest-paradise-pack",
+        "vestiges-of-the-end-normal-clear-pack",
+        "vestiges-of-the-end-hard-clear-pack",
+        "shimmering-gem-pack",
       ].sort(),
     );
   });

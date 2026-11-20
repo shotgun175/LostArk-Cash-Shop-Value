@@ -584,9 +584,10 @@ describe("buildPriceMap", () => {
     expect(map["relic-combat-engraving-recipe"]).toBe(relicRecipe({ ...BAKED, ...NAE }));
   });
   it("prices gems off the region's default Lv. 8 baseline when the region does not override them", () => {
-    // NAE prices carry no gem slugs, so Lv. 3 = the NA default 348,000 / 3^5 (2026-10-25).
+    // NAE prices carry no gem slugs, so Lv. 3 = the NA default 320,000 / 3^5 (2026-10-25;
+    // re-baselined 2026-11-20: the NA Lv. 8 default moved to 320,000; was 348,000 / 243).
     expect(NAE["lv-3-gem"]).toBeUndefined();
-    expect(map["lv-3-gem"]).toBe(348000 / 243);
+    expect(map["lv-3-gem"]).toBe(320000 / 243);
   });
   it("lets region prices override baked values", () => {
     const overridden = buildPriceMap({ "lv-3-gem": 9999 });
