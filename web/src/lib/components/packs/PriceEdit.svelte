@@ -10,7 +10,8 @@
   // One unit-price cell with click-to-edit: a per-unit override for the slug, saved per region and
   // applied everywhere the slug appears. Shared by PackLinesTable (Packs, Bonus Room), the pack
   // drill-down and the Jump-Up tab. F4-derived and computed prices render read-only (buildPriceMap
-  // would out-layer an override), as does anything the caller passes readOnly.
+  // would out-layer an override), as do gold (bars count at face value, and an override would
+  // move every gold line site-wide) and anything the caller passes readOnly.
   let {
     slug,
     value,
@@ -69,6 +70,8 @@
   <span class="num price-ro" title="Priced from the F4 exchange input (gold / 95). Change the exchange input to change it.">{shown}</span>
 {:else if COMPUTED_PRICE_NOTES.has(slug)}
   <span class="num price-ro" title={COMPUTED_PRICE_NOTES.get(slug)}>{shown}</span>
+{:else if slug === "gold"}
+  <span class="num price-ro" title="Gold counts at face value.">{shown}</span>
 {:else if readOnly}
   <span class="num price-ro" title={readOnlyTitle || undefined}>{shown}</span>
 {:else if editing}
